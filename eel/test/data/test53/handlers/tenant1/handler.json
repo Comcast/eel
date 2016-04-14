@@ -1,0 +1,9 @@
+{
+  "Version": "1.0",
+  "Name": "Crush",
+  "Info": "Crush array.",
+  "Active": true,
+  "Transformation": {
+    "{{/}}": "{{crush('{{/}}')}}"
+  }
+}

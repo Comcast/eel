@@ -1,0 +1,26 @@
+{
+	"Version": "1.0",
+	"Name": "MatchPartialArrays",
+	"Info": "Match array if event has identical array or with subset of values.",
+	"Active": true,
+	"Match": {
+		"content": {
+			"device": "sensor02",
+			"temperature": "42",
+			"recent": [40, 41]
+    }
+	},
+	"IsMatchByExample": true,
+	"TerminateOnMatch": true,
+	"Transformation": {
+		"{{/}}": "{{/}}"
+	},
+	"IsTransformationByExample": false,
+	"Path": "",
+	"Verb": "POST",
+	"Endpoint": "",
+	"HttpHeaders": {
+		"X-B3-TraceId": "{{traceid()}}",
+		"X-Tenant-Id": "{{tenant()}}"
+	}
+}

@@ -1,0 +1,16 @@
+[
+{
+	"fistName" : "Will",
+	"lastName" : "Smith",
+	"fullName" : "Will Smith"
+},
+{
+	"fistName" : "Helmut",
+	"lastName" : "Smith",
+	"fullName" : "Helmut Smith"
+},
+{
+	"fistName" : "Jane",
+	"lastName" : "Doe"
+}
+]

@@ -1,0 +1,41 @@
+{
+    "Version": "1.0",
+    "Name": "FilterCascade",
+    "Info": "Apply cascade of filters. Elements of a single filter are conjunctive, multiple filters are disjunctive. This syntax should be cleaner and replace all other deprecated filter syntax styles.",
+    "Active": true,
+    "Match": null,
+    "IsMatchByExample": false,
+    "TerminateOnMatch": true,
+    "Transformation": {
+      "{{/e/a}}": "a",
+      "{{/e/b}}": "b",
+      "{{/e/c}}": "c"
+    },
+    "IsTransformationByExample": false,
+	"Filters" : [
+	{
+	    "Filter" : {
+	      "{{/e/a}}": "x",
+	      "{{/e/b}}": "b"
+	    },
+	    "IsFilterInverted": false,
+	    "IsFilterByExample": false,
+	    "FilterAfterTransformation": true
+	},
+	{
+	    "Filter" : {
+	      "{{/e/a}}": "a"
+	    },
+	    "IsFilterInverted": false,
+	    "IsFilterByExample": false,
+	    "FilterAfterTransformation": true
+	}
+	],
+    "Path": "",
+    "Verb": "POST",
+    "Endpoint": "",
+    "HttpHeaders": {
+      "X-B3-TraceId": "{{traceid()}}",
+      "X-Tenant-Id": "{{tenant()}}"
+    }
+}

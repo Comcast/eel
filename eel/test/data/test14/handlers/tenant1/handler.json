@@ -1,0 +1,20 @@
+{
+	"Version": "1.0",
+	"Name": "FanOut",
+	"Info": "Fanout event to multiple endpoints and paths.",
+	"Active": true,
+	"Match": {},
+	"IsMatchByExample": false,
+	"TerminateOnMatch": true,
+	"Transformation": {
+		"{{/}}": "{{/}}"
+	},
+	"IsTransformationByExample": false,
+	"Path": [ "path1", "path2" ],
+	"Verb": "POST",
+	"Endpoint": [ "http://service1", "http://service2" ],
+	"HttpHeaders": {
+		"X-B3-TraceId": "{{traceid()}}",
+		"X-Tenant-Id": "{{tenant()}}"
+	}
+}

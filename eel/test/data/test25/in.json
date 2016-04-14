@@ -1,0 +1,6 @@
+{
+  "foo" : [
+    { "name" : "status" , "value" : "online" },
+    { "name" : "temperature" , "value" : 61 }
+  ]
+}

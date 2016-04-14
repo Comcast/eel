@@ -1,0 +1,29 @@
+{
+	"Version": "1.0",
+	"Name": "NamedTransformationsAndArrays",
+	"Info": "Iterate over an array and apply sub-transformations.",
+	"Active": true,
+	"Match": null,
+	"IsMatchByExample": false,
+	"TerminateOnMatch": true,
+	"Transformation": {
+		"{{/foo}}": "{{itransform('myt','{{/foo}}')}}"
+	},
+	"IsTransformationByExample": false,
+	"Transformations": {
+		"myt": {
+			"IsTransformationByExample": false,
+			"Transformation": {
+				"{{/r}}": "{{/r}}",
+				"{{/inject}}": "bar"
+			}
+		}
+	},
+	"Path": "",
+	"Verb": "POST",
+	"Endpoint": "",
+	"HttpHeaders": {
+		"X-B3-TraceId": "{{traceid()}}",
+		"X-Tenant-Id": "{{tenant()}}"
+	}
+}

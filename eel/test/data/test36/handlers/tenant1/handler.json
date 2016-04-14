@@ -1,0 +1,28 @@
+{
+	"Version": "1.0",
+	"Name": "Join3",
+	"Info": "Join two JSON documents into one. Merging two arrays under the same key. Duplicates will NOT be eliminated!",
+	"Active": true,
+	"Match": null,
+	"IsMatchByExample": false,
+	"TerminateOnMatch": true,
+	"Transformation": {
+		"{{/}}":"{{join('{{prop('a')}}','{{prop('b')}}')}}"
+	},
+	"CustomProperties": {
+		"a" : {
+			"foo": [1 , 2]
+		},
+		"b" : {
+			"foo": [2, 3, 4] 
+		}
+	},
+	"IsTransformationByExample": false,
+	"Path": "",
+	"Verb": "POST",
+	"Endpoint": "",
+	"HttpHeaders": {
+		"X-B3-TraceId": "{{traceid()}}",
+		"X-Tenant-Id": "{{tenant()}}"
+	}
+}

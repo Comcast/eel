@@ -1,0 +1,8 @@
+{
+    "content" : {
+        "foo" : "bar"
+    },
+    "header" : {
+        "X-MyKey" : "xyz"
+    }
+}

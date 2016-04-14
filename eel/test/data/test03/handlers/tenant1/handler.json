@@ -1,0 +1,32 @@
+{
+    "Version": "1.0",
+    "Name": "TransformationByExample",
+    "Info": "If severe structural changes are required, describing a transformation by example might be more effective. In this case set IsTransformationByExample to true.",
+    "Active": true,
+    "Match": null,
+    "IsMatchByExample": false,
+    "TerminateOnMatch": true,
+    "Transformation": {
+      	"apns": {
+          "data" : {
+      			"alert": "{{/message}}",
+            "badge": 1,
+      			"sound": "alarm.was"
+      		}},
+      		"gcm": {
+      			"data": {
+      				"title": "{{/title}}",
+      				"message": "{{/message}}",
+              "time_to_live": 300
+      			}
+      	}
+    },
+    "IsTransformationByExample": true,
+    "Path": "",
+    "Verb": "POST",
+    "Endpoint": "",
+    "HttpHeaders": {
+      "X-B3-TraceId": "{{traceid()}}",
+      "X-Tenant-Id": "{{tenant()}}"
+    }
+}

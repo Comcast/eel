@@ -1,0 +1,122 @@
+{
+  "@type": [
+    "Sensor",
+    "Door"
+  ],
+  "data": [
+    {
+      "id": "112.0",
+      "name": "Lab Zone 2",
+      "type": [
+        "Sensor",
+        "Window"
+      ]
+    },
+    {
+      "id": "113.0",
+      "name": "Lab Zone 3",
+      "type": [
+        "Sensor",
+        "Door"
+      ]
+    },
+    {
+      "id": "114.0",
+      "name": "Lab Zone 4",
+      "type": [
+        "Sensor",
+        "Door"
+      ]
+    },
+    {
+      "id": "115.0",
+      "name": "New Sensors",
+      "type": [
+        "Sensor",
+        "Door"
+      ]
+    },
+    {
+      "id": "116.0",
+      "name": "Glass Breakin' The Law",
+      "type": [
+        "Sensor",
+        "Glass"
+      ]
+    },
+    {
+      "id": "117.0",
+      "name": "Motion Sensor",
+      "type": [
+        "Sensor",
+        "Motion"
+      ]
+    },
+    {
+      "id": "13b0ce18140300056f.1.0",
+      "name": "Dimmable Light",
+      "type": [
+        "Light",
+        "Dimmable"
+      ]
+    },
+    {
+      "id": "12174745.1.0",
+      "name": "My Camera",
+      "type": [
+        "Camera"
+      ]
+    },
+    {
+      "id": "14000d6f0003ec66ca.1.0",
+      "name": "XH Thermostat",
+      "type": [
+        "Thermostat"
+      ]
+    },
+    {
+      "id": "15174745.net.E0:46:9A:4C:12:7A.0",
+      "name": "Network Peripheral",
+      "type": [
+        "Router"
+      ]
+    },
+    {
+      "id": "76283CC26A24F64077CD51B82BCCD434",
+      "name": "One",
+      "type": [
+        "Lock"
+      ]
+    },
+    {
+      "id": "IxTtgbJyhX2cIpTRKrLREyRYrOV8Nfjv",
+      "name": "Family Room (demo)",
+      "type": [
+        "Thermostat",
+        "Nest"
+      ]
+    },
+    {
+      "id": "1241536",
+      "name": "Garage Door Opener",
+      "type": [
+        "Sensor",
+        "Garage"
+      ]
+    },
+    {
+      "id": "NDBFQjkzQTFDRTlDNDY0NEJEN0NCOUFCNjJGQzI1QTAgL3pvbmUvMQ",
+      "name": "Living Room",
+      "type": [
+        "Light"
+      ]
+    },
+    {
+      "id": "NDBFQjkzQTFDRTlDNDY0NEJEN0NCOUFCNjJGQzI1QTAgL3pvbmUvMg",
+      "name": "Night Shade",
+      "type": [
+        "Light"
+      ]
+    }
+  ]
+}

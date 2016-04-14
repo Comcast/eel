@@ -1,0 +1,43 @@
+<html>
+<head>
+<title>EEL JPath Expression Debugger</title>
+<style>
+body 	{background-color:black}
+h1   	{color:white; font-family:verdana;}
+h2   	{color:white; font-family:verdana;}
+h3   	{color:white; font-family:verdana;}
+p    	{color:white; font-family:verdana;}
+td    	{color:white; font-family:verdana;}
+th    	{color:white; font-family:verdana; text-align: left}
+</style>
+</head>
+<body>
+<div align="center">
+<h1>EEL JPath Expression Debugger</h1>
+<p><img src="/img/eel.png" width="250"/></p>
+<form action="/test/ast" method="POST">
+<p>{{.ErrorMessage}}</p>
+<h3>JSON Event:</h3>
+<div><textarea name="message" rows="10" cols="80">{{.Message}}</textarea></div>
+<h3>JPath Expression:</h3>
+<div><textarea name="expression" rows="3" cols="80">{{.Expression}}</textarea></div>
+<h3>Named Transformations:</h3>
+<div><textarea name="transformations" rows="5" cols="80">{{.Transformations}}</textarea></div>
+<h3>Result:</h3>
+<div><textarea name="result" rows="3" cols="80">{{.Result}}</textarea></div>
+<div><input type="submit" value="Parse"></div>
+</form>
+<table>
+{{ range $hdx, $tree := .Lists }}
+  <tr><th>&nbsp;</th><th>&nbsp;</th><th>&nbsp;</th><th>&nbsp;</th><th>&nbsp;</th><th>&nbsp;</th></tr>
+  <tr><th>LEVEL</th><th>TYPE</th><th>#KIDS</th><th>VALUE</th><th>MTYPE</th><th>MVALUE</th></tr>
+  {{ range $idx, $row := $tree }}
+    <tr>
+      {{ range $kdx, $val := . }}<td>{{ $val }}</td>{{ end }}
+    </tr>
+  {{ end }}
+{{ end }}
+</table>
+</div>
+</body>
+</html>

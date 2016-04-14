@@ -1,0 +1,48 @@
+{
+	"Version": "1.0",
+	"Name": "DeviceModel",
+	"Info": "Michael Lu's stellar example.",
+	"Active": true,
+	"Match": null,
+	"IsMatchByExample": false,
+	"TerminateOnMatch": true,
+	"Transformation": {
+		"{{/email}}": "{{crush('{{itransform('temail','{{/}}')}}')}}",
+		"{{/phone}}": "{{crush('{{itransform('tphone','{{/}}')}}')}}"
+	},
+	"IsTransformationByExample": false,
+	"Transformations": {
+		"temail": {
+			"IsTransformationByExample": false,
+			"Transformation": {
+				"{{/}}": "{{itransform('tident','{{/emails}}','','{{transform('textractname','{{/}}')}}')}}"
+			}
+		},
+		"tphone": {
+			"IsTransformationByExample": false,
+			"Transformation": {
+				"{{/}}": "{{itransform('tident','{{/phones}}','','{{transform('textractname','{{/}}')}}')}}"
+			}
+		},
+		"textractname": {
+			"IsTransformationByExample": false,
+			"Transformation": {
+				"{{/firstName}}": "{{/firstName}}",
+				"{{/lastName}}": "{{/lastName}}"
+			}
+		},		
+		"tident": {
+			"IsTransformationByExample": false,
+			"Transformation": {
+				"{{/}}": "{{/}}"
+			}
+		}		
+	},
+	"Path": "",
+	"Verb": "POST",
+	"Endpoint": "",
+	"HttpHeaders": {
+		"X-B3-TraceId": "{{traceid()}}",
+		"X-Tenant-Id": "{{tenant()}}"
+	}
+}

@@ -1,0 +1,7 @@
+{
+	"data": {
+		"title": "Alert",
+		"message": "Please check your system.",
+		"time_to_live": 300
+	}
+}

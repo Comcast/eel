@@ -1,0 +1,28 @@
+{
+	"Version": "1.0",
+	"Name": "NamedTransformations2",
+	"Info": "Perform named transformation on external document.",
+	"Active": true,
+	"Match": {},
+	"IsMatchByExample": false,
+	"TerminateOnMatch": true,
+	"Transformation": {
+		"{{/data}}": "{{transform('myTransformation','{{/query}}')}}"
+	},
+	"IsTransformationByExample": false,
+	"Transformations" : {
+		"myTransformation" : {
+			"IsTransformationByExample" : false,
+			"Transformation" : {
+				"{{/}}" : "{{/results/quote}}"
+			}
+		}
+	},
+	"Path": "",
+	"Verb": "POST",
+	"Endpoint": "",
+	"HttpHeaders": {
+		"X-B3-TraceId": "{{traceid()}}",
+		"X-Tenant-Id": "{{tenant()}}"
+	}
+}

@@ -1,0 +1,6 @@
+{
+  "wrap" : {
+    "key1" : "value1"
+  },
+  "nextHandler":"Step2Handler"
+}

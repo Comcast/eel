@@ -1,0 +1,38 @@
+{
+	"Version": "1.0",
+	"Name": "NamedTransformations",
+	"Info": "You can pick from several named transformations using the if-then-else function ifte(). In this example you have a main transformation triggering one of two named transformations.",
+	"Active": true,
+	"Match": null,
+	"IsMatchByExample": false,
+	"TerminateOnMatch": true,
+	"Transformation": {
+		"{{/}}": "{{ifte('{{equals('{{/type}}', 'gcm')}}', '{{transform('GCM_Transformation')}}', '{{transform('APNS_Transformation')}}')}}"
+	},
+	"IsTransformationByExample": false,
+	"Transformations": {
+		"GCM_Transformation": {
+			"IsTransformationByExample": false,
+			"Transformation": {
+					"{{/data/title}}": "{{/title}}",
+					"{{/data/message}}": "{{/message}}",
+					"{{/data/time_to_live}}": 300
+			}
+		},
+		"APNS_Transformation": {
+			"IsTransformationByExample": false,
+			"Transformation": {
+					"{{/data/alert}}": "{{/message}}",
+					"{{/data/badge}}": 1,
+					"{{/data/sound}}": "alarm.was"
+			}
+		}
+	},
+	"Path": "",
+	"Verb": "POST",
+	"Endpoint": "",
+	"HttpHeaders": {
+		"X-B3-TraceId": "{{traceid()}}",
+		"X-Tenant-Id": "{{tenant()}}"
+	}
+}

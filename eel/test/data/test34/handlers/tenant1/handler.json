@@ -1,0 +1,28 @@
+{
+	"Version": "1.0",
+	"Name": "Join",
+	"Info": "Join two JSON documents into one. For this example the documents come from the custom properties section. Normally documents would come from the event source or external lookups via curl.",
+	"Active": true,
+	"Match": null,
+	"IsMatchByExample": false,
+	"TerminateOnMatch": true,
+	"Transformation": {
+		"{{/}}":"{{join('{{prop('a')}}','{{prop('b')}}')}}"
+	},
+	"CustomProperties": {
+		"a" : {
+			"foo": 1
+		},
+		"b" : {
+			"bar": 2 
+		}
+	},
+	"IsTransformationByExample": false,
+	"Path": "",
+	"Verb": "POST",
+	"Endpoint": "",
+	"HttpHeaders": {
+		"X-B3-TraceId": "{{traceid()}}",
+		"X-Tenant-Id": "{{tenant()}}"
+	}
+}

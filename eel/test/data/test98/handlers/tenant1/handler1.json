@@ -1,0 +1,20 @@
+{
+	"Version": "1.0",
+	"Name": "FooTopicHandlerWildCard",
+	"Info": "",
+	"Active": true,
+	"Topic": "/*/bar",
+	"TerminateOnMatch": true,
+	"Transformation": {
+		"{{/}}": "{{/}}",
+		"{{/wildcard}}" : "yes"
+	},
+	"IsTransformationByExample": false,
+	"Path": "",
+	"Verb": "POST",
+	"Endpoint": "",
+	"HttpHeaders": {
+		"X-B3-TraceId": "{{traceid()}}",
+		"X-Tenant-Id": "{{tenant()}}"
+	}
+}

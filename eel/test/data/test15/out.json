@@ -1,0 +1,8 @@
+{
+    "data": {
+        "ident": "fOo",
+        "upper": "FOO",
+        "lower": "foo",
+        "substr": "f"
+    }
+}

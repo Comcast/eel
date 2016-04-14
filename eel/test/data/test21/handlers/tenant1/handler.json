@@ -1,0 +1,20 @@
+{
+    "Version": "1.0",
+    "Name": "ExternalLookupFailure",
+    "Info": "Return blank string if any none 2XX response is returned by curl.",
+    "Active": true,
+    "Match": null,
+    "IsMatchByExample": false,
+    "TerminateOnMatch": true,
+    "Transformation": {
+      "{{/BlankResponse}}": "{{curl('GET', 'http://localhost:8080/doesntexist', '', '')}}"
+    },
+    "IsTransformationByExample": false,
+    "Path": "",
+    "Verb": "POST",
+    "Endpoint": "",
+    "HttpHeaders": {
+      "X-B3-TraceId": "{{traceid()}}",
+      "X-Tenant-Id": "{{tenant()}}"
+    }
+}

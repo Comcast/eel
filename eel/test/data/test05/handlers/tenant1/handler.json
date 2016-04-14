@@ -1,0 +1,21 @@
+{
+	"Version": "1.0",
+	"Name": "ConditionalMessageGeneration",
+	"Info": "Using nested ifte() functions to compose friendly message based on presence and value of certain fields.",
+	"Active": true,
+	"Match": null,
+	"IsMatchByExample": false,
+	"TerminateOnMatch": true,
+	"Transformation": {
+		"{{/}}": "{{/}}",
+		"{{/content/prettyMessage}}":"{{ifte('{{equals('{{/content/message}}', 'High WiFi')}}','{{/content/device}} has returned to good Wi-Fi coverage','{{ifte('{{equals('{{/content/message}}', 'Low WiFi')}}','{{/content/device}} has returned to bad Wi-Fi coverage','{{/content/message}}')}}')}}"
+	},
+	"IsTransformationByExample": false,
+	"Path": "",
+	"Verb": "POST",
+	"Endpoint": "",
+	"HttpHeaders": {
+		"X-B3-TraceId": "{{traceid()}}",
+		"X-Tenant-Id": "{{tenant()}}"
+	}
+}

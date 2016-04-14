@@ -1,0 +1,21 @@
+{
+	"Version": "1.0",
+	"Name": "DefaultHandlerT2",
+	"Info": "Weakest match, matches everything.",
+	"Active": true,
+	"Match": null,
+	"IsMatchByExample": false,
+	"TerminateOnMatch": true,
+	"Transformation": {
+		"{{/a}}": "{{/}}",
+		"{{/handler}}":"DefaultHandlerT2"
+	},
+	"IsTransformationByExample": false,
+	"Path": "",
+	"Verb": "POST",
+	"Endpoint": "http://service2/api",
+	"HttpHeaders": {
+		"X-B3-TraceId": "{{traceid()}}",
+		"X-Tenant-Id": "{{tenant()}}"
+	}
+}

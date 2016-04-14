@@ -1,0 +1,22 @@
+{
+	"Version": "1.0",
+	"Name": "Step3Handler",
+	"Info": "Last step, send final event to downstream service.",
+	"Active": true,
+	"Match": {
+		"{{/nextHandler}}" : "Step3Handler"
+	},
+	"IsMatchByExample": false,
+	"TerminateOnMatch": true,
+	"Transformation": {
+		"{{/wrap/further}}": "{{/wrap/more}}"
+	},
+	"IsTransformationByExample": false,
+	"Path": "",
+	"Verb": "POST",
+	"Endpoint": "http://targetservice",
+	"HttpHeaders": {
+		"X-B3-TraceId": "{{traceid()}}",
+		"X-Tenant-Id": "{{tenant()}}"
+	}
+}

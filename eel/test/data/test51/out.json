@@ -1,0 +1,30 @@
+{
+  "phone": [
+    {
+      "id": "111",
+      "firstName": "John",
+      "lastName": "Doe",
+      "value": "14080000001"
+    },
+    {
+      "id": "222",
+      "firstName": "Jane",
+      "lastName": "Doe",
+      "value": "14080000002"
+    }
+  ],
+  "email": [
+    {
+      "id": "333",
+      "firstName": "John",
+      "lastName": "Doe",
+      "value": "john@email.com"
+    },
+    {
+      "id": "444",
+      "firstName": "Jane",
+      "lastName": "Doe",
+      "value": "jane@email.com"
+    }
+  ]
+}

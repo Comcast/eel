@@ -1,0 +1,19 @@
+{
+	"Version": "1.0",
+	"Name": "DefaultTopicHandler",
+	"Info": "",
+	"Active": true,
+	"Topic": "/bar",
+	"TerminateOnMatch": true,
+	"Transformation": {
+		"{{/}}": "{{/}}"
+	},
+	"IsTransformationByExample": false,
+	"Path": "",
+	"Verb": "POST",
+	"Endpoint": "",
+	"HttpHeaders": {
+		"X-B3-TraceId": "{{traceid()}}",
+		"X-Tenant-Id": "{{tenant()}}"
+	}
+}

@@ -1,0 +1,21 @@
+{
+	"Version": "1.0",
+	"Name": "ConvertHeadersToPayload",
+	"Info": "Include HTTP headers from upstream service in JSON payload.",
+	"Active": true,
+	"Match": {},
+	"IsMatchByExample": false,
+	"TerminateOnMatch": true,
+	"Transformation": {
+		"{{/}}": "{{/}}",
+		"{{/header/X-MyKey}}": "{{header('X-MyKey')}}"
+	},
+	"IsTransformationByExample": false,
+	"Path": "",
+	"Verb": "POST",
+	"Endpoint": "",
+	"HttpHeaders": {
+		"X-B3-TraceId": "{{traceid()}}",
+		"X-Tenant-Id": "{{tenant()}}"
+	}
+}

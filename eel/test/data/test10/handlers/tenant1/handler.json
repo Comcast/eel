@@ -1,0 +1,21 @@
+{
+	"Version": "1.0",
+	"Name": "JavaScriptForEverythingElse",
+	"Info": "Resort to Java Script when extra functionality is needed. Could also combine with an interesting filter!",
+	"Active": true,
+	"Match": null,
+	"IsMatchByExample": false,
+	"TerminateOnMatch": true,
+	"Transformation": {
+		"{{/event/temperature}}": "{{/content/temperature}}",
+		"{{/event/temperatureLow}}":"{{js('{{/content/temperature}}<50')}}"
+	},
+	"IsTransformationByExample": false,
+	"Path": "",
+	"Verb": "POST",
+	"Endpoint": "",
+	"HttpHeaders": {
+		"X-B3-TraceId": "{{traceid()}}",
+		"X-Tenant-Id": "{{tenant()}}"
+	}
+}

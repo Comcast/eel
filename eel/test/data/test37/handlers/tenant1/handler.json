@@ -1,0 +1,28 @@
+{
+	"Version": "1.0",
+	"Name": "Join4",
+	"Info": "DISABLED! Join two JSON documents into one. Merging simple type and array into array. This feature is disabled for now.",
+	"Active": true,
+	"Match": null,
+	"IsMatchByExample": false,
+	"TerminateOnMatch": true,
+	"Transformation": {
+		"{{/}}":"{{join('{{prop('a')}}','{{prop('b')}}')}}"
+	},
+	"CustomProperties": {
+		"a" : {
+			"foo": 4
+		},
+		"b" : {
+			"foo": [1, 2, 3] 
+		}
+	},
+	"IsTransformationByExample": false,
+	"Path": "",
+	"Verb": "POST",
+	"Endpoint": "",
+	"HttpHeaders": {
+		"X-B3-TraceId": "{{traceid()}}",
+		"X-Tenant-Id": "{{tenant()}}"
+	}
+}

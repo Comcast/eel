@@ -1,0 +1,23 @@
+{
+	"Version": "1.0",
+	"Name": "SingleKeyMatchHandlerT1",
+	"Info": "Single key-value pair match.",
+	"Active": true,
+	"Match": {
+		"{{/key1}}" : "value1"
+	},
+	"IsMatchByExample": false,
+	"TerminateOnMatch": true,
+	"Transformation": {
+		"{{/b}}": "{{/}}",
+		"{{/handler}}":"SingleKeyMatchHandlerT1"
+	},
+	"IsTransformationByExample": false,
+	"Path": "",
+	"Verb": "POST",
+	"Endpoint": "http://service1/api",
+	"HttpHeaders": {
+		"X-B3-TraceId": "{{traceid()}}",
+		"X-Tenant-Id": "{{tenant()}}"
+	}
+}

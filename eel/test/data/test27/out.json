@@ -1,0 +1,12 @@
+{
+	"foo": [{
+		"inject": "bar",
+		"r": 1
+	}, {
+		"inject": "bar",
+		"r": 2
+	}, {
+		"inject": "bar",
+		"r": 3
+	}]
+}

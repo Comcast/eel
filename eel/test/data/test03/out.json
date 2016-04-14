@@ -1,0 +1,16 @@
+{
+	"apns": {
+		"data" : {
+			"alert": "Please check your system.",
+			"badge": 1,
+			"sound": "alarm.was"
+		}
+		},
+		"gcm": {
+			"data": {
+				"title": "Alert",
+				"message": "Please check your system.",
+				"time_to_live": 300
+			}
+		}
+}

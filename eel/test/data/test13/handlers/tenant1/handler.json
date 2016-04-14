@@ -1,0 +1,26 @@
+{
+	"Version": "1.0",
+	"Name": "CustomProperties",
+	"Info": "Custom properties in handler override custom properties in config.json. Values can be JPath expressions. Good for reusing same value in multiple places.",
+	"Active": true,
+	"Match": {},
+	"IsMatchByExample": false,
+	"TerminateOnMatch": true,
+	"Transformation": {
+		"{{/}}": "{{/}}",
+		"{{/id}}": "{{prop('otherId')}}",
+		"{{/content/id}}": "{{prop('otherId')}}"
+	},
+	"IsTransformationByExample": false,
+	"CustomProperties" : {
+		"uniqueId" : "{{uuid()}}-{{time()}}",
+		"otherId" : "123"
+	},
+	"Path": "",
+	"Verb": "POST",
+	"Endpoint": "",
+	"HttpHeaders": {
+		"X-B3-TraceId": "{{traceid()}}",
+		"X-Tenant-Id": "{{tenant()}}"
+	}
+}

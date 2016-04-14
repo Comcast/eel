@@ -1,0 +1,18 @@
+{
+	"content": {
+		"_links": {
+			"self": {
+				"href": "tag:ha,2015:event:123456789-1"
+			},
+			"device": {
+				"href": "tag:ha,2015:device:511.0"
+			},
+			"account": {
+				"href": "tag:ha,2015:site:123456"
+			},
+			"adapter": {
+				"href": "tag:ha,2015:adapter1"
+			}
+		}
+	}
+}

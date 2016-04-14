@@ -1,0 +1,23 @@
+{
+    "Version": "1.0",
+    "Name": "ExternalLookup",
+    "Info": "Look up company name by ticker symbol and inject into event using Yahoo Finance web service.",
+    "Active": true,
+    "Match": null,
+    "IsMatchByExample": false,
+    "TerminateOnMatch": true,
+    "Transformation": {
+      "{{/accountId}}": "{{eval('/accountId','{{curl('GET', '{{prop('42aas_api')}}')}}')}}"
+    },
+    "IsTransformationByExample": false,
+    "CustomProperties" : {
+      "42aas_api" : "http://localhost:8080/42aas"
+    },
+    "Path": "",
+    "Verb": "POST",
+    "Endpoint": "",
+    "HttpHeaders": {
+      "X-B3-TraceId": "{{traceid()}}",
+      "X-Tenant-Id": "{{tenant()}}"
+    }
+}

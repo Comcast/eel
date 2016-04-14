@@ -1,0 +1,18 @@
+{
+	"Version": "1.0",
+	"Name": "RulesTemplateDeleteLocation",
+	"Info": "Delete a location.",
+	"Active": true,
+	"Match": {
+		"{{/action}}" : "DELETE_LOCATION"
+	},
+	"IsMatchByExample": false,
+	"TerminateOnMatch": true,
+	"Path": "",
+	"Verb": "DELETE",
+	"Endpoint": "http://{{/rulesrest}}/locations/{{/location}}",
+	"HttpHeaders": {
+		"X-B3-TraceId": "{{traceid()}}",
+		"Xrs-Tenant-Id": "{{tenant()}}"
+	}
+}

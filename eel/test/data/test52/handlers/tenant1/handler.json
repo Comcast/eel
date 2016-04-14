@@ -1,0 +1,27 @@
+{
+  "Version": "1.0",
+  "Name": "FilterDeviceData",
+  "Info": "Filter device data.",
+  "Active": true,
+  "Match": {
+    "{{/@type}}": ["Light", "Lock", "Sensor", "Thermostat"]
+  },
+  "IsMatchByExample": false,
+  "TerminateOnMatch": true,
+  "Transformation": {
+    "{{/}}": "{{choose('{{/data}}','{{prop('myfilter')}}')}}"
+  },
+  "IsTransformationByExample": false,
+  "CustomProperties" : {
+	"myfilter" : {
+	  "type": ["Sensor", "Door"]
+	}
+  },
+  "Path": "",
+  "Verb": "POST",
+  "Endpoint": "http://localhost",
+  "HttpHeaders": {
+    "X-B3-TraceId": "{{traceid()}}",
+    "X-Tenant-Id": "{{tenant()}}"
+  }
+}

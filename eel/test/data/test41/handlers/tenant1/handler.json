@@ -1,0 +1,26 @@
+{
+	"Version": "1.0",
+	"Name": "MatchPartialArrays3",
+	"Info": "Partial matching with nested array elements.",
+	"Active": true,
+	"Match": {
+		"content": {
+			"device": "sensor02",
+			"temperature": "42",
+			"recent": [{"deep" : { "foo" : "a"}}]
+    }
+	},
+	"IsMatchByExample": true,
+	"TerminateOnMatch": true,
+	"Transformation": {
+		"{{/}}": "{{/}}"
+	},
+	"IsTransformationByExample": false,
+	"Path": "",
+	"Verb": "POST",
+	"Endpoint": "",
+	"HttpHeaders": {
+		"X-B3-TraceId": "{{traceid()}}",
+		"X-Tenant-Id": "{{tenant()}}"
+	}
+}

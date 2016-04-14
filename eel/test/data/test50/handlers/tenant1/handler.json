@@ -1,0 +1,21 @@
+{
+    "Version": "1.0",
+    "Name": "AnOddTransformation",
+    "Info": "DISABLED! Override exisiting keys. No order guaranteed. So this does not always work! ",
+    "Active": true,
+    "Match": null,
+    "IsMatchByExample": false,
+    "TerminateOnMatch": true,
+    "Transformation": {
+      "{{/}}": "{{/}}",
+	  "{{/firstName}}": "John"
+    },
+    "IsTransformationByExample": false,
+    "Path": "",
+    "Verb": "POST",
+    "Endpoint": "",
+    "HttpHeaders": {
+      "X-B3-TraceId": "{{traceid()}}",
+      "X-Tenant-Id": "{{tenant()}}"
+    }
+}

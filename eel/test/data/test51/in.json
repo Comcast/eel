@@ -1,0 +1,38 @@
+[
+  {
+    "id": "001",
+    "firstName": "John",
+    "lastName": "Doe",
+    "primary": true,
+    "emails": [
+      {
+        "id": "333",
+        "value": "john@email.com"
+      }
+    ],
+    "phones": [
+      {
+        "id": "111",
+        "value": "14080000001"
+      }
+    ]
+  },
+  {
+    "id": "002",
+    "firstName": "Jane",
+    "lastName": "Doe",
+    "primary": false,
+    "emails": [
+      {
+        "id": "444",
+        "value": "jane@email.com"
+      }
+    ],
+    "phones": [
+      {
+        "id": "222",
+        "value": "14080000002"
+      }
+    ]
+  }
+]

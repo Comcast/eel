@@ -1,0 +1,5 @@
+{
+    "action": "CREATE_LOCATION",
+    "location": "bwtest",
+    "rulesrest": "rest.tps.rules.comcast.com"
+}

@@ -1,0 +1,21 @@
+{
+    "Version": "1.0",
+    "Name": "ArrayPathSelector",
+    "Info": "Select from arrays by index or by key.",
+    "Active": true,
+    "Match": null,
+    "IsMatchByExample": false,
+    "TerminateOnMatch": true,
+    "Transformation": {
+      "{{/one}}": "{{/foo[0]/value}}",
+      "{{/two}}": "{{/foo[name=temperature]/value}}"
+    },
+    "IsTransformationByExample": false,
+    "Path": "",
+    "Verb": "POST",
+    "Endpoint": "",
+    "HttpHeaders": {
+      "X-B3-TraceId": "{{traceid()}}",
+      "X-Tenant-Id": "{{tenant()}}"
+    }
+}

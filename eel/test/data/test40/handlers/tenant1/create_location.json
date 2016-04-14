@@ -1,0 +1,18 @@
+{
+	"Version": "1.0",
+	"Name": "RulesTemplateCreateLocation",
+	"Info": "Create a location.",
+	"Active": true,
+	"Match": {
+		"{{/action}}" : "CREATE_LOCATION"
+	},
+	"IsMatchByExample": false,
+	"TerminateOnMatch": true,
+	"Path": "",
+	"Verb": "PUT",
+	"Endpoint": "http://{{/rulesrest}}/locations/{{/location}}",
+	"HttpHeaders": {
+		"X-B3-TraceId": "{{traceid()}}",
+		"Xrs-Tenant-Id": "{{tenant()}}"
+	}
+}

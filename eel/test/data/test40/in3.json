@@ -1,0 +1,7 @@
+{
+    "action": "CREATE_NOTIFICATION_RULE",
+    "location": "bwtest",
+    "rulesrest": "rest.tps.rules.comcast.com",
+    "rule": "bwtestrule",
+    "protocol": "sms"
+}

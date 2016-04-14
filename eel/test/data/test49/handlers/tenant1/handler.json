@@ -1,0 +1,33 @@
+{
+    "Version": "1.0",
+    "Name": "NamedTransformationWithArrayAndJoin",
+    "Info": "Apply a named transformation only to array element matching a given pattern.",
+    "Active": true,
+    "Match": null,
+    "IsMatchByExample": false,
+    "TerminateOnMatch": true,
+    "Transformation": {
+      "{{/}}": "{{itransform('myt','{{/}}','','{{prop('myjoin')}}')}}"
+    },
+    "IsTransformationByExample": false,
+	"Transformations" : {
+		"myt" : {
+			"Transformation" : {
+				"{{/}}" : "{{/}}",
+				"{{/fullName}}": "{{/firstName}} {{/lastName}}"
+			}
+		}	
+	},
+	"CustomProperties" : {
+		"myjoin" : {
+			"type" : "person"
+		}
+	},
+    "Path": "",
+    "Verb": "POST",
+    "Endpoint": "",
+    "HttpHeaders": {
+      "X-B3-TraceId": "{{traceid()}}",
+      "X-Tenant-Id": "{{tenant()}}"
+    }
+}

@@ -1,0 +1,25 @@
+{
+    "Version": "1.0",
+    "Name": "ChooseFromArray",
+    "Info": "Choose array elements which match a given pattern.",
+    "Active": true,
+    "Match": null,
+    "IsMatchByExample": false,
+    "TerminateOnMatch": true,
+    "Transformation": {
+      "{{/}}": "{{choose('{{/}}','{{prop('mypattern')}}')}}"
+    },
+    "IsTransformationByExample": false,
+	"CustomProperties" : {
+		"mypattern" : {
+			"lastName" : "Smith"
+		}
+	},
+    "Path": "",
+    "Verb": "POST",
+    "Endpoint": "",
+    "HttpHeaders": {
+      "X-B3-TraceId": "{{traceid()}}",
+      "X-Tenant-Id": "{{tenant()}}"
+    }
+}

@@ -1,0 +1,29 @@
+{
+	"Version": "1.0",
+	"Name": "NamedTransformationsAndArrays2",
+	"Info": "Apply sub-transformation to sub-section of a document.",
+	"Active": true,
+	"Match": null,
+	"IsMatchByExample": false,
+	"TerminateOnMatch": true,
+	"Transformation": {
+		"{{/foo}}": "{{transform('myt','{{/foo}}')}}"
+	},
+	"IsTransformationByExample": false,
+	"Transformations": {
+		"myt": {
+			"IsTransformationByExample": false,
+			"Transformation": {
+				"{{/r}}": "{{/r}}",
+				"{{/inject}}": "bar"
+			}
+		}
+	},
+	"Path": "",
+	"Verb": "POST",
+	"Endpoint": "",
+	"HttpHeaders": {
+		"X-B3-TraceId": "{{traceid()}}",
+		"X-Tenant-Id": "{{tenant()}}"
+	}
+}

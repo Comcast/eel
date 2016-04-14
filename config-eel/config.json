@@ -1,0 +1,31 @@
+{
+    "Name": "Default",
+	"AppName": "eel",
+    "EventPort": 8080,
+    "EventProxyPath": "/proxy",
+    "EventProcPath": "/proc",
+    "Endpoint": "http://localhost:8088",
+    "MaxAttempts": 1,
+    "InitialDelay": 125,
+	"InitialBackoff": 1000,
+	"Pad": 0,
+	"BackoffMethod": "Exponential",
+    "MaxMessageSize": 51200,
+    "MessageQueueTimeout": 1000,
+    "MessageQueueDepth": 100,
+    "WorkerPoolSize": 1,
+    "HttpTimeout": 1000,
+    "ResponseHeaderTimeout": 1000,
+    "MaxIdleConnsPerHost": 100,
+    "DuplicateTimeout": 0,
+    "HttpTransactionHeader": "X-B3-TraceId",
+    "HttpTenantHeader": "X-TenantId",
+    "CustomProperties": {
+        "key" : "value"
+    },
+    "LogStats": false,
+	"TopicPath": "{{/topic}}",
+	"CloseIdleConnectionIntervalSec": 0,
+	"Version": "1.0",
+	"HandlerConfigPath": ""
+}

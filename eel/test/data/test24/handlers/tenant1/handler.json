@@ -1,0 +1,22 @@
+{
+    "Version": "1.0",
+    "Name": "MatchChoiceOfValues",
+    "Info": "Choice of values is a special mode in match by path.",
+    "Active": true,
+    "Match": {
+      "{{/foo}}" : "bar"
+    },
+    "IsMatchByExample": false,
+    "TerminateOnMatch": true,
+    "Transformation": {
+      "{{/message}}": "{{/message}}"
+    },
+    "IsTransformationByExample": false,
+    "Path": "",
+    "Verb": "POST",
+    "Endpoint": "",
+    "HttpHeaders": {
+      "X-B3-TraceId": "{{traceid()}}",
+      "X-Tenant-Id": "{{tenant()}}"
+    }
+}

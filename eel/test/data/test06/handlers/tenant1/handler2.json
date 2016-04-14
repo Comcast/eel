@@ -1,0 +1,24 @@
+{
+	"Version": "1.0",
+	"Name": "DoubeKeyMatchHandler",
+	"Info": "Strongest match with two key-valu pairs. TerminateOnMatch is true, so only the best matching handler will be used within a tenant.",
+	"Active": true,
+	"Match": {
+		"{{/key1}}" : "value1",
+		"{{/key2}}" : "value2"
+	},
+	"IsMatchByExample": false,
+	"TerminateOnMatch": true,
+	"Transformation": {
+		"{{/c}}": "{{/}}",
+		"{{/handler}}":"DoubeKeyMatchHandler"
+	},
+	"IsTransformationByExample": false,
+	"Path": "",
+	"Verb": "POST",
+	"Endpoint": "",
+	"HttpHeaders": {
+		"X-B3-TraceId": "{{traceid()}}",
+		"X-Tenant-Id": "{{tenant()}}"
+	}
+}

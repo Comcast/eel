@@ -1,0 +1,6 @@
+{
+    "topic" : "/foo/bar/baz",
+    "content" : {
+      "key" : "value"
+    }
+}

@@ -1,0 +1,12 @@
+{
+    "content": {
+        "device": "sensor02",
+        "temperature": "42",
+        "mac_address": "28cfda08c555",
+        "service_account": "1234567890",
+		"recent": [40, 41, 40, 42]
+    },
+    "expires": 0,
+    "sequence": 1449629344335,
+    "timestamp": 1449629344335
+}

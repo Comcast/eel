@@ -1,0 +1,20 @@
+{
+	"Version": "1.0",
+	"Name": "NamedTransformationsAndSimpleTypes2",
+	"Info": "Apply sub-transformation to sub-section of a document.",
+	"Active": true,
+	"Match": null,
+	"IsMatchByExample": false,
+	"TerminateOnMatch": true,
+	"Transformation": {
+		"{{/a/b/c}}":"{{/}}bar"
+	},
+	"IsTransformationByExample": false,
+	"Path": "",
+	"Verb": "POST",
+	"Endpoint": "",
+	"HttpHeaders": {
+		"X-B3-TraceId": "{{traceid()}}",
+		"X-Tenant-Id": "{{tenant()}}"
+	}
+}

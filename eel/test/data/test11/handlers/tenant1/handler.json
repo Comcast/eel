@@ -1,0 +1,27 @@
+{
+	"Version": "1.0",
+	"Name": "MatchByExample",
+	"Info": "Similar to transformations by example, a match can also be given by example. Match also supports the wild-card '*' and the boolean or '||'",
+	"Active": true,
+	"Match": {
+		"content": {
+			"device": "sensor02",
+			"temperature": "42||52",
+			"mac_address": "*",
+			"service_account": "*"
+    }
+	},
+	"IsMatchByExample": true,
+	"TerminateOnMatch": true,
+	"Transformation": {
+		"{{/}}": "{{/}}"
+	},
+	"IsTransformationByExample": false,
+	"Path": "",
+	"Verb": "POST",
+	"Endpoint": "",
+	"HttpHeaders": {
+		"X-B3-TraceId": "{{traceid()}}",
+		"X-Tenant-Id": "{{tenant()}}"
+	}
+}

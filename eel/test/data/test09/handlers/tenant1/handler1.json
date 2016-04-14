@@ -1,0 +1,23 @@
+{
+	"Version": "1.0",
+	"Name": "Step2Handler",
+	"Info": "Handler for second iteration. Will be picked by matching nextHandler field injected in initial step.",
+	"Active": true,
+	"Match": {
+		"{{/nextHandler}}" : "Step2Handler"
+	},
+	"IsMatchByExample": false,
+	"TerminateOnMatch": true,
+	"Transformation": {
+		"{{/wrap/more}}": "{{/wrap}}",
+		"{{/nextHandler}}":"Step3Handler"
+	},
+	"IsTransformationByExample": false,
+	"Path": "",
+	"Verb": "POST",
+	"Endpoint": "http://localhost:8080",
+	"HttpHeaders": {
+		"X-B3-TraceId": "{{traceid()}}",
+		"X-Tenant-Id": "{{tenant()}}"
+	}
+}

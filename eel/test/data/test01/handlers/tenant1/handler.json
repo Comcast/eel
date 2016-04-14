@@ -1,0 +1,25 @@
+{
+    "Version": "1.0",
+    "Name": "Canonicalize",
+    "Info": "Convert event format by changing lowercase keys to uppercase, combining two values under one key, eliminating an array by only picking one element etc.",
+    "Active": true,
+    "Match": null,
+    "IsMatchByExample": false,
+    "TerminateOnMatch": true,
+    "Transformation": {
+        "{{/FirstName}}": "{{/firstName}}",
+        "{{/LastName}}": "{{/lastName}}",
+        "{{/FullName}}": "{{/firstName}} {{/lastName}}",
+        "{{/Age}}": "{{/age}}",
+        "{{/HomePhone}}": "{{/phoneNumber[type=home]/number}}",
+        "{{/Address}}": "{{/address}}"
+    },
+    "IsTransformationByExample": false,
+    "Path": "",
+    "Verb": "POST",
+    "Endpoint": "",
+    "HttpHeaders": {
+      "X-B3-TraceId": "{{traceid()}}",
+      "X-Tenant-Id": "{{tenant()}}"
+    }
+}

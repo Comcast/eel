@@ -1,0 +1,31 @@
+{
+	"Version": "1.0",
+	"Name": "Contains",
+	"Info": "Demo of contains() function.",
+	"Active": true,
+	"Match": {},
+	"IsMatchByExample": false,
+	"TerminateOnMatch": true,
+	"Transformation": {
+		"{{/containsData}}": "{{contains('{{prop('containee')}}')}}"
+	},
+	"IsTransformationByExample": false,
+	"CustomProperties" : {
+		"containee" : {
+			"query" : {
+				"results" : {
+					"quote" : {
+						"symbol" : "CMCSA"
+					}
+				}
+			}
+		}
+	},
+	"Path": "",
+	"Verb": "POST",
+	"Endpoint": "",
+	"HttpHeaders": {
+		"X-B3-TraceId": "{{traceid()}}",
+		"X-Tenant-Id": "{{tenant()}}"
+	}
+}

@@ -1,0 +1,21 @@
+{
+	"Version": "1.0",
+	"Name": "DefaultHandler",
+	"Info": "Weakest match, matches everything. TerminateOnMatch is false, so all matching handlers will be used for this tenant.",
+	"Active": true,
+	"Match": null,
+	"IsMatchByExample": false,
+	"TerminateOnMatch": false,
+	"Transformation": {
+		"{{/a}}": "{{/}}",
+		"{{/handler}}":"DefaultHandler"
+	},
+	"IsTransformationByExample": false,
+	"Path": "",
+	"Verb": "POST",
+	"Endpoint": "",
+	"HttpHeaders": {
+		"X-B3-TraceId": "{{traceid()}}",
+		"X-Tenant-Id": "{{tenant()}}"
+	}
+}

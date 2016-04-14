@@ -1,0 +1,23 @@
+{
+	"Version": "1.0",
+	"Name": "SingleKeyMatchHandler",
+	"Info": "Single key-value pair match. TerminateOnMatch is true, so only the best matching handler will be used within a tenant.",
+	"Active": true,
+	"Match": {
+		"key1" : "value1"
+	},
+	"IsMatchByExample": true,
+	"TerminateOnMatch": true,
+	"Transformation": {
+		"{{/b}}": "{{/}}",
+		"{{/handler}}":"SingleKeyMatchHandler"
+	},
+	"IsTransformationByExample": false,
+	"Path": "",
+	"Verb": "POST",
+	"Endpoint": "",
+	"HttpHeaders": {
+		"X-B3-TraceId": "{{traceid()}}",
+		"X-Tenant-Id": "{{tenant()}}"
+	}
+}

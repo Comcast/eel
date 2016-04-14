@@ -1,0 +1,23 @@
+{
+	"Version": "1.0",
+	"Name": "StringOps",
+	"Info": "Demo some simple string operations.",
+	"Active": true,
+	"Match": {},
+	"IsMatchByExample": false,
+	"TerminateOnMatch": true,
+	"Transformation": {
+		"{{/data/ident}}": "{{ident('{{/content/name}}')}}",
+		"{{/data/upper}}": "{{upper('{{/content/name}}')}}",
+		"{{/data/lower}}": "{{lower('{{/content/name}}')}}",
+		"{{/data/substr}}": "{{substr('{{/content/name}}','0','1')}}"
+	},
+	"IsTransformationByExample": false,
+	"Path": "",
+	"Verb": "POST",
+	"Endpoint": "",
+	"HttpHeaders": {
+		"X-B3-TraceId": "{{traceid()}}",
+		"X-Tenant-Id": "{{tenant()}}"
+	}
+}

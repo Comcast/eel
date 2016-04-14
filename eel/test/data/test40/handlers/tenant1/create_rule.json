@@ -1,0 +1,47 @@
+{
+	"Version": "1.0",
+	"Name": "RulesTemplateCreateRule",
+	"Info": "Create a rule.",
+	"Active": true,
+	"Match": {
+		"{{/action}}" : "CREATE_NOTIFICATION_RULE"
+	},
+	"IsMatchByExample": false,
+	"TerminateOnMatch": true,
+  "Transformation": {
+    	"when": {
+    		"pattern": {
+    			"content": {
+    				"phonenumber": "?phonenumber",
+    				"prettyMessage": "?prettyMessage",
+    				"mac_address": "?mac_address"
+    			}
+    		}
+    	},
+    	"action": {
+    		"endpoint": "nae",
+    		"code": {
+    			"location": "{{/location}}",
+    			"tenant": "{{tenant()}}",
+    			"type": "GENERIC",
+    			"transport": [
+    				"{{/protocol}}"
+    			],
+    			"params": {
+    				"phone": "?phonenumber"
+    			},
+    			"data": {
+    				"message": "?prettyMessage"
+    			}
+    		}
+    	}
+  },
+  "IsTransformationByExample": true,
+	"Path": "",
+	"Verb": "PUT",
+	"Endpoint": "http://{{/rulesrest}}/locations/{{/location}}/rules/{{/rule}}",
+	"HttpHeaders": {
+		"X-B3-TraceId": "{{traceid()}}",
+		"Xrs-Tenant-Id": "{{tenant()}}"
+	}
+}

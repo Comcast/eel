@@ -1,0 +1,7 @@
+{
+    "topic" : "/foo/bar",
+    "content" : {
+      "key" : "value"
+    },
+	"wildcard" : "yes"
+}
