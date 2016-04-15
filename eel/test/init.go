@@ -20,8 +20,8 @@ import (
 	"os"
 	"time"
 
-	. "code.comcast.com/XfinityRulesService/csv-rules-eel/eel/jtl"
-	. "code.comcast.com/XfinityRulesService/csv-rules-eel/eel/util"
+	. "github.com/Comcast/eel/eel/jtl"
+	. "github.com/Comcast/eel/eel/util"
 )
 
 func initTests(handlers string) {

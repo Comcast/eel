@@ -23,8 +23,8 @@ import (
 	"net/http"
 	"os"
 
-	. "code.comcast.com/XfinityRulesService/csv-rules-eel/eel/jtl"
-	. "code.comcast.com/XfinityRulesService/csv-rules-eel/eel/util"
+	. "github.com/Comcast/eel/eel/jtl"
+	. "github.com/Comcast/eel/eel/util"
 )
 
 // StatusHandler http handler for health and status checks. Writes JSON containing config.json, handler configs and basic stats to w.

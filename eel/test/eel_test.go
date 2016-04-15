@@ -26,10 +26,10 @@ import (
 	"testing"
 	"time"
 
-	. "code.comcast.com/XfinityRulesService/csv-rules-eel/eel/eellib"
-	. "code.comcast.com/XfinityRulesService/csv-rules-eel/eel/handlers"
-	. "code.comcast.com/XfinityRulesService/csv-rules-eel/eel/jtl"
-	. "code.comcast.com/XfinityRulesService/csv-rules-eel/eel/util"
+	. "github.com/Comcast/eel/eel/eellib"
+	. "github.com/Comcast/eel/eel/handlers"
+	. "github.com/Comcast/eel/eel/jtl"
+	. "github.com/Comcast/eel/eel/util"
 )
 
 func TestEELLibrary(t *testing.T) {
