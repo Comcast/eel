@@ -23,7 +23,7 @@ import (
 	"strconv"
 	"strings"
 
-	. "code.comcast.com/XfinityRulesService/csv-rules-eel/eel/util"
+	. "github.com/Comcast/eel/eel/util"
 )
 
 // A simple & efficient JSON transformation library inspired by XPath and XSLT

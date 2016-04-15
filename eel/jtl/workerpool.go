@@ -19,7 +19,7 @@ package jtl
 import (
 	"strconv"
 
-	. "code.comcast.com/XfinityRulesService/csv-rules-eel/eel/util"
+	. "github.com/Comcast/eel/eel/util"
 )
 
 // Worker is a worker in the pool
@@ -32,8 +32,8 @@ type Worker struct {
 
 // WorkRequest is a work request
 type WorkRequest struct {
-	message string
-	ctx     Context
+	Message string
+	Ctx     Context
 }
 
 // WorkDispatcher dispatches work requests to workers in the pool using channels
@@ -69,14 +69,14 @@ func (w *Worker) Start() {
 			w.WorkerQueue <- w.work
 			select {
 			case work := <-w.work:
-				stats := work.ctx.Value(EelTotalStats).(*ServiceStats)
+				stats := work.Ctx.Value(EelTotalStats).(*ServiceStats)
 				//w.ctx.Log.Info("event", "received_work", "id", strconv.Itoa(w.id))
-				msg, err := NewJDocFromString(work.message)
+				msg, err := NewJDocFromString(work.Message)
 				if err != nil {
-					work.ctx.Log().Error("status", "400", "event", "rejected", "reason", "invalid_json", "error", err.Error(), "content", work.message)
+					work.Ctx.Log().Error("status", "400", "event", "rejected", "reason", "invalid_json", "error", err.Error(), "content", work.Message)
 					stats.IncErrors()
 				} else {
-					handleEvent(work.ctx, stats, msg, work.message, false, false)
+					handleEvent(work.Ctx, stats, msg, work.Message, false, false)
 				}
 				//w.ctx.Log.Info("event", "handled_work", "id", strconv.Itoa(w.id))
 			case <-w.quitChan:

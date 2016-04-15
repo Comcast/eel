@@ -19,7 +19,7 @@ package jtl
 import (
 	"encoding/json"
 
-	. "code.comcast.com/XfinityRulesService/csv-rules-eel/eel/util"
+	. "github.com/Comcast/eel/eel/util"
 )
 
 // handleEvent processes an event (usually from the work queue) by selecting the correct handlers, applying the appropriate transformations and then sending off the tranformed event via appropriate publisher(s).

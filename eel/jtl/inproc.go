@@ -23,7 +23,7 @@ import (
 	"net/http"
 	"time"
 
-	. "code.comcast.com/XfinityRulesService/csv-rules-eel/eel/util"
+	. "github.com/Comcast/eel/eel/util"
 )
 
 // EventHandler processes incoming events (arbitrary JSON payloads) and places them on the worker pool queue.
@@ -134,7 +134,7 @@ func EventHandler(w http.ResponseWriter, r *http.Request) {
 	} else {
 		if ctx.Value(EelDispatcher) != nil {
 			dp := GetWorkDispatcher(ctx)
-			work := WorkRequest{message: string(body), ctx: ctx}
+			work := WorkRequest{Message: string(body), Ctx: ctx}
 			select {
 			case dp.WorkQueue <- &work:
 				ctx.Log().Info("status", "200", "event", "accepted", "trace.in.data", string(body), "remote_address", r.RemoteAddr, "user_agent", r.UserAgent())

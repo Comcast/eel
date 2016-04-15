@@ -27,12 +27,10 @@
 
   <body>
 
-<!-- load the d3.js library -->
 <script src="http://d3js.org/d3.v3.min.js"></script>
 
 <script>
 
-// ************** Generate the tree diagram  *****************
 var margin = {top: 40, right: 120, bottom: 40, left: 120},
  width = 2000 - margin.right - margin.left,
  height = 2000 - margin.top - margin.bottom;
@@ -76,18 +74,14 @@ function update(source) {
 
   var delta = -15;
 
-  // Compute the new tree layout.
   var nodes = tree.nodes(source).reverse(),
    links = tree.links(nodes);
 
-  // Normalize for fixed-depth.
   nodes.forEach(function(d) { d.y = d.depth * 100; });
 
-  // Declare the nodes¦
   var node = svg.selectAll("g.node")
    .data(nodes, function(d) { return d.id || (d.id = ++i); });
 
-  // Enter the nodes.
   var nodeEnter = node.enter().append("g")
    .attr("class", "node")
    .attr("transform", function(d) {
@@ -105,11 +99,9 @@ function update(source) {
     return d.children || d._children ? "end" : "start"; })
    .text(function(d) { return d.name; }).style("fill-opacity", 0.75).style("fill", "#333");
 
-  // Declare the links¦
   var link = svg.selectAll("path.link")
    .data(links, function(d) { return d.target.id; });
 
-  // Enter the links.
   link.enter().insert("path", "g")
    .attr("class", "link")
    .attr("d", diagonal);

@@ -27,10 +27,10 @@ import (
 
 	"testing"
 
-	. "code.comcast.com/XfinityRulesService/csv-rules-eel/eel/eelsys"
-	. "code.comcast.com/XfinityRulesService/csv-rules-eel/eel/handlers"
-	. "code.comcast.com/XfinityRulesService/csv-rules-eel/eel/jtl"
-	. "code.comcast.com/XfinityRulesService/csv-rules-eel/eel/util"
+	. "github.com/Comcast/eel/eel/eelsys"
+	. "github.com/Comcast/eel/eel/handlers"
+	. "github.com/Comcast/eel/eel/jtl"
+	. "github.com/Comcast/eel/eel/util"
 )
 
 func TestHealthCheckHandler(t *testing.T) {
