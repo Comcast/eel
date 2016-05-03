@@ -685,3 +685,21 @@ Example:
 ```
 {{case('{{/content/message}}', 'High WiFi','{{/content/device}} has returned to good Wi-Fi coverage','{{/content/message}}', 'Low WiFi','{{/content/device}} has returned to bad Wi-Fi coverage','{{/content/message}}')}}
 ```
+
+### header
+
+Returns http header value from incoming event by key.
+
+Syntax:
+
+```
+{{header('<key>')}}
+```
+
+Example:
+
+```
+{{header('X-B3-TraceId')}}
+```
+
+
