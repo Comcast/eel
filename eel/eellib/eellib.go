@@ -86,3 +86,27 @@ func EELTransformEvent(ctx Context, event interface{}, eelHandlerFactory *Handle
 	}
 	return events, nil
 }
+
+func EELSingleTransform(ctx Context, event string, transformation string, isTransformationByExample bool) (string, error) {
+	if Gctx == nil {
+		return "", errors.New("must call EELInit first")
+	}
+	tf, err := NewJDocFromString(transformation)
+	if err != nil {
+		return "", err
+	}
+	doc, err := NewJDocFromString(event)
+	if err != nil {
+		return "", err
+	}
+	var tfd *JDoc
+	if isTransformationByExample {
+		tfd = doc.ApplyTransformationByExample(ctx, tf)
+	} else {
+		tfd = doc.ApplyTransformation(ctx, tf)
+	}
+	if tfd == nil {
+		return "", errors.New("bad transformation")
+	}
+	return tfd.StringPretty(), nil
+}

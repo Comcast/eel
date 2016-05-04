@@ -229,3 +229,4 @@ No | Name | Test Name | Description
 * [Debug Tools](doc/debug.md)
 * [EEL Web API Reference](doc/apis.md)
 * [EEL Transformations as Go Library](doc/lib.md)
+* [EEL Transformations as Command Line Tool](doc/cmd.md)

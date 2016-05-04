@@ -134,7 +134,7 @@ func TestEELLibrary3(t *testing.T) {
 		t.Fatalf("unexpected number of results: %d\n", len(outs))
 	}
 	if !DeepEquals(outs[0], in) {
-		t.Fatalf("unexpected transformation result")
+		t.Fatalf("unexpected transformation result\n")
 	}
 	//publishers, err := EELGetPublishers(ctx, in, eelHandlerFactory)
 	//if err != nil {
@@ -147,6 +147,28 @@ func TestEELLibrary3(t *testing.T) {
 	//	}
 	//	t.Logf("response: %s\n", resp)
 	//}
+}
+
+func TestEELLibrary4(t *testing.T) {
+	ctx := NewDefaultContext(L_InfoLevel)
+	in := `{ "message" : "hello world!!!" }`
+	expected, err := NewJDocFromString(`{ "event" : { "message" : "hello world!!!" }}`)
+	if err != nil {
+		t.Fatalf("could not parse expected event: %s\n", err.Error())
+	}
+	transformation := `{ "{{/event}}" : "{{/}}" }`
+	EELInit(ctx)
+	out, err := EELSingleTransform(ctx, in, transformation, false)
+	if err != nil {
+		t.Fatalf("bad tranformation: %s\n", err.Error())
+	}
+	outDoc, err := NewJDocFromString(out)
+	if err != nil {
+		t.Fatalf("could not parse out event: %s\n", err.Error())
+	}
+	if !DeepEquals(expected.GetOriginalObject(), outDoc.GetOriginalObject()) {
+		t.Fatalf("unexpected transformation result: %s\n", out)
+	}
 }
 
 func TestDontTouchEvent(t *testing.T) {

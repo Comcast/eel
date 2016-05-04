@@ -59,3 +59,27 @@ if !DeepEquals(outs[0], in) {
 //	fmt.Printf("response: %s\n", resp)
 //}
 ```
+
+Use the `EELSingleTransform()` API for an easy way to execute simple transformations.  
+
+```
+// initialize context
+
+ctx := NewDefaultContext(L_InfoLevel)
+EELInit(ctx)
+
+// prepare event and transformation
+
+event := `{ "message" : "hello world!!!" }`
+transformation := `{ "{{/event}}" : "{{/}}" }`
+
+// perform trasnformation
+
+out, err := EELSingleTransform(ctx, event, transformation, false)
+
+if err != nil {
+	fmt.Printf("bad tranformation: %s\n", err.Error())
+}
+
+fmt.Printf("transformed event: %s\n", out)
+```
