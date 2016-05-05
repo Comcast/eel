@@ -28,9 +28,12 @@ import (
 )
 
 func eelCmd(in, inf, tf, tff string, istbe bool) {
-	Gctx = NewDefaultContext(L_InfoLevel)
+	//Gctx = NewDefaultContext(L_InfoLevel)
+	Gctx = NewDefaultContext(L_NilLevel)
 	stats := new(ServiceStats)
 	Gctx.AddValue(EelTotalStats, stats)
+	var settings EelSettings
+	Gctx.AddConfigValue(EelConfig, &settings)
 	if tff != "" {
 		buf, err := ioutil.ReadFile(tff)
 		if err != nil {
@@ -51,9 +54,9 @@ func eelCmd(in, inf, tf, tff string, istbe bool) {
 		in = string(buf)
 	}
 	if in != "" {
-		out, err := EELSingleTransform(Gctx, in, tf, istbe)
+		out, err := EELSimpleTransform(Gctx, in, tf, istbe)
 		if err != nil {
-			fmt.Printf("bad transformation %s %s\n", in, tf)
+			fmt.Printf("bad transformation %s %s %s\n", in, tf, err.Error())
 			os.Exit(1)
 		}
 		_, err = os.Stdout.WriteString(out + "\n")
@@ -71,9 +74,9 @@ func eelCmd(in, inf, tf, tff string, istbe bool) {
 			os.Exit(1)
 		}
 		if in != "" {
-			out, err := EELSingleTransform(Gctx, in, tf, istbe)
+			out, err := EELSimpleTransform(Gctx, in, tf, istbe)
 			if err != nil {
-				fmt.Printf("bad transformation\n")
+				fmt.Printf("bad transformation %s\n", err.Error())
 				os.Exit(1)
 			}
 			_, err = os.Stdout.WriteString(out + "\n")

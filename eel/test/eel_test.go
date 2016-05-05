@@ -158,7 +158,7 @@ func TestEELLibrary4(t *testing.T) {
 	}
 	transformation := `{ "{{/event}}" : "{{/}}" }`
 	EELInit(ctx)
-	out, err := EELSingleTransform(ctx, in, transformation, false)
+	out, err := EELSimpleTransform(ctx, in, transformation, false)
 	if err != nil {
 		t.Fatalf("bad tranformation: %s\n", err.Error())
 	}
