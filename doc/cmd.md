@@ -25,7 +25,7 @@ Process single event from file:
 ./eelsys -inf=event.json -tf='{"{{/}}":"{{/}}","{{/uuid}}":"{{uuid()}}"}' -istbe=false
 ```
 
-Process multiple events (oen event per line):
+Process multiple events (one event per line):
 
 ```
 cat multipleevents.json | ./eelsys -tf='{"{{/}}":"{{/}}"}' -istbe=false
@@ -36,3 +36,9 @@ You can even use entire transformation handler files:
 ```
 ./eelsys -in='{"foo":"bar"}' -tff=../../config-handlers/tenant1/default.json
 ```
+
+Just for fun: Using the command line version of EEL to parse log output of proxy version of EEL:
+
+```
+./eelsys -config=../../config-eel/config.json -handlers=../../config-handlers/ | ./eelsys -tf='{"{{/}}":"{{/}}"}' -istbe=false
+``` 
