@@ -106,7 +106,7 @@ func EELTransformEvent(ctx Context, event interface{}, eelHandlerFactory *Handle
 }
 
 // EELSingleTransform can work with raw JSON transformation or a transformation wrapped in a config handler.
-// Transformation must yield single result.
+// Transformation must yield single result or no result (if filtered).
 func EELSimpleTransform(ctx Context, event string, transformation string, isTransformationByExample bool) (string, error) {
 	if Gctx == nil {
 		return "", errors.New("must call EELInit first")
@@ -140,8 +140,11 @@ func EELSimpleTransform(ctx Context, event string, transformation string, isTran
 	if err != nil {
 		return "", err
 	}
-	if len(p) != 1 {
+	if len(p) > 1 {
 		return "", errors.New("transformation must yield single result")
+	} else if len(p) == 0 {
+		return "", nil
+	} else {
+		return p[0].GetPayload(), nil
 	}
-	return p[0].GetPayload(), nil
 }

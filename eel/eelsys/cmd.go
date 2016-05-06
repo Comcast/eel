@@ -79,10 +79,12 @@ func eelCmd(in, inf, tf, tff string, istbe bool) {
 				fmt.Printf("bad transformation %s\n", err.Error())
 				os.Exit(1)
 			}
-			_, err = os.Stdout.WriteString(out + "\n")
-			if err != nil {
-				fmt.Printf("cannot write to stdout\n")
-				os.Exit(1)
+			if out != "" {
+				_, err = os.Stdout.WriteString(out + "\n")
+				if err != nil {
+					fmt.Printf("cannot write to stdout\n")
+					os.Exit(1)
+				}
 			}
 		}
 	}
