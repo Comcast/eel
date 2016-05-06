@@ -12,13 +12,17 @@
       "{{/e/c}}": "c"
     },
     "IsTransformationByExample": false,
-    "Filter" : {
-      "{{/e/a}}": "a",
-      "{{/e/b}}": "b"
-    },
-    "IsFilterInverted": false,
-    "IsFilterByExample": false,
-    "FilterAfterTransformation": true,
+	"Filters": [
+		{
+		    "Filter" : {
+		      "{{/e/a}}": "a",
+		      "{{/e/b}}": "b"
+		    },
+		    "IsFilterInverted": false,
+		    "IsFilterByExample": false,
+		    "FilterAfterTransformation": true
+		}
+	],
     "Path": "",
     "Verb": "POST",
     "Endpoint": "",
