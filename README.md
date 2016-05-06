@@ -160,6 +160,17 @@ Stop EEL.
 ./bin/stopeel.sh
 ```
 
+## EEL as Command Line Tool
+
+You can also start experimenting with EEL by using the command line parameters. Example:
+
+```
+./eelsys -in='{"foo":"bar"}' -tf='{"Foo":"{{/foo}}"}' -istbe=true
+```
+
+More examples can be found [here ](doc/cmd.md).
+
+
 ## Exploring EEL Features
 
 The unit tests are a good starting point to learn more about EEL features and look at some examples in detail.
@@ -229,4 +240,3 @@ No | Name | Test Name | Description
 * [Debug Tools](doc/debug.md)
 * [EEL Web API Reference](doc/apis.md)
 * [EEL Transformations as Go Library](doc/lib.md)
-* [EEL Transformations as Command Line Tool](doc/cmd.md)

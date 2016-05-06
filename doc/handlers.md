@@ -441,8 +441,11 @@ All event filtering parameters are optional.
 Filters are optional. You can have zero, one or more filters.
 `Filters` describes a list of patterns that must be matched by the incoming event. If the event does not match all of the patterns,
 EEL will discard the event and not forward it. Filters lets you choose between by-path syntax and
-by-example syntax using the `IsFilterByExample` parameter. If the additional parameter `IsFilterInverted` is
+by-example syntax using the `IsFilterByExample` parameter. If the parameter `IsFilterInverted` is
 set to `true`, events will be filtered if they do NOT match the pattern described by `Filter`.
+If the parameter `FilterAfterTransformation` is set to `true`, the filter will be applied the
+outgoing event (after the transformation), otherwise it will be applied to the incoming event
+(before the transformation).
 
 _*Example 1:*_ Let everything come through.
 
@@ -453,7 +456,8 @@ _*Example 1:*_ Let everything come through.
       "*" : "*"
     },
     "IsFilterByExample" : true,
-    "IsFilterInverted" : false
+    "IsFilterInverted" : false,
+	"FilterAfterTransformation" : false
   }
 ]
 ```
@@ -469,7 +473,8 @@ _*Example 2:*_ Only process events with `id` present regardless of its value.
        }
     },
     "IsFilterByExample" : true,
-    "IsFilterInverted" : false
+    "IsFilterInverted" : false,
+	"FilterAfterTransformation" : false
   }
 ]
 ```
@@ -485,7 +490,8 @@ _*Example 3:*_ Only process events with `id` present and value `"123"`.
        }
     },
     "IsFilterByExample" : true,
-    "IsFilterInverted" : false
+    "IsFilterInverted" : false,
+	"FilterAfterTransformation" : false
   }
 ]
 ```
@@ -501,8 +507,21 @@ _*Example 4:*_ Only process events with `id` present and value `"123"` or `"xyz"
        }
     },
     "IsFilterByExample" : true,
-    "IsFilterInverted" : false
+    "IsFilterInverted" : false,
+	"FilterAfterTransformation" : false
   }
+]
+```
+
+_*Example 5:*_ Only process events where `message` is `found_problem`.
+
+```
+"Filters": [
+	{
+		"Filter": {
+			"{{equals('{{/message}}','found_problem')}}": false
+		}
+	}
 ]
 ```
 
