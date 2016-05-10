@@ -443,7 +443,7 @@ Filters are optional. You can have zero, one or more filters.
 EEL will discard the event and not forward it. Filters lets you choose between by-path syntax and
 by-example syntax using the `IsFilterByExample` parameter. If the parameter `IsFilterInverted` is
 set to `true`, events will be filtered if they do NOT match the pattern described by `Filter`.
-If the parameter `FilterAfterTransformation` is set to `true`, the filter will be applied the
+If the parameter `FilterAfterTransformation` is set to `true`, the filter will be applied to the
 outgoing event (after the transformation), otherwise it will be applied to the incoming event
 (before the transformation).
 
