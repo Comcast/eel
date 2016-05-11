@@ -42,6 +42,8 @@ func EELNewHandlerFactory(ctx Context, configFolder string) (*HandlerFactory, []
 	if ctx == nil {
 		return nil, []string{"ctx cannot be nil"}
 	}
+	ctx = ctx.SubContext()
+	ClearErrors(ctx)
 	eelHandlerFactory, warnings := NewHandlerFactory(ctx, []string{configFolder})
 	return eelHandlerFactory, warnings
 }
@@ -54,6 +56,8 @@ func EELGetHandlersForEvent(ctx Context, event interface{}, eelHandlerFactory *H
 	if ctx == nil {
 		return nil, errors.New("ctx cannot be nil")
 	}
+	ctx = ctx.SubContext()
+	ClearErrors(ctx)
 	doc, err := NewJDocFromInterface(event)
 	if err != nil {
 		return nil, err
@@ -63,64 +67,70 @@ func EELGetHandlersForEvent(ctx Context, event interface{}, eelHandlerFactory *H
 }
 
 // EELGetPublishers is similar to EELTransformEvent but return slice of publishers instead of slice of events.
-func EELGetPublishers(ctx Context, event interface{}, eelHandlerFactory *HandlerFactory) ([]EventPublisher, error) {
+func EELGetPublishers(ctx Context, event interface{}, eelHandlerFactory *HandlerFactory) ([]EventPublisher, []error) {
 	if Gctx == nil {
-		return nil, errors.New("must call EELInit first")
+		return nil, []error{errors.New("must call EELInit first")}
 	}
 	if ctx == nil {
-		return nil, errors.New("ctx cannot be nil")
+		return nil, []error{errors.New("ctx cannot be nil")}
 	}
+	ctx = ctx.SubContext()
+	ClearErrors(ctx)
 	doc, err := NewJDocFromInterface(event)
 	if err != nil {
-		return nil, err
+		return nil, []error{err}
 	}
 	publishers := make([]EventPublisher, 0)
 	eelMatchingHandlers := eelHandlerFactory.GetHandlersForEvent(ctx, doc)
 	for _, h := range eelMatchingHandlers {
 		p, err := h.ProcessEvent(ctx, doc)
 		if err != nil {
-			return nil, err
+			return nil, []error{err}
 		}
 		publishers = append(publishers, p...)
 	}
-	return publishers, nil
+	return publishers, GetErrors(ctx)
 }
 
 // EELTransformEvent transforms single event based on set of configuration handlers. Can yield multiple results.
-func EELTransformEvent(ctx Context, event interface{}, eelHandlerFactory *HandlerFactory) ([]interface{}, error) {
+func EELTransformEvent(ctx Context, event interface{}, eelHandlerFactory *HandlerFactory) ([]interface{}, []error) {
 	if Gctx == nil {
-		return nil, errors.New("must call EELInit first")
+		return nil, []error{errors.New("must call EELInit first")}
 	}
 	if ctx == nil {
-		return nil, errors.New("ctx cannot be nil")
+		return nil, []error{errors.New("ctx cannot be nil")}
 	}
-	publishers, err := EELGetPublishers(ctx, event, eelHandlerFactory)
-	if err != nil {
-		return nil, err
+	ctx = ctx.SubContext()
+	ClearErrors(ctx)
+	publishers, errs := EELGetPublishers(ctx, event, eelHandlerFactory)
+	if errs != nil {
+		return nil, errs
 	}
 	events := make([]interface{}, 0)
 	for _, p := range publishers {
 		events = append(events, p.GetPayloadParsed().GetOriginalObject())
 	}
-	return events, nil
+	return events, GetErrors(ctx)
 }
 
 // EELSingleTransform can work with raw JSON transformation or a transformation wrapped in a config handler.
 // Transformation must yield single result or no result (if filtered).
-func EELSimpleTransform(ctx Context, event string, transformation string, isTransformationByExample bool) (string, error) {
+func EELSimpleTransform(ctx Context, event string, transformation string, isTransformationByExample bool) (string, []error) {
 	if Gctx == nil {
-		return "", errors.New("must call EELInit first")
+		return "", []error{errors.New("must call EELInit first")}
 	}
 	if ctx == nil {
-		return "", errors.New("ctx cannot be nil")
+		return "", []error{errors.New("ctx cannot be nil")}
 	}
+	ctx = ctx.SubContext()
+	ClearErrors(ctx)
 	doc, err := NewJDocFromString(event)
 	if err != nil {
-		return "", err
+		return "", []error{err}
 	}
 	tf, err := NewJDocFromString(transformation)
 	if err != nil {
-		return "", err
+		return "", []error{err}
 	}
 	h := new(HandlerConfiguration)
 	err = json.Unmarshal([]byte(transformation), h)
@@ -138,13 +148,13 @@ func EELSimpleTransform(ctx Context, event string, transformation string, isTran
 	h, _ = hf.GetHandlerConfigurationFromJson(ctx, "", *h)
 	p, err := h.ProcessEvent(ctx, doc)
 	if err != nil {
-		return "", err
+		return "", []error{err}
 	}
 	if len(p) > 1 {
-		return "", errors.New("transformation must yield single result")
+		return "", []error{errors.New("transformation must yield single result")}
 	} else if len(p) == 0 {
 		return "", nil
 	} else {
-		return p[0].GetPayload(), nil
+		return p[0].GetPayload(), GetErrors(ctx)
 	}
 }

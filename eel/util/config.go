@@ -89,6 +89,7 @@ const (
 	EelTenantId             = "Eel.TenantId"
 	EelCustomProperties     = "Eel.CustomProperties"
 	EelRetryService         = "Eel.RetryService"
+	EelErrors               = "Eel.Errors"
 )
 
 const (

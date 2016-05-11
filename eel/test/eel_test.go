@@ -126,9 +126,9 @@ func TestEELLibrary3(t *testing.T) {
 		"message": "hello world!!!",
 	}
 	// process event and get publisher objects in return - typically we expect exactly one publisher (unless event was filtered)
-	outs, err := EELTransformEvent(ctx, in, eelHandlerFactory)
-	if err != nil {
-		t.Fatalf("could not transform event: %s\n", err.Error())
+	outs, errs := EELTransformEvent(ctx, in, eelHandlerFactory)
+	if errs != nil {
+		t.Fatalf("could not transform event: %v\n", errs)
 	}
 	if len(outs) != 1 {
 		t.Fatalf("unexpected number of results: %d\n", len(outs))
@@ -158,9 +158,9 @@ func TestEELLibrary4(t *testing.T) {
 	}
 	transformation := `{ "{{/event}}" : "{{/}}" }`
 	EELInit(ctx)
-	out, err := EELSimpleTransform(ctx, in, transformation, false)
-	if err != nil {
-		t.Fatalf("bad tranformation: %s\n", err.Error())
+	out, errs := EELSimpleTransform(ctx, in, transformation, false)
+	if errs != nil {
+		t.Fatalf("bad tranformation: %v\n", errs)
 	}
 	outDoc, err := NewJDocFromString(out)
 	if err != nil {
