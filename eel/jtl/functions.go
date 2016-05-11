@@ -59,9 +59,9 @@ func NewFunction(fn string) *JFunction {
 		// uuid()
 		return &JFunction{fnUuid, 0, 0}
 	case "header":
-		// returns a value given the http request header key
+		// returns a value given the http request header key, or all headers if no key is given
 		// header('mykey')
-		return &JFunction{fnHeader, 1, 1}
+		return &JFunction{fnHeader, 0, 1}
 	case "ident":
 		// returns input parameter unchanged, for debugging only
 		// ident('foo')
@@ -564,24 +564,32 @@ func fnCurl(ctx Context, doc *JDoc, params []string) interface{} {
 // fnmHeader function to obtain http header value from incoming event by key.
 func fnHeader(ctx Context, doc *JDoc, params []string) interface{} {
 	stats := ctx.Value(EelTotalStats).(*ServiceStats)
-	if params == nil || len(params) != 1 {
+	if params == nil || len(params) > 1 {
 		ctx.Log().Error("event", "execute_function", "function", "header", "error", "wrong_number_of_parameters", "params", params)
 		stats.IncErrors()
-		AddError(ctx, SyntaxError{fmt.Sprintf("wrong number of parameters in call to header function")})
+		AddError(ctx, SyntaxError{"wrong number of parameters in call to header function"})
 		return ""
 	}
-	key := extractStringParam(params[0])
 	header := ctx.Value(EelRequestHeader)
 	if header == nil {
 		ctx.Log().Info("event", "execute_function", "function", "header", "message", "header_object_not_found")
+		stats.IncErrors()
+		AddError(ctx, RuntimeError{"header object not found in call to header function"})
 		return ""
 	}
 	h, ok := header.(http.Header)
 	if !ok {
 		ctx.Log().Info("event", "execute_function", "function", "header", "message", "header_object_not_valid")
+		AddError(ctx, RuntimeError{"header object not valid in call to header function"})
+		stats.IncErrors()
 		return ""
 	}
-	return h.Get(key)
+	if len(params) == 1 && len(params[0]) > 2 {
+		key := extractStringParam(params[0])
+		return h.Get(key)
+	} else {
+		return h
+	}
 }
 
 // fnUuid return a new uuid.

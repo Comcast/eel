@@ -57,7 +57,10 @@ func eelCmd(in, inf, tf, tff string, istbe bool) {
 	if in != "" {
 		out, errs := EELSimpleTransform(Gctx, in, tf, istbe)
 		if errs != nil {
-			fmt.Printf("bad transformation %s %s %v\n", in, tf, errs)
+			fmt.Printf("bad transformation %s on %s\n", tf, in)
+			for _, e := range errs {
+				fmt.Printf("%s\n", e.Error())
+			}
 			os.Exit(1)
 		}
 		_, err := os.Stdout.WriteString(out + "\n")
@@ -77,7 +80,10 @@ func eelCmd(in, inf, tf, tff string, istbe bool) {
 		if in != "" {
 			out, errs := EELSimpleTransform(Gctx, in, tf, istbe)
 			if errs != nil {
-				fmt.Printf("bad transformation %v\n", errs)
+				fmt.Printf("bad transformation\n")
+				for _, e := range errs {
+					fmt.Printf("%s\n", e.Error())
+				}
 				os.Exit(1)
 			}
 			if out != "" {

@@ -73,6 +73,14 @@ func (e RuntimeError) Error() string {
 	return fmt.Sprintf("%s", e.Message)
 }
 
+type ParseError struct {
+	Message string
+}
+
+func (e ParseError) Error() string {
+	return fmt.Sprintf("%s", e.Message)
+}
+
 // ClearErrors clears any stale errors from current transacction in case lib user recycles contexts
 func ClearErrors(ctx Context) {
 	if ctx == nil {

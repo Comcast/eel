@@ -318,6 +318,11 @@ func ParserDebugHandler(w http.ResponseWriter, r *http.Request) {
 		r, l := jexpr.ExecuteDebug(ctx, mIn)
 		ta.Result = ToFlatString(r)
 		ta.Lists = l
+		if errs := GetErrors(ctx); errs != nil {
+			for _, e := range errs {
+				ta.ErrorMessage += e.Error() + "<br/>"
+			}
+		}
 	} else {
 		ta.ErrorMessage = "no message or expression"
 	}
@@ -398,13 +403,14 @@ func TopicTestHandler(w http.ResponseWriter, r *http.Request) {
 	hc.IsFilterByExample = isfbe
 	hc.IsFilterInverted = isfinvt
 	hc.IsTransformationByExample = istbe
+	hc.Version = "1.0"
+	hc.Name = "DEBUG"
 	err = json.Unmarshal([]byte(filter), &hc.Filter)
 	hf, _ := NewHandlerFactory(ctx, nil)
-	hc.Endpoint = "http://localhost:4242/"
-	topicHandler, _ := hf.GetHandlerConfigurationFromJson(ctx, "", *hc)
-	/*for _, w := range warnings {
-		tht.ErrorMessage += w + ", "
-	}*/
+	topicHandler, errs := hf.GetHandlerConfigurationFromJson(ctx, "", *hc)
+	for _, e := range errs {
+		tht.ErrorMessage += e.Error() + "<br/>"
+	}
 	if message != "" && topicHandler != nil {
 		if customproperties != "" {
 			var ct map[string]interface{}
@@ -444,6 +450,11 @@ func TopicTestHandler(w http.ResponseWriter, r *http.Request) {
 			tht.Response = publishers[0].GetPayload()
 			tht.Path = publishers[0].GetPath()
 			out = tht.Response
+			if errs := GetErrors(ctx); errs != nil {
+				for _, e := range errs {
+					tht.ErrorMessage += e.Error() + "<br/>"
+				}
+			}
 		}
 		ctx.Log().Info("event", "test_transform", "in", mIn.StringPretty(), "out", out, "topic_handler", topicHandler)
 	}

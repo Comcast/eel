@@ -35,12 +35,12 @@ func EELInit(ctx Context) {
 }
 
 // EELNewHandlerFactory creates handler factory for given folder with handler files.
-func EELNewHandlerFactory(ctx Context, configFolder string) (*HandlerFactory, []string) {
+func EELNewHandlerFactory(ctx Context, configFolder string) (*HandlerFactory, []error) {
 	if Gctx == nil {
-		return nil, []string{"must call EELInit first"}
+		return nil, []error{errors.New("must call EELInit first")}
 	}
 	if ctx == nil {
-		return nil, []string{"ctx cannot be nil"}
+		return nil, []error{errors.New("ctx cannot be nil")}
 	}
 	ctx = ctx.SubContext()
 	ClearErrors(ctx)
@@ -157,4 +157,30 @@ func EELSimpleTransform(ctx Context, event string, transformation string, isTran
 	} else {
 		return p[0].GetPayload(), GetErrors(ctx)
 	}
+}
+
+// EELSingleTransform can work with raw JSON transformation or a transformation wrapped in a config handler.
+// Transformation must yield single result or no result (if filtered).
+func EELSimpleEvalExpression(ctx Context, event string, expr string) (string, []error) {
+	if Gctx == nil {
+		return "", []error{errors.New("must call EELInit first")}
+	}
+	if ctx == nil {
+		return "", []error{errors.New("ctx cannot be nil")}
+	}
+	ctx = ctx.SubContext()
+	ClearErrors(ctx)
+	doc, err := NewJDocFromString(event)
+	if err != nil {
+		return "", []error{err}
+	}
+	result := doc.ParseExpression(ctx, expr)
+	if result == nil {
+		return "", GetErrors(ctx)
+	}
+	rdoc, err := NewJDocFromInterface(result)
+	if err != nil {
+		return "", []error{err}
+	}
+	return rdoc.StringPretty(), GetErrors(ctx)
 }

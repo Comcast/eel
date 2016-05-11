@@ -171,6 +171,23 @@ func TestEELLibrary4(t *testing.T) {
 	}
 }
 
+func TestEELLibrary5(t *testing.T) {
+	ctx := NewDefaultContext(L_InfoLevel)
+	//in := `{ "message" : "hello world!!!" }`
+	in := ``
+	// note: results of type string are surrounded by double quotes
+	expected := `"xyz"`
+	expr := `{{ident('xyz')}}`
+	EELInit(ctx)
+	out, errs := EELSimpleEvalExpression(ctx, in, expr)
+	if errs != nil {
+		t.Fatalf("bad tranformation: %v\n", errs)
+	}
+	if out != expected {
+		t.Fatalf("unexpected eval result: %s expected: %s\n", out, expected)
+	}
+}
+
 func TestDontTouchEvent(t *testing.T) {
 	initTests("data/test00/handlers")
 	transformEvent(t, "data/test00/", nil)

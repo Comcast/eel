@@ -17,22 +17,24 @@ th    	{color:white; font-family:verdana; text-align: left}
 <p><img src="/img/eel.png" width="250"/></p>
 <form action="/test" method="POST">
 <p>{{.ErrorMessage}}</p>
+<div><input type="submit" value="Process"></div>
 <h3>Incoming JSON Event:</h3>
 <div><textarea name="message" rows="10" cols="80">{{.Message}}</textarea></div>
 <h3>Transformation:</h3>
 <div><p><input type=checkbox name="istbe"{{if .IsTBE}} checked{{end}}>Is Template By Example</input></p></div>
 <div><textarea name="transformation" rows="5" cols="80">{{.Transformation}}</textarea></div>
+<h3>Outgoing JSON Event:</h3>
+<div><textarea name="result" rows="10" cols="80">{{.Response}}</textarea></div>
 <h3>Named Transformations:</h3>
 <div><textarea name="transformations" rows="5" cols="80">{{.Transformations}}</textarea></div>
 <h3>Custom Properties:</h3>
 <div><textarea name="customproperties" rows="3" cols="80">{{.CustomProperties}}</textarea></div>
 <h3>Filter:</h3>
-<div><p><input type=checkbox name="isfbe"{{if .IsFBE}} checked{{end}}>Is Filter By Example</input></p></div>
-<div><p><input type=checkbox name="isfinvt"{{if .IsFInvt}} checked{{end}}>Is Filter Inverted</input></p></div>
+<div><p>
+<input type=checkbox name="isfbe"{{if .IsFBE}} checked{{end}}>Is Filter By Example</input>
+<input type=checkbox name="isfinvt"{{if .IsFInvt}} checked{{end}}>Is Filter Inverted</input>
+</p></div>
 <div><textarea name="filter" rows="5" cols="80">{{.Filter}}</textarea></div>
-<h3>Outgoing JSON Event:</h3>
-<div><textarea name="result" rows="10" cols="80">{{.Response}}</textarea></div>
-<div><input type="submit" value="Process"></div>
 </form>
 </div>
 </body>

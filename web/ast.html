@@ -16,16 +16,16 @@ th    	{color:white; font-family:verdana; text-align: left}
 <h1>EEL JPath Expression Debugger</h1>
 <p><img src="/img/eel.png" width="250"/></p>
 <form action="/test/ast" method="POST">
+<div><input type="submit" value="Parse"></div>
 <p>{{.ErrorMessage}}</p>
 <h3>JSON Event:</h3>
 <div><textarea name="message" rows="10" cols="80">{{.Message}}</textarea></div>
 <h3>JPath Expression:</h3>
 <div><textarea name="expression" rows="3" cols="80">{{.Expression}}</textarea></div>
-<h3>Named Transformations:</h3>
-<div><textarea name="transformations" rows="5" cols="80">{{.Transformations}}</textarea></div>
 <h3>Result:</h3>
 <div><textarea name="result" rows="3" cols="80">{{.Result}}</textarea></div>
-<div><input type="submit" value="Parse"></div>
+<h3>Named Transformations:</h3>
+<div><textarea name="transformations" rows="5" cols="80">{{.Transformations}}</textarea></div>
 </form>
 <table>
 {{ range $hdx, $tree := .Lists }}
