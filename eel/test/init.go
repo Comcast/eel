@@ -32,7 +32,7 @@ func initTests(handlers string) {
 	Gctx = NewDefaultContext(L_InfoLevel)
 	Gctx.AddLogValue("app.id", "eel")
 	Gctx.AddValue("Eel.StartTime", time.Now().Local().Format("2006-01-02 15:04:05 +0800"))
-	if LogsOn != "on" {
+	if LogsOn != "on" && LogsOn != "true" {
 		Gctx.DisableLogging()
 	}
 	Gctx.AddValue(EelTotalStats, new(ServiceStats))

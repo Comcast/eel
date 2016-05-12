@@ -226,6 +226,22 @@ Example:
 
 Here the account ID is returned unmodified if we cannot map it to a Comcast GUID.
 
+### len
+
+Returns length of given object (string, array, map).
+
+Syntax:
+
+```
+{{len('<object>')}}
+```
+
+Example:
+
+```
+{{len('[1,2,3]')}}
+```
+
 ### regex
 
 Apply regular expression to string and return (first) match if any.
@@ -240,6 +256,22 @@ Example:
 
 ```
 {{regex('{{/content/_links/iot:account/href}}','[A-Z0-9]{10,}+')}}
+```
+
+### match
+
+Apply regular expression to string and return true if there is a match, false otherwise.
+
+Syntax:
+
+```
+{{match('<string>', '<regex>')}}
+```
+
+Example:
+
+```
+{{match('{{/content/_links/iot:account/href}}','[A-Z0-9]{10,}+')}}
 ```
 
 ### join

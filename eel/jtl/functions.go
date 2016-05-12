@@ -92,8 +92,11 @@ func NewFunction(fn string) *JFunction {
 		// case('<path_1>','<comparison_value_1>','<return_value_1>', '<path_2>','<comparison_value_2>','<return_value_2>,...,'<default>')
 		return &JFunction{fnCase, 3, 100}
 	case "regex":
-		// apply regex to string value: regex('<string>', '<regex>')
+		// apply regex to string value and return (first) result: regex('<string>', '<regex>')
 		return &JFunction{fnRegex, 2, 2}
+	case "match":
+		// apply regex to string value and return true if matches: match('<string>', '<regex>')
+		return &JFunction{fnMatch, 2, 2}
 	case "and":
 		// boolean and: and('<bool>', '<bool>', ...)
 		return &JFunction{fnAnd, 1, 100}
@@ -151,8 +154,11 @@ func NewFunction(fn string) *JFunction {
 		// chooses elements for list or array based on pattern
 		return &JFunction{fnChoose, 2, 2}
 	case "crush":
-		// experimental function for collapsing a JSON document into a flat array
+		// collapse a JSON document into a flat array
 		return &JFunction{fnCrush, 1, 1}
+	case "len":
+		// returns length of object (string, array, map)
+		return &JFunction{fnLen, 1, 1}
 	default:
 		//gctx.Log.Error("event", "execute_function", "function", fn, "error", "not_implemented")
 		//stats.IncErrors()
@@ -160,7 +166,7 @@ func NewFunction(fn string) *JFunction {
 	}
 }
 
-// fnRegex regular expression function.
+// fnRegex regular expression function returns first matching value.
 func fnRegex(ctx Context, doc *JDoc, params []string) interface{} {
 	stats := ctx.Value(EelTotalStats).(*ServiceStats)
 	if params == nil || len(params) != 2 {
@@ -177,6 +183,25 @@ func fnRegex(ctx Context, doc *JDoc, params []string) interface{} {
 
 	}
 	return reg.FindString(extractStringParam(params[0]))
+}
+
+// fnMatch regular expression function returns true if regex matches.
+func fnMatch(ctx Context, doc *JDoc, params []string) interface{} {
+	stats := ctx.Value(EelTotalStats).(*ServiceStats)
+	if params == nil || len(params) != 2 {
+		ctx.Log().Error("event", "execute_function", "function", "match", "error", "wrong_number_of_parameters", "params", params)
+		stats.IncErrors()
+		AddError(ctx, SyntaxError{fmt.Sprintf("wrong number of parameters in call to match function")})
+		return nil
+	}
+	reg, err := regexp.Compile(extractStringParam(params[1]))
+	if err != nil {
+		ctx.Log().Error("event", "execute_function", "function", "match", "error", "invalid_regex", "params", params, "message", err.Error())
+		stats.IncErrors()
+		return nil
+
+	}
+	return reg.MatchString(extractStringParam(params[0]))
 }
 
 // fnAlt alternative function.
@@ -717,6 +742,29 @@ func fnEval(ctx Context, doc *JDoc, params []string) interface{} {
 		}
 		return ldoc.EvalPath(ctx, extractStringParam(params[0]))
 	}
+}
+
+// fnLen functions returns length of parameter.
+func fnLen(ctx Context, doc *JDoc, params []string) interface{} {
+	stats := ctx.Value(EelTotalStats).(*ServiceStats)
+	if params == nil || len(params) != 1 {
+		ctx.Log().Error("event", "execute_function", "function", "len", "error", "wrong_number_of_parameters", "params", params)
+		stats.IncErrors()
+		AddError(ctx, SyntaxError{fmt.Sprintf("wrong number of parameters in call to len function")})
+		return nil
+	}
+	var obj interface{}
+	err := json.Unmarshal([]byte(extractStringParam(params[0])), &obj)
+	if err != nil {
+		return len(extractStringParam(params[0]))
+	}
+	switch obj.(type) {
+	case []interface{}:
+		return len(obj.([]interface{}))
+	case map[string]interface{}:
+		return len(obj.(map[string]interface{}))
+	}
+	return 0
 }
 
 // fnJoin functions joins two JSON documents given as parameters and returns results.
