@@ -50,10 +50,11 @@ func NewFunction(fn string) *JFunction {
 		// payload - to be sent to external mapping service
 		// url - url of external mapping service
 		// method - POST, GET etc.
-		// curl('<method>','<url>','<payload>','<selector>',['<header-map>'])
+		// retries - if true, applies retry policy as specified in config.json in case of failure
+		// curl('<method>','<url>',['<payload>'],['<selector>'],['<header-map>'],['<retries>'])
 		// curl('POST', 'http://foo.com/bar/json', 'foo-{{/content/bar}}', '/content/comcastId')
 		// example: {{curl('POST', 'http://foo.com/bar/json', '{{/content/bar}}', '/content/comcastId')}}
-		return &JFunction{fnCurl, 2, 5}
+		return &JFunction{fnCurl, 2, 6}
 	case "uuid":
 		// returns UUID string
 		// uuid()
@@ -500,11 +501,22 @@ func fnJs(ctx Context, doc *JDoc, params []string) interface{} {
 // fnCurl provides curl-like functionality to reach out to helper web services. This function usually has grave performance consequences.
 func fnCurl(ctx Context, doc *JDoc, params []string) interface{} {
 	stats := ctx.Value(EelTotalStats).(*ServiceStats)
-	if params == nil || len(params) < 2 || len(params) > 5 {
+	if params == nil || len(params) < 2 || len(params) > 6 {
 		ctx.Log().Error("event", "execute_function", "function", "curl", "error", "wrong_number_of_parameters", "params", params)
 		stats.IncErrors()
 		AddError(ctx, SyntaxError{fmt.Sprintf("wrong number of parameters in call to curl function")})
 		return nil
+	}
+	var err error
+	retry := false
+	if len(params) >= 6 {
+		retry, err = strconv.ParseBool(extractStringParam(params[5]))
+		if err != nil {
+			stats.IncErrors()
+			ctx.Log().Error("event", "execute_function", "function", "curl", "error", "non_boolean_parameter", "params", params)
+			AddError(ctx, SyntaxError{"non boolean parameter in call to curl function"})
+			return nil
+		}
 	}
 	url := extractStringParam(params[1])
 	if ctx.ConfigValue("debug.url") != nil {
@@ -512,7 +524,7 @@ func fnCurl(ctx Context, doc *JDoc, params []string) interface{} {
 	}
 	// compose http headers: at a minimum use trace header (if available), then add extra headers (if given in param #5)
 	hmap := make(map[string]interface{})
-	if len(params) == 5 {
+	if len(params) >= 5 {
 		hdoc, err := NewJDocFromString(extractStringParam(params[4]))
 		if err != nil {
 			stats.IncErrors()
@@ -535,7 +547,13 @@ func fnCurl(ctx Context, doc *JDoc, params []string) interface{} {
 		body = extractStringParam(params[2])
 	}
 	ctx.AddLogValue("destination", "external_service")
-	resp, status, err := HitEndpoint(ctx, url, body, extractStringParam(params[0]), headers, nil)
+	var resp string
+	var status int
+	if retry {
+		resp, status, err = GetRetrier(ctx).RetryEndpoint(ctx, url, body, extractStringParam(params[0]), headers, nil)
+	} else {
+		resp, status, err = HitEndpoint(ctx, url, body, extractStringParam(params[0]), headers, nil)
+	}
 	if err != nil {
 		// this error will already be counted by hitEndpoint
 		ctx.Log().Error("event", "execute_function", "function", "curl", "error", "unexpected_response", "status", strconv.Itoa(status), "detail", err.Error(), "response", resp, "params", params)

@@ -82,7 +82,7 @@ Used to hit an external web service.
 Syntax:
 
 ```
-{{curl('<method>','<url>',['<payload>'],['<selector>'],[<'headers'>])}}
+{{curl('<method>','<url>',['<payload>'],['<selector>'],[<'headers'>],[<'retries'>])}}
 ```
 
 Example:
@@ -98,6 +98,7 @@ Parameters:
 * url - url of external service
 * method - POST, GET etc.
 * timeout - optional timeout in milliseconds
+* retries - if true, applies retry policy as specified in config.json in case of failure
 
 ### uuid
 
