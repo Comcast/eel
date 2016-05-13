@@ -869,7 +869,7 @@ func fnProp(ctx Context, doc *JDoc, params []string) interface{} {
 	if props == nil || props[extractStringParam(params[0])] == nil {
 		ctx.Log().Error("event", "execute_function", "function", "prop", "error", "property_not_found", "params", params)
 		stats.IncErrors()
-		AddError(ctx, RuntimeError{fmt.Sprintf("property not found in call to prop function")})
+		AddError(ctx, RuntimeError{fmt.Sprintf("property %s not found in call to prop function", extractStringParam(params[0]))})
 		return ""
 	}
 	return doc.ParseExpression(ctx, props[extractStringParam(params[0])])

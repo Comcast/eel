@@ -411,6 +411,14 @@ func TopicTestHandler(w http.ResponseWriter, r *http.Request) {
 	for _, e := range errs {
 		tht.ErrorMessage += e.Error() + "<br/>"
 	}
+	tp, err := json.MarshalIndent(hc.Transformation, "", "\t")
+	if err == nil {
+		tht.Transformation = string(tp)
+	}
+	mdoc, err := NewJDocFromString(message)
+	if err == nil {
+		tht.Message = mdoc.StringPretty()
+	}
 	if message != "" && topicHandler != nil {
 		if customproperties != "" {
 			var ct map[string]interface{}
