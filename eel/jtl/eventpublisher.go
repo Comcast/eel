@@ -41,6 +41,7 @@ type (
 		GetUrl() string
 		SetPayloadParsed(event *JDoc)
 		GetPayloadParsed() *JDoc
+		GetErrors() []error
 	}
 )
 

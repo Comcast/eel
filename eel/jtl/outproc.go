@@ -117,6 +117,9 @@ func handleEvent(ctx Context, stats *ServiceStats, event *JDoc, raw string, debu
 				de["api"] = publisher.GetApi()
 				de["tx.id"] = ctx.Id()
 				de["tx.traceId"] = publisher.GetHeaders()[traceHeaderKey]
+				if errs := publisher.GetErrors(); errs != nil {
+					de["tx.errors"] = errs
+				}
 				debuginfo = append(debuginfo, de)
 
 			} else {

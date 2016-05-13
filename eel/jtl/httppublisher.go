@@ -74,6 +74,10 @@ func (p *HttpPublisher) GetUrl() string {
 	return p.endpoint + "/" + p.path
 }
 
+func (p *HttpPublisher) GetErrors() []error {
+	return GetErrors(p.ctx)
+}
+
 func (p *HttpPublisher) SetPath(path string) {
 	p.path = path
 }
