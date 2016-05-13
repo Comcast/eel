@@ -2,66 +2,58 @@
 <head>
 <title>EEL Transformation Debugger</title>
 <style>
-body 	{background-color:black}
-h1   	{color:white; font-family:verdana;}
-h2   	{color:white; font-family:verdana;}
-h3   	{color:white; font-family:verdana;}
-p    	{color:white; font-family:verdana;}
-td    	{color:white; font-family:verdana;}
-th    	{color:white; font-family:verdana; text-align: left}
+body 		{background-color:black}
+h1   		{color:green; font-family:verdana;}
+h2   		{color:green; font-family:verdana;}
+h3   		{color:green; font-family:verdana;}
+p    		{color:green; font-family:verdana;}
+td    		{color:green; font-family:verdana; text-align: left; vertical-align:bottom;}
+th    	 	{color:green; font-family:verdana; text-align: left; vertical-align:bottom;}
+textarea 	{border-radius: 5px; color:#555555; font-family:verdana; font-size: 16px;}
+p.error		{color: red;}
 </style>
 </head>
 <body>
 <div align="center">
 <h1>EEL Transformation Debugger</h1>
-<p><img src="/img/eel.png" width="250"/></p>
+<!--<p><img src="/img/eel.png" width="250"/></p>-->
 <form action="/test" method="POST">
-<p>{{.ErrorMessage}}</p>
-<div><input type="submit" value="Process"></div>
+<p class="error">{{.ErrorMessage}}</p>
+<div><input type="submit" value="Transform"></div>
+<p></p>
 <table>
 <tr>
-<td>
-<h3>Incoming JSON Event:</h3>
-</td>
-<td>
-<h3>Transformation:</h3>
-</td>
-<td>
-<h3>Outgoing JSON Event:</h3>
-</td>
+<th>Incoming JSON Event:</th>
+<th>Transformation:</th>
+<th>Outgoing JSON Event:</th>
 </tr>
 <tr>
 <td>
 </td>
 <td>
-<div><p><input type=checkbox name="istbe"{{if .IsTBE}} checked{{end}}>Is Template By Example</input></p></div>
+<input type=checkbox name="istbe"{{if .IsTBE}} checked{{end}}>Is Template By Example</input>
 </td>
 <td>
 </td>
 </tr>
 <tr>
 <td>
-<div><textarea name="message" rows="20" cols="60">{{.Message}}</textarea>&nbsp;</div>
+<textarea name="message" rows="20" cols="60">{{.Message}}</textarea>&nbsp;
 </td>
 <td>
-<div><textarea name="transformation" rows="20" cols="60">{{.Transformation}}</textarea>&nbsp;</div>
+<textarea name="transformation" rows="20" cols="60">{{.Transformation}}</textarea>&nbsp;
 </td>
 <td>
-<div><textarea name="result" rows="20" cols="60">{{.Response}}</textarea></div>
+<textarea name="result" rows="20" cols="60">{{.Response}}</textarea>
 </td>
 </tr>
 </table>
+<p></p>
 <table>
 <tr>
-<td>
-<h3>Named Transformations:</h3>
-</td>
-<td>
-<h3>Custom Properties:</h3>
-</td>
-<td>
-<h3>Filter:</h3>
-</td>
+<th>Named Transformations:</th>
+<th>Custom Properties:</th>
+<th>Filter:</th>
 </tr>
 <tr>
 <td>
@@ -69,21 +61,19 @@ th    	{color:white; font-family:verdana; text-align: left}
 <td>
 </td>
 <td>
-<div><p>
 <input type=checkbox name="isfbe"{{if .IsFBE}} checked{{end}}>Is Filter By Example</input>
 <input type=checkbox name="isfinvt"{{if .IsFInvt}} checked{{end}}>Is Filter Inverted</input>
-</p></div>
 </td>
 </tr>
 <tr>
 <td>
-<div><textarea name="transformations" rows="20" cols="60">{{.Transformations}}</textarea>&nbsp;</div>
+<textarea name="transformations" rows="10" cols="60">{{.Transformations}}</textarea>&nbsp;
 </td>
 <td>
-<div><textarea name="customproperties" rows="20" cols="60">{{.CustomProperties}}</textarea>&nbsp;</div>
+<textarea name="customproperties" rows="10" cols="60">{{.CustomProperties}}</textarea>&nbsp;
 </td>
 <td>
-<div><textarea name="filter" rows="20" cols="60">{{.Filter}}</textarea></div>
+<textarea name="filter" rows="10" cols="60">{{.Filter}}</textarea>
 </td>
 </tr>
 </table>

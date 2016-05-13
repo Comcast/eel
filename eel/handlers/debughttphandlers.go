@@ -405,15 +405,25 @@ func TopicTestHandler(w http.ResponseWriter, r *http.Request) {
 	hc.IsTransformationByExample = istbe
 	hc.Version = "1.0"
 	hc.Name = "DEBUG"
-	err = json.Unmarshal([]byte(filter), &hc.Filter)
+	if filter != "" {
+		err = json.Unmarshal([]byte(filter), &hc.Filter)
+		if err != nil {
+			tht.ErrorMessage = "error parsing filter: " + err.Error()
+		} else {
+			buf, _ := json.MarshalIndent(hc.Filter, "", "\t")
+			tht.Filter = string(buf)
+		}
+	}
 	hf, _ := NewHandlerFactory(ctx, nil)
 	topicHandler, errs := hf.GetHandlerConfigurationFromJson(ctx, "", *hc)
 	for _, e := range errs {
 		tht.ErrorMessage += e.Error() + "<br/>"
 	}
-	tp, err := json.MarshalIndent(hc.Transformation, "", "\t")
-	if err == nil {
-		tht.Transformation = string(tp)
+	if hc.Transformation != nil {
+		tp, err := json.MarshalIndent(hc.Transformation, "", "\t")
+		if err == nil {
+			tht.Transformation = string(tp)
+		}
 	}
 	mdoc, err := NewJDocFromString(message)
 	if err == nil {
@@ -425,6 +435,9 @@ func TopicTestHandler(w http.ResponseWriter, r *http.Request) {
 			err := json.Unmarshal([]byte(customproperties), &ct)
 			if err != nil {
 				tht.ErrorMessage = "error parsing custom properties: " + err.Error()
+			} else {
+				buf, _ := json.MarshalIndent(ct, "", "\t")
+				tht.CustomProperties = string(buf)
 			}
 			topicHandler.CustomProperties = ct
 		}
@@ -433,6 +446,9 @@ func TopicTestHandler(w http.ResponseWriter, r *http.Request) {
 			err := json.Unmarshal([]byte(transformations), &nts)
 			if err != nil {
 				tht.ErrorMessage = "error parsing named transformations: " + err.Error()
+			} else {
+				buf, _ := json.MarshalIndent(nts, "", "\t")
+				tht.Transformations = string(buf)
 			}
 			for _, v := range nts {
 				tf, err := NewJDocFromInterface(v.Transformation)
@@ -464,7 +480,7 @@ func TopicTestHandler(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 		}
-		ctx.Log().Info("event", "test_transform", "in", mIn.StringPretty(), "out", out, "topic_handler", topicHandler)
+		ctx.Log().Info("event", "test_transform", "in", message, "out", out, "topic_handler", topicHandler)
 	}
 	err = t.Execute(w, tht)
 	if err != nil {
