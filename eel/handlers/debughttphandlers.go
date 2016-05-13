@@ -48,12 +48,13 @@ type (
 		IsFInvt          bool
 	}
 	AstTest struct {
-		Message         string
-		Expression      string
-		Result          string
-		ErrorMessage    string
-		Transformations string
-		Lists           [][][]string
+		Message          string
+		Expression       string
+		Result           string
+		ErrorMessage     string
+		Transformations  string
+		CustomProperties string
+		Lists            [][][]string
 	}
 )
 
@@ -278,16 +279,34 @@ func ParserDebugHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	expression := r.FormValue("expression")
 	transformations := r.FormValue("transformations")
+	customproperties := r.FormValue("customproperties")
 	var ta AstTest
 	ta.Lists = make([][][]string, 0)
 	ta.Message = message
+	ta.CustomProperties = customproperties
 	if message != "" && expression != "" {
+		var h HandlerConfiguration
+		if customproperties != "" {
+			var ct map[string]interface{}
+			err := json.Unmarshal([]byte(customproperties), &ct)
+			if err != nil {
+				ta.ErrorMessage = "error parsing custom properties: " + err.Error()
+			} else {
+				buf, _ := json.MarshalIndent(ct, "", "\t")
+				ta.CustomProperties = string(buf)
+			}
+			h.CustomProperties = ct
+			ctx.AddValue(EelCustomProperties, ct)
+		}
 		if transformations != "" {
 			ta.Transformations = transformations
 			var nts map[string]*Transformation
 			err := json.Unmarshal([]byte(transformations), &nts)
 			if err != nil {
 				ta.ErrorMessage = "error parsing named transformations: " + err.Error()
+			} else {
+				buf, _ := json.MarshalIndent(nts, "", "\t")
+				ta.Transformations = string(buf)
 			}
 			for _, v := range nts {
 				tf, err := NewJDocFromInterface(v.Transformation)
@@ -296,10 +315,9 @@ func ParserDebugHandler(w http.ResponseWriter, r *http.Request) {
 				}
 				v.SetTransformation(tf)
 			}
-			var h HandlerConfiguration
 			h.Transformations = nts
-			ctx.AddValue(EelHandlerConfig, &h)
 		}
+		ctx.AddValue(EelHandlerConfig, &h)
 		ta.Expression = expression
 		mIn, err := NewJDocFromString(message)
 		if err != nil {
@@ -307,6 +325,8 @@ func ParserDebugHandler(w http.ResponseWriter, r *http.Request) {
 			ctx.Log().Error("event", "test_handler_error", "error", err.Error())
 			t.Execute(w, ta)
 			return
+		} else {
+			ta.Message = mIn.StringPretty()
 		}
 		jexpr, err := NewJExpr(expression)
 		if err != nil {
@@ -323,8 +343,6 @@ func ParserDebugHandler(w http.ResponseWriter, r *http.Request) {
 				ta.ErrorMessage += e.Error() + "<br/>"
 			}
 		}
-	} else {
-		ta.ErrorMessage = "no message or expression"
 	}
 	err := t.Execute(w, ta)
 	if err != nil {
