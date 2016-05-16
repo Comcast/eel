@@ -269,6 +269,30 @@ func GetASTJsonHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// ParserDebugVizHandler http handler for D3 vizualization of jpath expression AST
+func ParserDebugVizHandler(w http.ResponseWriter, r *http.Request) {
+	ctx := Gctx.SubContext()
+	if !strings.HasPrefix(r.URL.Path, "/test/asttree/") {
+		ctx.Log().Error("status", "500", "event", "invalid_path")
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, `{"error":"invalid path"}`)
+		fmt.Fprintf(w, "\n")
+		return
+	}
+	expression := r.URL.Path[len("/test/asttree/"):]
+	if expression == "" {
+		ctx.Log().Error("status", "500", "event", "blank_expression")
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, `{"error":"blank expression"}`)
+		fmt.Fprintf(w, "\n")
+		return
+	}
+	t, _ := template.ParseFiles(filepath.Join(BasePath, "web/asttree.html"))
+	var ta AstTest
+	ta.Expression = expression
+	t.Execute(w, ta)
+}
+
 // ParserDebugHandler http handler to display HTML version of AST for jpath expression
 func ParserDebugHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := Gctx.SubContext()
@@ -350,34 +374,142 @@ func ParserDebugHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// ParserDebugVizHandler http handler for D3 vizualization of jpath expression AST
-func ParserDebugVizHandler(w http.ResponseWriter, r *http.Request) {
-	ctx := Gctx.SubContext()
-	if !strings.HasPrefix(r.URL.Path, "/test/asttree/") {
-		ctx.Log().Error("status", "500", "event", "invalid_path")
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, `{"error":"invalid path"}`)
-		fmt.Fprintf(w, "\n")
-		return
-	}
-	expression := r.URL.Path[len("/test/asttree/"):]
-	if expression == "" {
-		ctx.Log().Error("status", "500", "event", "blank_expression")
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, `{"error":"blank expression"}`)
-		fmt.Fprintf(w, "\n")
-		return
-	}
-	t, _ := template.ParseFiles(filepath.Join(BasePath, "web/asttree.html"))
-	var ta AstTest
-	ta.Expression = expression
-	t.Execute(w, ta)
-}
-
 // TopicTestHandler http handler for Web Form based transformation testing
 func TopicTestHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := Gctx.SubContext()
 	t, _ := template.ParseFiles(filepath.Join(BasePath, "web/test.html"))
+	message := r.FormValue("message")
+	if message == "" {
+		message = ""
+	}
+	transformation := r.FormValue("transformation")
+	if transformation == "" {
+		transformation = `{
+	"{{/}}":"{{/}}"
+}`
+	}
+	transformations := r.FormValue("transformations")
+	customproperties := r.FormValue("customproperties")
+	filter := r.FormValue("filter")
+	istbe := false
+	if r.FormValue("istbe") == "on" {
+		istbe = true
+	}
+	isfbe := false
+	if r.FormValue("isfbe") == "on" {
+		isfbe = true
+	}
+	isfinvt := false
+	if r.FormValue("isfinvt") == "on" {
+		isfinvt = true
+	}
+	var tht TopicHandlerTest
+	tht.Message = message
+	tht.Transformation = transformation
+	tht.Transformations = transformations
+	tht.CustomProperties = customproperties
+	tht.Filter = filter
+	tht.IsTBE = istbe
+	tht.IsFBE = isfbe
+	tht.IsFInvt = isfinvt
+	hc := new(HandlerConfiguration)
+	err := json.Unmarshal([]byte(transformation), &hc.Transformation)
+	if err != nil {
+		tht.ErrorMessage = err.Error()
+	}
+	hc.IsTransformationByExample = istbe
+	hc.IsFilterByExample = isfbe
+	hc.IsFilterInverted = isfinvt
+	hc.IsTransformationByExample = istbe
+	hc.Version = "1.0"
+	hc.Name = "DEBUG"
+	if filter != "" {
+		err = json.Unmarshal([]byte(filter), &hc.Filter)
+		if err != nil {
+			tht.ErrorMessage = "error parsing filter: " + err.Error()
+		} else {
+			buf, _ := json.MarshalIndent(hc.Filter, "", "\t")
+			tht.Filter = string(buf)
+		}
+	}
+	hf, _ := NewHandlerFactory(ctx, nil)
+	topicHandler, errs := hf.GetHandlerConfigurationFromJson(ctx, "", *hc)
+	for _, e := range errs {
+		tht.ErrorMessage += e.Error() + "<br/>"
+	}
+	if hc.Transformation != nil {
+		tp, err := json.MarshalIndent(hc.Transformation, "", "\t")
+		if err == nil {
+			tht.Transformation = string(tp)
+		}
+	}
+	mdoc, err := NewJDocFromString(message)
+	if err == nil {
+		tht.Message = mdoc.StringPretty()
+	}
+	if message != "" && topicHandler != nil {
+		if customproperties != "" {
+			var ct map[string]interface{}
+			err := json.Unmarshal([]byte(customproperties), &ct)
+			if err != nil {
+				tht.ErrorMessage = "error parsing custom properties: " + err.Error()
+			} else {
+				buf, _ := json.MarshalIndent(ct, "", "\t")
+				tht.CustomProperties = string(buf)
+			}
+			topicHandler.CustomProperties = ct
+		}
+		if transformations != "" {
+			var nts map[string]*Transformation
+			err := json.Unmarshal([]byte(transformations), &nts)
+			if err != nil {
+				tht.ErrorMessage = "error parsing named transformations: " + err.Error()
+			} else {
+				buf, _ := json.MarshalIndent(nts, "", "\t")
+				tht.Transformations = string(buf)
+			}
+			for _, v := range nts {
+				tf, err := NewJDocFromInterface(v.Transformation)
+				if err != nil {
+					tht.ErrorMessage = "error parsing named transformations: " + err.Error()
+				}
+				v.SetTransformation(tf)
+			}
+			topicHandler.Transformations = nts
+			ctx.AddValue(EelHandlerConfig, &topicHandler)
+		}
+		mIn, err := NewJDocFromString(message)
+		if err != nil {
+			tht.ErrorMessage = "error parsing message: " + err.Error()
+			ctx.Log().Error("event", "test_handler_error", "error", err.Error())
+		}
+		publishers, err := topicHandler.ProcessEvent(ctx, mIn)
+		out := ""
+		if err != nil {
+			tht.ErrorMessage = "error processing message: " + err.Error()
+			ctx.Log().Error("event", "test_handler_error", "error", err.Error())
+		} else if publishers != nil && len(publishers) > 0 {
+			tht.Response = publishers[0].GetPayload()
+			tht.Path = publishers[0].GetPath()
+			out = tht.Response
+			if errs := GetErrors(ctx); errs != nil {
+				for _, e := range errs {
+					tht.ErrorMessage += e.Error() + "<br/>"
+				}
+			}
+		}
+		ctx.Log().Info("event", "test_transform", "in", message, "out", out, "topic_handler", topicHandler)
+	}
+	err = t.Execute(w, tht)
+	if err != nil {
+		ctx.Log().Error("event", "template_error", "error", err.Error())
+	}
+}
+
+// HandlersTestHandler http handler for Web Form based transformation testing
+func HandlersTestHandler(w http.ResponseWriter, r *http.Request) {
+	ctx := Gctx.SubContext()
+	t, _ := template.ParseFiles(filepath.Join(BasePath, "web/handlers.html"))
 	message := r.FormValue("message")
 	if message == "" {
 		message = ""

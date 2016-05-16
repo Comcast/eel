@@ -52,7 +52,7 @@ func NewFunction(fn string) *JFunction {
 		// retries - if true, applies retry policy as specified in config.json in case of failure, no retries if false
 		// curl('<method>','<url>',['<payload>'],['<header-map>'],['<retries>'])
 		// example curl('POST', 'http://foo.com/bar/json', 'foo-{{/content/bar}}')
-		return &JFunction{fnCurl, 2, 6}
+		return &JFunction{fnCurl, 2, 5}
 	case "uuid":
 		// returns UUID string
 		// uuid()
