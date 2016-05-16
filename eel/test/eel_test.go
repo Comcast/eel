@@ -111,7 +111,7 @@ func TestEELLibrary2(t *testing.T) {
 	//t.Logf("response: %s\n", resp)
 }
 
-func TestEELLibrary3(t *testing.T) {
+func TestEELLibrary3Sequential(t *testing.T) {
 	// initialize context
 	ctx := NewDefaultContext(L_InfoLevel)
 	EELInit(ctx)
@@ -136,17 +136,33 @@ func TestEELLibrary3(t *testing.T) {
 	if !DeepEquals(outs[0], in) {
 		t.Fatalf("unexpected transformation result\n")
 	}
-	//publishers, err := EELGetPublishers(ctx, in, eelHandlerFactory)
-	//if err != nil {
-	//	t.Fatalf("could not transform event: %s\n", err.Error())
-	//}
-	//for _, p := range publishers {
-	//	resp, err := p.Publish()
-	//	if err != nil {
-	//		t.Fatalf("could not publish event: %s\n", err.Error())
-	//	}
-	//	t.Logf("response: %s\n", resp)
-	//}
+}
+
+func TestEELLibrary3Concurrent(t *testing.T) {
+	// initialize context
+	ctx := NewDefaultContext(L_InfoLevel)
+	EELInit(ctx)
+	// load handlers from folder: note parameter is an array of one or more folders
+	eelHandlerFactory, warnings := EELNewHandlerFactory(ctx, "../../config-handlers")
+	// check if parsing handlers caused warnings
+	for _, w := range warnings {
+		t.Logf("warning loading handlers: %s\n", w)
+	}
+	// prepare incoming test event
+	in := map[string]interface{}{
+		"message": "hello world!!!",
+	}
+	// process event and get publisher objects in return - typically we expect exactly one publisher (unless event was filtered)
+	outs, errs := EELTransformEventConcurrent(ctx, in, eelHandlerFactory)
+	if errs != nil {
+		t.Fatalf("could not transform event: %v\n", errs)
+	}
+	if len(outs) != 1 {
+		t.Fatalf("unexpected number of results: %d\n", len(outs))
+	}
+	if !DeepEquals(outs[0], in) {
+		t.Fatalf("unexpected transformation result\n")
+	}
 }
 
 func TestEELLibrary4(t *testing.T) {

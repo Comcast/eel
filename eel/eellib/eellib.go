@@ -19,6 +19,7 @@ package eellib
 import (
 	"encoding/json"
 	"errors"
+	"sync"
 
 	. "github.com/Comcast/eel/eel/jtl"
 	. "github.com/Comcast/eel/eel/util"
@@ -92,6 +93,61 @@ func EELGetPublishers(ctx Context, event interface{}, eelHandlerFactory *Handler
 	return publishers, GetErrors(ctx)
 }
 
+// EELGetPublishersConcurrent is the concurrent version of EELGetPublishers. Useful when processing multiple
+// expensive transformations at the same time (e.g. making heavy use of curl() function calls).
+func EELGetPublishersConcurrent(ctx Context, event interface{}, eelHandlerFactory *HandlerFactory) ([]EventPublisher, []error) {
+	if Gctx == nil {
+		return nil, []error{errors.New("must call EELInit first")}
+	}
+	if ctx == nil {
+		return nil, []error{errors.New("ctx cannot be nil")}
+	}
+	ctx = ctx.SubContext()
+	ClearErrors(ctx)
+	doc, err := NewJDocFromInterface(event)
+	if err != nil {
+		return nil, []error{err}
+	}
+	eelMatchingHandlers := eelHandlerFactory.GetHandlersForEvent(ctx, doc)
+	var mtx sync.Mutex
+	var wg sync.WaitGroup
+	publishers := make([]EventPublisher, 0)
+	errs := make([]error, 0)
+	for _, h := range eelMatchingHandlers {
+		wg.Add(1)
+		go func() {
+			sctx := ctx.SubContext()
+			d, _ := NewJDocFromInterface(event)
+			pp, err := h.ProcessEvent(sctx, d)
+			if err != nil {
+				mtx.Lock()
+				errs = append(errs, err)
+				mtx.Unlock()
+				wg.Done()
+				return
+			}
+			ee := GetErrors(sctx)
+			if ee != nil && len(ee) > 0 {
+				mtx.Lock()
+				errs = append(errs, ee...)
+				mtx.Unlock()
+			}
+			if pp != nil && len(pp) > 0 {
+				mtx.Lock()
+				publishers = append(publishers, pp...)
+				mtx.Unlock()
+			}
+			wg.Done()
+		}()
+	}
+	wg.Wait()
+	if len(errs) > 0 {
+		return publishers, errs
+	} else {
+		return publishers, nil
+	}
+}
+
 // EELTransformEvent transforms single event based on set of configuration handlers. Can yield multiple results.
 func EELTransformEvent(ctx Context, event interface{}, eelHandlerFactory *HandlerFactory) ([]interface{}, []error) {
 	if Gctx == nil {
@@ -103,6 +159,28 @@ func EELTransformEvent(ctx Context, event interface{}, eelHandlerFactory *Handle
 	ctx = ctx.SubContext()
 	ClearErrors(ctx)
 	publishers, errs := EELGetPublishers(ctx, event, eelHandlerFactory)
+	if errs != nil {
+		return nil, errs
+	}
+	events := make([]interface{}, 0)
+	for _, p := range publishers {
+		events = append(events, p.GetPayloadParsed().GetOriginalObject())
+	}
+	return events, GetErrors(ctx)
+}
+
+// EELTransformEventConcurrent is the concurrent version of EELTransformEvent. Useful when processing multiple
+// expensive transformations at the same time (e.g. making heavy use of curl() function calls).
+func EELTransformEventConcurrent(ctx Context, event interface{}, eelHandlerFactory *HandlerFactory) ([]interface{}, []error) {
+	if Gctx == nil {
+		return nil, []error{errors.New("must call EELInit first")}
+	}
+	if ctx == nil {
+		return nil, []error{errors.New("ctx cannot be nil")}
+	}
+	ctx = ctx.SubContext()
+	ClearErrors(ctx)
+	publishers, errs := EELGetPublishersConcurrent(ctx, event, eelHandlerFactory)
 	if errs != nil {
 		return nil, errs
 	}
