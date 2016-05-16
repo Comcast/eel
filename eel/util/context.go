@@ -54,7 +54,7 @@ type NetworkError struct {
 }
 
 func (e NetworkError) Error() string {
-	return fmt.Sprintf("error reaching %s: %s", e.Endpoint, e.Message)
+	return fmt.Sprintf("error reaching endpoint: %s: status: %d message: %s", e.Endpoint, e.Status, e.Message)
 }
 
 type SyntaxError struct {
