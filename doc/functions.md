@@ -704,12 +704,12 @@ Example:
 
 ### header
 
-Returns http header value from incoming event by key.
+Returns http header value from incoming event by key. When the key parameter is omitted the entire header map will be returned.
 
 Syntax:
 
 ```
-{{header('<key>')}}
+{{header(['<key>'])}}
 ```
 
 Example:
