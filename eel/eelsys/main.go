@@ -83,6 +83,7 @@ func startProxyServices(ctx Context) {
 	http.HandleFunc("/reload", ReloadConfigHandler)
 	http.HandleFunc("/vet", VetHandler)
 	http.HandleFunc("/test", TopicTestHandler)
+	http.HandleFunc("/test/handlers", HandlersTestHandler)
 	http.HandleFunc("/test/process/", ProcessExpressionHandler)
 	http.HandleFunc("/test/ast", ParserDebugHandler)
 	http.HandleFunc("/test/astjson/", GetASTJsonHandler)

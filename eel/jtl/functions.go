@@ -45,15 +45,13 @@ func NewFunction(fn string) *JFunction {
 	switch fn {
 	case "curl":
 		// hit external web service
-		// jpath expressions of the form {{/...}} will be evaluated prior to function execution
-		// selector - optional jpath to be applied to (json) response
-		// payload - to be sent to external mapping service
-		// url - url of external mapping service
 		// method - POST, GET etc.
-		// retries - if true, applies retry policy as specified in config.json in case of failure
-		// curl('<method>','<url>',['<payload>'],['<selector>'],['<header-map>'],['<retries>'])
-		// curl('POST', 'http://foo.com/bar/json', 'foo-{{/content/bar}}', '/content/comcastId')
-		// example: {{curl('POST', 'http://foo.com/bar/json', '{{/content/bar}}', '/content/comcastId')}}
+		// url - url of external service
+		// payload - payload to be sent to external service
+		// headers - headers to be sent to external service
+		// retries - if true, applies retry policy as specified in config.json in case of failure, no retries if false
+		// curl('<method>','<url>',['<payload>'],['<header-map>'],['<retries>'])
+		// example curl('POST', 'http://foo.com/bar/json', 'foo-{{/content/bar}}')
 		return &JFunction{fnCurl, 2, 6}
 	case "uuid":
 		// returns UUID string
@@ -501,7 +499,7 @@ func fnJs(ctx Context, doc *JDoc, params []string) interface{} {
 // fnCurl provides curl-like functionality to reach out to helper web services. This function usually has grave performance consequences.
 func fnCurl(ctx Context, doc *JDoc, params []string) interface{} {
 	stats := ctx.Value(EelTotalStats).(*ServiceStats)
-	if params == nil || len(params) < 2 || len(params) > 6 {
+	if params == nil || len(params) < 2 || len(params) > 5 {
 		ctx.Log().Error("event", "execute_function", "function", "curl", "error", "wrong_number_of_parameters", "params", params)
 		stats.IncErrors()
 		AddError(ctx, SyntaxError{fmt.Sprintf("wrong number of parameters in call to curl function")})
@@ -509,8 +507,8 @@ func fnCurl(ctx Context, doc *JDoc, params []string) interface{} {
 	}
 	var err error
 	retry := false
-	if len(params) >= 6 {
-		retry, err = strconv.ParseBool(extractStringParam(params[5]))
+	if len(params) >= 5 {
+		retry, err = strconv.ParseBool(extractStringParam(params[4]))
 		if err != nil {
 			stats.IncErrors()
 			ctx.Log().Error("event", "execute_function", "function", "curl", "error", "non_boolean_parameter", "params", params)
@@ -524,8 +522,8 @@ func fnCurl(ctx Context, doc *JDoc, params []string) interface{} {
 	}
 	// compose http headers: at a minimum use trace header (if available), then add extra headers (if given in param #5)
 	hmap := make(map[string]interface{})
-	if len(params) >= 5 {
-		hdoc, err := NewJDocFromString(extractStringParam(params[4]))
+	if len(params) >= 4 {
+		hdoc, err := NewJDocFromString(extractStringParam(params[3]))
 		if err != nil {
 			stats.IncErrors()
 			ctx.Log().Error("event", "execute_function", "function", "curl", "error", "invalid_headers", "detail", err.Error(), "params", params)
@@ -566,41 +564,12 @@ func fnCurl(ctx Context, doc *JDoc, params []string) interface{} {
 		AddError(ctx, NetworkError{url, "could not reach endpoint", status})
 		return nil
 	}
-	selector := ""
-	if len(params) >= 4 {
-		selector = extractStringParam(params[3])
-	}
-	if selector != "" {
-		j, _ := NewJDocFromString("")
-		if !j.IsValidPath(selector) {
-			ctx.Log().Error("event", "execute_function", "function", "curl", "error", "invalid_path_selector", "params", params, "selector", selector, "params", params)
-			stats.IncErrors()
-			AddError(ctx, NetworkError{url, "invalid path selector", status})
-			return nil
-		}
-		jresp, err := NewJDocFromString(resp)
-		if err != nil {
-			ctx.Log().Error("event", "execute_function", "function", "curl", "error", "no_json_response", "params", params, "detail", err.Error(), "response", resp)
-			stats.IncErrors()
-			AddError(ctx, NetworkError{url, "invalid json response", status})
-			return nil
-		}
-		result := jresp.EvalPath(ctx, selector)
-		if result == nil {
-			ctx.Log().Error("event", "execute_function", "function", "curl", "error", "selector_yields_blank_response", "params", params, "response", resp, "selector", selector)
-			stats.IncErrors()
-			AddError(ctx, NetworkError{url, "selector yields blank response", status})
-			return nil
-		}
-		return result
+	var res interface{}
+	err = json.Unmarshal([]byte(resp), &res)
+	if err != nil {
+		return resp
 	} else {
-		var res interface{}
-		err := json.Unmarshal([]byte(resp), &res)
-		if err != nil {
-			return resp
-		} else {
-			return res
-		}
+		return res
 	}
 }
 

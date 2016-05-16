@@ -29,7 +29,7 @@ the mapped ID in a transformation.
 _Example 1:_
 
 ```
-"{{/content/mappedId}}" : "{{curl('GET', 'http://mappingservice/{{/content/id}}', '', '')}}"
+"{{/content/mappedId}}" : "{{curl('GET', 'http://mappingservice/{{/content/id}}')}}"
 ```
 
 Here the function "curl" is called to HTTP GET from the mapping service passing in the ID from the event as part
@@ -39,39 +39,23 @@ the payload returned by the external service will be used verbatim as `mappedId`
 _Example 2:_
 
 ```
-"{{/content/mappedId}}" : "{{curl('GET', 'http://mappingservice/{{/content/id}}', '', '/mappedId')}}"
+"Path" : "{{eval('/mappedId','{{curl('GET', '{{prop('ServiceUrl')}}')}}')}}"
 ```
 
 Same as Example 1 but since the external service returns a JSON document and we are only interested in one field
-we use a JPath selector to extract that field (mappedId) AFTER we have received a response from the external service.
+we use eval() to extract that field (mappedId) AFTER we have received a response from the external service.
+Note also the use of the prop() function to look up the URL of the external service from custom properties.
 
 _Example 3:_
 
 ```
-"Path" : "{{curl('POST', 'http://mappingservice', '{ \"query\" : \"{{/content/id}}\"}', '/mappedId')}}"
+"Path" : "{{curl('POST', 'http://mappingservice', '{ \"query\" : \"{{/content/id}}\"}')}}"
 ```
 
-Similar to Example 2 but here we are assuming that `mappingservice` expects to receive a JSON encoded query via POST.
+Similar to Example 1 but here we are assuming that `mappingservice` expects to receive a JSON encoded query via POST.
 This requires escaping the double quotes in the payload. Note that the the single curly brackets {} for the JSON encoding
 mix with the double curly brackets used for JPath expressions without problems (other than readability).
 
-_Example 4:_
-
-```
-"Path" : "{{curl('GET', '{{prop('MappingServiceUrl')}}', '', '/mappedId')}}"
-```
-
-Similar to Example 2 but here we are using a configurable external service URL by pulling a custom property
-from config.json.
-
-_Example 5:_
-
-```
-"Path" : "{{eval('/mappedId','{{curl('GET', '{{prop('ServiceUrl')}}', '', '')}}')}}"
-```
-
-Identical to Example 4. Here we are using the built-in function eval() rather than the 4th parameter of the curl()
-function to select from the result document.
 
 ## Function Reference
 
@@ -82,22 +66,21 @@ Used to hit an external web service.
 Syntax:
 
 ```
-{{curl('<method>','<url>',['<payload>'],['<selector>'],[<'headers'>],[<'retries'>])}}
+{{curl('<method>','<url>',['<payload>'],[<'headers'>],[<'retries'>])}}
 ```
 
 Example:
 
 ```
-{{curl('POST', 'http://foo.com/bar/json', '{{/content/siteId}}', '/content/comcastId')}}
+{{curl('POST', 'http://foo.com/bar/json', '{{/content/userId}}')}}
 ```
 
 Parameters:
 
-* selector - optional JPath expression to be applied to (JSON) response
-* payload - payload to be sent to external service
-* url - url of external service
 * method - POST, GET etc.
-* timeout - optional timeout in milliseconds
+* url - url of external service
+* payload - payload to be sent to external service
+* headers - optional header map
 * retries - if true, applies retry policy as specified in config.json in case of failure
 
 ### uuid

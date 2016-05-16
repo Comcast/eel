@@ -1043,10 +1043,7 @@ func TestParserWhiteSpace(t *testing.T) {
 							'POST',
 							'{{prop(
 								'ServiceUrl'
-							)}}',
-							'',
-							'',
-							''
+							)}}'
 						)}}'
 					)}}
 					-
@@ -1094,7 +1091,7 @@ func TestParserCurl(t *testing.T) {
 	defer ts.Close()
 	props := GetConfig(Gctx).CustomProperties
 	props["ServiceUrl"] = ts.URL
-	test = `foo-{{curl('POST', '{{prop('ServiceUrl')}}', '{ "query" : "{{/content/accountId}}-foo"}', '/accountId')}}-{{ident('bar')}}-bar`
+	test = `foo-{{eval('/accountId','{{curl('POST', '{{prop('ServiceUrl')}}', '{ "query" : "{{/content/accountId}}-foo"}')}}')}}-{{ident('bar')}}-bar`
 	jexpr, err := NewJExpr(test)
 	if err != nil {
 		t.Errorf("error: %s\n", err.Error())
@@ -1117,7 +1114,7 @@ func TestParserCurl2(t *testing.T) {
 	defer ts.Close()
 	props := GetConfig(Gctx).CustomProperties
 	props["ServiceUrl"] = ts.URL
-	test = `foo-{{eval('/accountId','{{curl('POST', '{{prop('ServiceUrl')}}', '', '', '')}}')}}-{{ident('bar')}}-bar`
+	test = `foo-{{eval('/accountId','{{curl('POST', '{{prop('ServiceUrl')}}')}}')}}-{{ident('bar')}}-bar`
 	jexpr, err := NewJExpr(test)
 	if err != nil {
 		t.Errorf("error: %s\n", err.Error())
