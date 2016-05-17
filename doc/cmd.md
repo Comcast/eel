@@ -2,10 +2,8 @@
 
 ## Parameters
 
-* in - (single) incoming event string surrounded by single quotes
-* inf - (single) incoming event as file
-* tf - JSON transformation as string surrounded by single quotes (one of tf or tff is mandatory)
-* tff - JSON transformation as file
+* in - (single) incoming event string surrounded by single quotes or as file prefixed with @
+* tf - JSON transformation as string surrounded by single quotes (one of tf or tff is mandatory) or as file prefixed with @
 * istbe - boolean flag "is transformation by example?" (default true)
 
 The transformation parameter tf/tff accepts both raw transformations (like in most of the examples below)

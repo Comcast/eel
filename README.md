@@ -106,28 +106,27 @@ Output:
 [
 	{
 		"api": "http",
-		"endpoint": "http://localhost:8082",
-		"event.in": {
+		"handler": "Default",
+		"tenant.id": "tenant1",
+		"trace.in.data": {
 			"message": "hello world!!!"
 		},
-		"event.out": {
+		"trace.out.data": {
 			"event": {
 				"message": "hello world!!!"
 			}
 		},
-		"handler": "Default",
-		"headers": {
-			"X-B3-TraceId": "1449343562055990060",
+		"trace.out.endpoint": "http://localhost:8088",
+		"trace.out.headers": {
+			"X-B3-TraceId": "20073ee4-d681-4ab5-a973-50c978cd1111",
 			"X-Tenant-Id": "tenant1"
 		},
-		"path": "target",
-		"protocol": "http",
-		"tenant.id": "tenant1",
-		"topic": "",
-		"tx.id": "053e4424-9b86-11e5-8eb1-a45e60edf673",
-		"tx.traceId": "1449343562055990060",
-		"url": "http://localhost:8082/target",
-		"verb": "POST"
+		"trace.out.path": "",
+		"trace.out.protocol": "http",
+		"trace.out.url": "http://localhost:8088",
+		"trace.out.verb": "POST",
+		"tx.id": "20073ee4-d681-4ab5-a973-50c978cd1111",
+		"tx.traceId": "20073ee4-d681-4ab5-a973-50c978cd1111"
 	}
 ]
 ```

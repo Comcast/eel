@@ -39,7 +39,7 @@ the payload returned by the external service will be used verbatim as `mappedId`
 _Example 2:_
 
 ```
-"Path" : "{{eval('/mappedId','{{curl('GET', '{{prop('ServiceUrl')}}')}}')}}"
+"Path" : "{{eval('/mappedId','{{curl('GET', '{{prop('ServiceUrl')}}/{{/content/id}}')}}')}}"
 ```
 
 Same as Example 1 but since the external service returns a JSON document and we are only interested in one field
@@ -182,10 +182,16 @@ Parameters:
 * js_output_variable - Java Script variable to return (can be omitted if source code is an expression)
 * js_input_key / js_input_value - arbitrary number of key-value-pairs to pass in to Java Script (can also inject values directly into the Java Script source using JPath expressions)
 
-Example:
+Example 1:
 
 ```
 {{js('result = 40+2; result += 2;', 'result')}}
+```
+
+Example 2:
+
+```
+{{js('return 40+{{/content/number}}')}}
 ```
 
 ### alt
@@ -205,7 +211,7 @@ Parameters:
 Example:
 
 ```
-{{alt('{{eval('/item','{{curl('GET', '{{prop('MoleculeMappingServiceUrl')}}{{/content/accountId}}')}}', '', '')}}')}}','{{/content/accountId}}')}}
+{{alt('{{eval('/item','{{curl('GET', '{{prop('MoleculeMappingServiceUrl')}}{{/content/accountId}}')}}')}}')}}','{{/content/accountId}}')}}
 ```
 
 Here the account ID is returned unmodified if we cannot map it to a Comcast GUID.
@@ -244,7 +250,7 @@ Example:
 
 ### match
 
-Apply regular expression to string and return true if there is a match, false otherwise.
+Apply regular expression to string and return true if there is at least one match, false otherwise.
 
 Syntax:
 
@@ -435,7 +441,6 @@ Example:
 
 Applies named transformation.
 
-
 Syntax:
 
 ```
@@ -497,7 +502,6 @@ Parameters:
 
 Chooses elements from an array or map that match a given pattern.
 
-
 Syntax:
 
 ```
@@ -547,7 +551,7 @@ Example:
 }
 ```
 
-Expected result:
+Result:
 
 ```
 [1,2,3,4]
