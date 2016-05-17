@@ -22,12 +22,13 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"strings"
 
 	. "github.com/Comcast/eel/eel/eellib"
 	. "github.com/Comcast/eel/eel/util"
 )
 
-func eelCmd(in, inf, tf, tff string, istbe bool) {
+func eelCmd(in, tf string, istbe bool) {
 	//Gctx = NewDefaultContext(L_InfoLevel)
 	Gctx = NewDefaultContext(L_NilLevel)
 	stats := new(ServiceStats)
@@ -35,8 +36,8 @@ func eelCmd(in, inf, tf, tff string, istbe bool) {
 	var settings EelSettings
 	Gctx.AddConfigValue(EelConfig, &settings)
 	InitHttpTransport(Gctx)
-	if tff != "" {
-		buf, err := ioutil.ReadFile(tff)
+	if strings.HasPrefix(tf, "@") {
+		buf, err := ioutil.ReadFile(tf[1:])
 		if err != nil {
 			panic(err)
 		}
@@ -46,8 +47,8 @@ func eelCmd(in, inf, tf, tff string, istbe bool) {
 		fmt.Printf("blank transformation\n")
 		os.Exit(1)
 	}
-	if inf != "" {
-		buf, err := ioutil.ReadFile(inf)
+	if strings.HasPrefix(in, "@") {
+		buf, err := ioutil.ReadFile(in[1:])
 		if err != nil {
 			fmt.Printf("bad in file\n")
 			os.Exit(1)

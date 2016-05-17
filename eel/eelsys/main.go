@@ -45,10 +45,8 @@ var (
 	handlerPath = flag.String("handlers", "", "path to handlers (optional)")
 	logLevel    = flag.String("loglevel", L_InfoLevel, "log level (optional)")
 	// cmd params
-	in    = flag.String("in", "", "incoming event string")
-	inf   = flag.String("inf", "", "incoming event file")
-	tf    = flag.String("tf", "", "transformation string")
-	tff   = flag.String("tff", "", "transformation file")
+	in    = flag.String("in", "", "incoming event string or @file")
+	tf    = flag.String("tf", "", "transformation string or @file")
 	istbe = flag.Bool("istbe", true, "is template by example flag")
 )
 
@@ -140,8 +138,8 @@ func initLogging() {
 
 func main() {
 	flag.Parse()
-	if *tf != "" || *tff != "" {
-		eelCmd(*in, *inf, *tf, *tff, *istbe)
+	if *tf != "" {
+		eelCmd(*in, *tf, *istbe)
 	} else {
 		initLogging()
 		ReloadConfig()
