@@ -178,6 +178,7 @@ func fnRegex(ctx Context, doc *JDoc, params []string) interface{} {
 	if err != nil {
 		ctx.Log().Error("event", "execute_function", "function", "regex", "error", "invalid_regex", "params", params, "message", err.Error())
 		stats.IncErrors()
+		AddError(ctx, RuntimeError{fmt.Sprintf("invalid regex in call to regex function: %s", err.Error())})
 		return nil
 
 	}
@@ -197,8 +198,8 @@ func fnMatch(ctx Context, doc *JDoc, params []string) interface{} {
 	if err != nil {
 		ctx.Log().Error("event", "execute_function", "function", "match", "error", "invalid_regex", "params", params, "message", err.Error())
 		stats.IncErrors()
+		AddError(ctx, RuntimeError{fmt.Sprintf("invalid regex in call to match function: %s", err.Error())})
 		return nil
-
 	}
 	return reg.MatchString(extractStringParam(params[0]))
 }
