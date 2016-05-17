@@ -115,7 +115,7 @@ func EELGetPublishersConcurrent(ctx Context, event interface{}, eelHandlerFactor
 	errs := make([]error, 0)
 	for _, h := range eelMatchingHandlers {
 		wg.Add(1)
-		go func() {
+		go func(h *HandlerConfiguration) {
 			sctx := ctx.SubContext()
 			d, _ := NewJDocFromInterface(event)
 			pp, err := h.ProcessEvent(sctx, d)
@@ -138,7 +138,7 @@ func EELGetPublishersConcurrent(ctx Context, event interface{}, eelHandlerFactor
 				mtx.Unlock()
 			}
 			wg.Done()
-		}()
+		}(h)
 	}
 	wg.Wait()
 	if len(errs) > 0 {
