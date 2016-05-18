@@ -204,6 +204,34 @@ func TestEELLibrary5(t *testing.T) {
 	}
 }
 
+func TestEELLibraryError(t *testing.T) {
+	ctx := NewDefaultContext(L_InfoLevel)
+	in := `{}`
+	transformation := `{ "{{/event}}" : "{{curl('GET','http://x.y.z')}}" }`
+	EELInit(ctx)
+	eelSettings, err := EELGetSettings(ctx)
+	if err != nil {
+		t.Fatalf("error getting settings: %s\n", err.Error())
+	}
+	eelSettings.MaxAttempts = 3
+	eelSettings.InitialDelay = 125
+	eelSettings.InitialBackoff = 1000
+	eelSettings.BackoffMethod = "Exponential"
+	eelSettings.HttpTimeout = 1000
+	eelSettings.ResponseHeaderTimeout = 1000
+	_, errs := EELSimpleTransform(ctx, in, transformation, false)
+	if errs == nil {
+		t.Fatalf("no errors!\n")
+	}
+	if len(errs) != 1 {
+		t.Fatalf("unexpected number of errors: %d\n", len(errs))
+	}
+	expectedError := "error reaching endpoint: http://x.y.z: status: 0 message: Get http://x.y.z: dial tcp: lookup x.y.z: no such host"
+	if errs[0].Error() != expectedError {
+		t.Fatalf("unexpecte error: %s\n", errs[0].Error())
+	}
+}
+
 func TestDontTouchEvent(t *testing.T) {
 	initTests("data/test00/handlers")
 	transformEvent(t, "data/test00/", nil)

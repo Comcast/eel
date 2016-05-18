@@ -29,10 +29,36 @@ import (
 func EELInit(ctx Context) {
 	Gctx = ctx
 	eelSettings := new(EelSettings)
+	eelSettings.MaxAttempts = 3
+	eelSettings.InitialDelay = 125
+	eelSettings.InitialBackoff = 1000
+	eelSettings.BackoffMethod = "Exponential"
+	eelSettings.HttpTimeout = 1000
+	eelSettings.ResponseHeaderTimeout = 1000
+	eelSettings.MaxMessageSize = 512000
+	eelSettings.HttpTransactionHeader = "X-B3-TraceId"
+	eelSettings.HttpTenantHeader = "X-TenantId"
+	eelSettings.AppName = "eel"
+	eelSettings.Name = "eel"
+	eelSettings.Version = "1.0"
 	ctx.AddConfigValue(EelConfig, eelSettings)
 	eelServiceStats := new(ServiceStats)
 	ctx.AddValue(EelTotalStats, eelServiceStats)
 	InitHttpTransport(ctx)
+}
+
+// EELGetSettings get current settings for read / write
+func EELGetSettings(ctx Context) (*EelSettings, error) {
+	if Gctx == nil {
+		return nil, errors.New("must call EELInit first")
+	}
+	if ctx == nil {
+		return nil, errors.New("ctx cannot be nil")
+	}
+	if ctx.ConfigValue(EelConfig) == nil {
+		return nil, errors.New("no settings")
+	}
+	return ctx.ConfigValue(EelConfig).(*EelSettings), nil
 }
 
 // EELNewHandlerFactory creates handler factory for given folder with handler files.
