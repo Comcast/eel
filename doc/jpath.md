@@ -95,7 +95,7 @@ Results of function calls can also be concatenated.
 
 ## Escape Characters
 
-Use the `$` sign to escape `{{` or `}}` to prevent the EEL from interpreting the content inside as a JPath
+Use the `$` sign to escape `{{` or `}}` to prevent EEL from interpreting the content inside as a JPath
 expression. This is useful when a downstream service requires mustache notation for further processing.
 
 Example:

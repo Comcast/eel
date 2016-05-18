@@ -48,12 +48,13 @@ type (
 		IsFInvt          bool
 	}
 	AstTest struct {
-		Message         string
-		Expression      string
-		Result          string
-		ErrorMessage    string
-		Transformations string
-		Lists           [][][]string
+		Message          string
+		Expression       string
+		Result           string
+		ErrorMessage     string
+		Transformations  string
+		CustomProperties string
+		Lists            [][][]string
 	}
 )
 
@@ -268,65 +269,6 @@ func GetASTJsonHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// ParserDebugHandler http handler to display HTML version of AST for jpath expression
-func ParserDebugHandler(w http.ResponseWriter, r *http.Request) {
-	ctx := Gctx.SubContext()
-	t, _ := template.ParseFiles(filepath.Join(BasePath, "web/ast.html"))
-	message := r.FormValue("message")
-	if message == "" {
-		message = ""
-	}
-	expression := r.FormValue("expression")
-	transformations := r.FormValue("transformations")
-	var ta AstTest
-	ta.Lists = make([][][]string, 0)
-	ta.Message = message
-	if message != "" && expression != "" {
-		if transformations != "" {
-			ta.Transformations = transformations
-			var nts map[string]*Transformation
-			err := json.Unmarshal([]byte(transformations), &nts)
-			if err != nil {
-				ta.ErrorMessage = "error parsing named transformations: " + err.Error()
-			}
-			for _, v := range nts {
-				tf, err := NewJDocFromInterface(v.Transformation)
-				if err != nil {
-					ta.ErrorMessage = "error parsing named transformations: " + err.Error()
-				}
-				v.SetTransformation(tf)
-			}
-			var h HandlerConfiguration
-			h.Transformations = nts
-			ctx.AddValue(EelHandlerConfig, &h)
-		}
-		ta.Expression = expression
-		mIn, err := NewJDocFromString(message)
-		if err != nil {
-			ta.ErrorMessage = "error parsing message: " + err.Error()
-			ctx.Log().Error("event", "test_handler_error", "error", err.Error())
-			t.Execute(w, ta)
-			return
-		}
-		jexpr, err := NewJExpr(expression)
-		if err != nil {
-			ta.ErrorMessage = "error parsing expression: " + err.Error()
-			ctx.Log().Error("event", "test_handler_error", "error", err.Error())
-			t.Execute(w, ta)
-			return
-		}
-		r, l := jexpr.ExecuteDebug(ctx, mIn)
-		ta.Result = ToFlatString(r)
-		ta.Lists = l
-	} else {
-		ta.ErrorMessage = "no message or expression"
-	}
-	err := t.Execute(w, ta)
-	if err != nil {
-		ctx.Log().Error("event", "template_error", "error", err.Error())
-	}
-}
-
 // ParserDebugVizHandler http handler for D3 vizualization of jpath expression AST
 func ParserDebugVizHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := Gctx.SubContext()
@@ -349,6 +291,87 @@ func ParserDebugVizHandler(w http.ResponseWriter, r *http.Request) {
 	var ta AstTest
 	ta.Expression = expression
 	t.Execute(w, ta)
+}
+
+// ParserDebugHandler http handler to display HTML version of AST for jpath expression
+func ParserDebugHandler(w http.ResponseWriter, r *http.Request) {
+	ctx := Gctx.SubContext()
+	t, _ := template.ParseFiles(filepath.Join(BasePath, "web/ast.html"))
+	message := r.FormValue("message")
+	if message == "" {
+		message = ""
+	}
+	expression := r.FormValue("expression")
+	transformations := r.FormValue("transformations")
+	customproperties := r.FormValue("customproperties")
+	var ta AstTest
+	ta.Lists = make([][][]string, 0)
+	ta.Message = message
+	ta.CustomProperties = customproperties
+	if message != "" && expression != "" {
+		var h HandlerConfiguration
+		if customproperties != "" {
+			var ct map[string]interface{}
+			err := json.Unmarshal([]byte(customproperties), &ct)
+			if err != nil {
+				ta.ErrorMessage = "error parsing custom properties: " + err.Error()
+			} else {
+				buf, _ := json.MarshalIndent(ct, "", "\t")
+				ta.CustomProperties = string(buf)
+			}
+			h.CustomProperties = ct
+			ctx.AddValue(EelCustomProperties, ct)
+		}
+		if transformations != "" {
+			ta.Transformations = transformations
+			var nts map[string]*Transformation
+			err := json.Unmarshal([]byte(transformations), &nts)
+			if err != nil {
+				ta.ErrorMessage = "error parsing named transformations: " + err.Error()
+			} else {
+				buf, _ := json.MarshalIndent(nts, "", "\t")
+				ta.Transformations = string(buf)
+			}
+			for _, v := range nts {
+				tf, err := NewJDocFromInterface(v.Transformation)
+				if err != nil {
+					ta.ErrorMessage = "error parsing named transformations: " + err.Error()
+				}
+				v.SetTransformation(tf)
+			}
+			h.Transformations = nts
+		}
+		ctx.AddValue(EelHandlerConfig, &h)
+		ta.Expression = expression
+		mIn, err := NewJDocFromString(message)
+		if err != nil {
+			ta.ErrorMessage = "error parsing message: " + err.Error()
+			ctx.Log().Error("event", "test_handler_error", "error", err.Error())
+			t.Execute(w, ta)
+			return
+		} else {
+			ta.Message = mIn.StringPretty()
+		}
+		jexpr, err := NewJExpr(expression)
+		if err != nil {
+			ta.ErrorMessage = "error parsing expression: " + err.Error()
+			ctx.Log().Error("event", "test_handler_error", "error", err.Error())
+			t.Execute(w, ta)
+			return
+		}
+		r, l := jexpr.ExecuteDebug(ctx, mIn)
+		ta.Result = ToFlatString(r)
+		ta.Lists = l
+		if errs := GetErrors(ctx); errs != nil {
+			for _, e := range errs {
+				ta.ErrorMessage += e.Error() + "<br/>"
+			}
+		}
+	}
+	err := t.Execute(w, ta)
+	if err != nil {
+		ctx.Log().Error("event", "template_error", "error", err.Error())
+	}
 }
 
 // TopicTestHandler http handler for Web Form based transformation testing
@@ -398,19 +421,41 @@ func TopicTestHandler(w http.ResponseWriter, r *http.Request) {
 	hc.IsFilterByExample = isfbe
 	hc.IsFilterInverted = isfinvt
 	hc.IsTransformationByExample = istbe
-	err = json.Unmarshal([]byte(filter), &hc.Filter)
+	hc.Version = "1.0"
+	hc.Name = "DEBUG"
+	if filter != "" {
+		err = json.Unmarshal([]byte(filter), &hc.Filter)
+		if err != nil {
+			tht.ErrorMessage = "error parsing filter: " + err.Error()
+		} else {
+			buf, _ := json.MarshalIndent(hc.Filter, "", "\t")
+			tht.Filter = string(buf)
+		}
+	}
 	hf, _ := NewHandlerFactory(ctx, nil)
-	hc.Endpoint = "http://localhost:4242/"
-	topicHandler, _ := hf.GetHandlerConfigurationFromJson(ctx, "", *hc)
-	/*for _, w := range warnings {
-		tht.ErrorMessage += w + ", "
-	}*/
+	topicHandler, errs := hf.GetHandlerConfigurationFromJson(ctx, "", *hc)
+	for _, e := range errs {
+		tht.ErrorMessage += e.Error() + "<br/>"
+	}
+	if hc.Transformation != nil {
+		tp, err := json.MarshalIndent(hc.Transformation, "", "\t")
+		if err == nil {
+			tht.Transformation = string(tp)
+		}
+	}
+	mdoc, err := NewJDocFromString(message)
+	if err == nil {
+		tht.Message = mdoc.StringPretty()
+	}
 	if message != "" && topicHandler != nil {
 		if customproperties != "" {
 			var ct map[string]interface{}
 			err := json.Unmarshal([]byte(customproperties), &ct)
 			if err != nil {
 				tht.ErrorMessage = "error parsing custom properties: " + err.Error()
+			} else {
+				buf, _ := json.MarshalIndent(ct, "", "\t")
+				tht.CustomProperties = string(buf)
 			}
 			topicHandler.CustomProperties = ct
 		}
@@ -419,6 +464,9 @@ func TopicTestHandler(w http.ResponseWriter, r *http.Request) {
 			err := json.Unmarshal([]byte(transformations), &nts)
 			if err != nil {
 				tht.ErrorMessage = "error parsing named transformations: " + err.Error()
+			} else {
+				buf, _ := json.MarshalIndent(nts, "", "\t")
+				tht.Transformations = string(buf)
 			}
 			for _, v := range nts {
 				tf, err := NewJDocFromInterface(v.Transformation)
@@ -444,8 +492,145 @@ func TopicTestHandler(w http.ResponseWriter, r *http.Request) {
 			tht.Response = publishers[0].GetPayload()
 			tht.Path = publishers[0].GetPath()
 			out = tht.Response
+			if errs := GetErrors(ctx); errs != nil {
+				for _, e := range errs {
+					tht.ErrorMessage += e.Error() + "<br/>"
+				}
+			}
 		}
-		ctx.Log().Info("event", "test_transform", "in", mIn.StringPretty(), "out", out, "topic_handler", topicHandler)
+		ctx.Log().Info("event", "test_transform", "in", message, "out", out, "topic_handler", topicHandler)
+	}
+	err = t.Execute(w, tht)
+	if err != nil {
+		ctx.Log().Error("event", "template_error", "error", err.Error())
+	}
+}
+
+// HandlersTestHandler http handler for Web Form based transformation testing
+func HandlersTestHandler(w http.ResponseWriter, r *http.Request) {
+	ctx := Gctx.SubContext()
+	t, _ := template.ParseFiles(filepath.Join(BasePath, "web/handlers.html"))
+	message := r.FormValue("message")
+	if message == "" {
+		message = ""
+	}
+	transformation := r.FormValue("transformation")
+	if transformation == "" {
+		transformation = `{
+	"{{/}}":"{{/}}"
+}`
+	}
+	transformations := r.FormValue("transformations")
+	customproperties := r.FormValue("customproperties")
+	filter := r.FormValue("filter")
+	istbe := false
+	if r.FormValue("istbe") == "on" {
+		istbe = true
+	}
+	isfbe := false
+	if r.FormValue("isfbe") == "on" {
+		isfbe = true
+	}
+	isfinvt := false
+	if r.FormValue("isfinvt") == "on" {
+		isfinvt = true
+	}
+	var tht TopicHandlerTest
+	tht.Message = message
+	tht.Transformation = transformation
+	tht.Transformations = transformations
+	tht.CustomProperties = customproperties
+	tht.Filter = filter
+	tht.IsTBE = istbe
+	tht.IsFBE = isfbe
+	tht.IsFInvt = isfinvt
+	hc := new(HandlerConfiguration)
+	err := json.Unmarshal([]byte(transformation), &hc.Transformation)
+	if err != nil {
+		tht.ErrorMessage = err.Error()
+	}
+	hc.IsTransformationByExample = istbe
+	hc.IsFilterByExample = isfbe
+	hc.IsFilterInverted = isfinvt
+	hc.IsTransformationByExample = istbe
+	hc.Version = "1.0"
+	hc.Name = "DEBUG"
+	if filter != "" {
+		err = json.Unmarshal([]byte(filter), &hc.Filter)
+		if err != nil {
+			tht.ErrorMessage = "error parsing filter: " + err.Error()
+		} else {
+			buf, _ := json.MarshalIndent(hc.Filter, "", "\t")
+			tht.Filter = string(buf)
+		}
+	}
+	hf, _ := NewHandlerFactory(ctx, nil)
+	topicHandler, errs := hf.GetHandlerConfigurationFromJson(ctx, "", *hc)
+	for _, e := range errs {
+		tht.ErrorMessage += e.Error() + "<br/>"
+	}
+	if hc.Transformation != nil {
+		tp, err := json.MarshalIndent(hc.Transformation, "", "\t")
+		if err == nil {
+			tht.Transformation = string(tp)
+		}
+	}
+	mdoc, err := NewJDocFromString(message)
+	if err == nil {
+		tht.Message = mdoc.StringPretty()
+	}
+	if message != "" && topicHandler != nil {
+		if customproperties != "" {
+			var ct map[string]interface{}
+			err := json.Unmarshal([]byte(customproperties), &ct)
+			if err != nil {
+				tht.ErrorMessage = "error parsing custom properties: " + err.Error()
+			} else {
+				buf, _ := json.MarshalIndent(ct, "", "\t")
+				tht.CustomProperties = string(buf)
+			}
+			topicHandler.CustomProperties = ct
+		}
+		if transformations != "" {
+			var nts map[string]*Transformation
+			err := json.Unmarshal([]byte(transformations), &nts)
+			if err != nil {
+				tht.ErrorMessage = "error parsing named transformations: " + err.Error()
+			} else {
+				buf, _ := json.MarshalIndent(nts, "", "\t")
+				tht.Transformations = string(buf)
+			}
+			for _, v := range nts {
+				tf, err := NewJDocFromInterface(v.Transformation)
+				if err != nil {
+					tht.ErrorMessage = "error parsing named transformations: " + err.Error()
+				}
+				v.SetTransformation(tf)
+			}
+			topicHandler.Transformations = nts
+			ctx.AddValue(EelHandlerConfig, &topicHandler)
+		}
+		mIn, err := NewJDocFromString(message)
+		if err != nil {
+			tht.ErrorMessage = "error parsing message: " + err.Error()
+			ctx.Log().Error("event", "test_handler_error", "error", err.Error())
+		}
+		publishers, err := topicHandler.ProcessEvent(ctx, mIn)
+		out := ""
+		if err != nil {
+			tht.ErrorMessage = "error processing message: " + err.Error()
+			ctx.Log().Error("event", "test_handler_error", "error", err.Error())
+		} else if publishers != nil && len(publishers) > 0 {
+			tht.Response = publishers[0].GetPayload()
+			tht.Path = publishers[0].GetPath()
+			out = tht.Response
+			if errs := GetErrors(ctx); errs != nil {
+				for _, e := range errs {
+					tht.ErrorMessage += e.Error() + "<br/>"
+				}
+			}
+		}
+		ctx.Log().Info("event", "test_transform", "in", message, "out", out, "topic_handler", topicHandler)
 	}
 	err = t.Execute(w, tht)
 	if err != nil {

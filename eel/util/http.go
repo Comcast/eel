@@ -60,8 +60,9 @@ func InitHttpTransport(ctx Context) {
 		MaxIdleConnsPerHost:   GetConfig(ctx).MaxIdleConnsPerHost,
 		ResponseHeaderTimeout: GetConfig(ctx).ResponseHeaderTimeout * time.Millisecond,
 	}
-	if GetConfig(ctx).CloseIdleConnectionIntervalSec > 0 {
+	if GetConfig(ctx).CloseIdleConnectionIntervalSec > 0 && !GetConfig(ctx).CloseIdleConnectionsStarted {
 		go func() {
+			GetConfig(ctx).CloseIdleConnectionsStarted = true
 			for {
 				time.Sleep(time.Duration(GetConfig(ctx).CloseIdleConnectionIntervalSec) * time.Second)
 				ctx.Log().Info("event", "closing_idle_connections")
@@ -90,7 +91,7 @@ func HitEndpoint(ctx Context, url string, payload string, verb string, headers m
 	// add trace header to outbound call
 	traceHeader := GetConfig(ctx).HttpTransactionHeader
 	if "" != traceHeader {
-		traceId := ctx.LogValue("tx.traceId")
+		traceId := ctx.Value("tx.traceId")
 		if nil == traceId {
 			traceId = ctx.Id()
 		}

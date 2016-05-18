@@ -8,7 +8,7 @@ EEL Web Hook for receiving JSON events for event forwarding:
 
 ### /proc
 
-EEL Web API for processing JSON events synchronously and returning the transformed event immediately in the response body.
+EEL Web API for processing JSON events synchronously and returning the transformed event immediately in the response body:
 
 [http://localhost:8080/proc](http://localhost:8080/proc)
 

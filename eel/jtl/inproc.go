@@ -45,8 +45,10 @@ func EventHandler(w http.ResponseWriter, r *http.Request) {
 	traceHeaderKey := GetConfig(ctx).HttpTransactionHeader
 	if r.Header.Get(traceHeaderKey) != "" {
 		ctx.AddLogValue("tx.traceId", r.Header.Get(traceHeaderKey))
+		ctx.AddValue("tx.traceId", r.Header.Get(traceHeaderKey))
 	} else {
 		ctx.AddLogValue("tx.traceId", ctx.Id())
+		ctx.AddValue("tx.traceId", ctx.Id())
 	}
 	// adopt tenant id if present
 	tenantHeaderKey := GetConfig(ctx).HttpTenantHeader

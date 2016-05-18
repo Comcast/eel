@@ -22,20 +22,22 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"strings"
 
 	. "github.com/Comcast/eel/eel/eellib"
 	. "github.com/Comcast/eel/eel/util"
 )
 
-func eelCmd(in, inf, tf, tff string, istbe bool) {
+func eelCmd(in, tf string, istbe bool) {
 	//Gctx = NewDefaultContext(L_InfoLevel)
 	Gctx = NewDefaultContext(L_NilLevel)
 	stats := new(ServiceStats)
 	Gctx.AddValue(EelTotalStats, stats)
 	var settings EelSettings
 	Gctx.AddConfigValue(EelConfig, &settings)
-	if tff != "" {
-		buf, err := ioutil.ReadFile(tff)
+	InitHttpTransport(Gctx)
+	if strings.HasPrefix(tf, "@") {
+		buf, err := ioutil.ReadFile(tf[1:])
 		if err != nil {
 			panic(err)
 		}
@@ -45,8 +47,8 @@ func eelCmd(in, inf, tf, tff string, istbe bool) {
 		fmt.Printf("blank transformation\n")
 		os.Exit(1)
 	}
-	if inf != "" {
-		buf, err := ioutil.ReadFile(inf)
+	if strings.HasPrefix(in, "@") {
+		buf, err := ioutil.ReadFile(in[1:])
 		if err != nil {
 			fmt.Printf("bad in file\n")
 			os.Exit(1)
@@ -54,12 +56,15 @@ func eelCmd(in, inf, tf, tff string, istbe bool) {
 		in = string(buf)
 	}
 	if in != "" {
-		out, err := EELSimpleTransform(Gctx, in, tf, istbe)
-		if err != nil {
-			fmt.Printf("bad transformation %s %s %s\n", in, tf, err.Error())
+		out, errs := EELSimpleTransform(Gctx, in, tf, istbe)
+		if errs != nil {
+			fmt.Printf("bad transformation %s on %s\n", tf, in)
+			for _, e := range errs {
+				fmt.Printf("%s\n", e.Error())
+			}
 			os.Exit(1)
 		}
-		_, err = os.Stdout.WriteString(out + "\n")
+		_, err := os.Stdout.WriteString(out + "\n")
 		if err != nil {
 			fmt.Printf("cannot write to stdout\n")
 			os.Exit(1)
@@ -74,9 +79,12 @@ func eelCmd(in, inf, tf, tff string, istbe bool) {
 			os.Exit(1)
 		}
 		if in != "" {
-			out, err := EELSimpleTransform(Gctx, in, tf, istbe)
-			if err != nil {
-				fmt.Printf("bad transformation %s\n", err.Error())
+			out, errs := EELSimpleTransform(Gctx, in, tf, istbe)
+			if errs != nil {
+				fmt.Printf("bad transformation\n")
+				for _, e := range errs {
+					fmt.Printf("%s\n", e.Error())
+				}
 				os.Exit(1)
 			}
 			if out != "" {

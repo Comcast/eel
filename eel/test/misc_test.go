@@ -524,6 +524,78 @@ func TestParserRegex2(t *testing.T) {
 	}
 }
 
+func TestParserRegex3(t *testing.T) {
+	initTests("../../config-handlers")
+	e1, err := NewJDocFromString(event1)
+	if err != nil {
+		t.Fatal("could not get event1")
+	}
+	test := `{{match('barfoobar', 'f.o')}}`
+	jexpr, err := NewJExpr(test)
+	if err != nil {
+		t.Errorf("error: %s\n", err.Error())
+	}
+	result := jexpr.Execute(Gctx, e1)
+	expected := true
+	if result.(bool) != expected {
+		t.Errorf("wrong parsing result: %v expected: %v\n", result, expected)
+	}
+}
+
+func TestParserLen(t *testing.T) {
+	initTests("../../config-handlers")
+	e1, err := NewJDocFromString(event1)
+	if err != nil {
+		t.Fatal("could not get event1")
+	}
+	test := `{{len('foobar')}}`
+	jexpr, err := NewJExpr(test)
+	if err != nil {
+		t.Errorf("error: %s\n", err.Error())
+	}
+	result := jexpr.Execute(Gctx, e1)
+	expected := 6
+	if result.(int) != expected {
+		t.Errorf("wrong parsing result: %v expected: %v\n", result, expected)
+	}
+}
+
+func TestParserLen2(t *testing.T) {
+	initTests("../../config-handlers")
+	e1, err := NewJDocFromString(event1)
+	if err != nil {
+		t.Fatal("could not get event1")
+	}
+	test := `{{len('[1,2,3]')}}`
+	jexpr, err := NewJExpr(test)
+	if err != nil {
+		t.Errorf("error: %s\n", err.Error())
+	}
+	result := jexpr.Execute(Gctx, e1)
+	expected := 3
+	if result.(int) != expected {
+		t.Errorf("wrong parsing result: %v expected: %v\n", result, expected)
+	}
+}
+
+func TestParserLen3(t *testing.T) {
+	initTests("../../config-handlers")
+	e1, err := NewJDocFromString(event1)
+	if err != nil {
+		t.Fatal("could not get event1")
+	}
+	test := `{{len('{"a":"b"}')}}`
+	jexpr, err := NewJExpr(test)
+	if err != nil {
+		t.Errorf("error: %s\n", err.Error())
+	}
+	result := jexpr.Execute(Gctx, e1)
+	expected := 1
+	if result.(int) != expected {
+		t.Errorf("wrong parsing result: %v expected: %v\n", result, expected)
+	}
+}
+
 func TestParserAndTrue(t *testing.T) {
 	initTests("../../config-handlers")
 	e1, err := NewJDocFromString(event1)
@@ -971,10 +1043,7 @@ func TestParserWhiteSpace(t *testing.T) {
 							'POST',
 							'{{prop(
 								'ServiceUrl'
-							)}}',
-							'',
-							'',
-							''
+							)}}'
 						)}}'
 					)}}
 					-
@@ -1022,7 +1091,7 @@ func TestParserCurl(t *testing.T) {
 	defer ts.Close()
 	props := GetConfig(Gctx).CustomProperties
 	props["ServiceUrl"] = ts.URL
-	test = `foo-{{curl('POST', '{{prop('ServiceUrl')}}', '{ "query" : "{{/content/accountId}}-foo"}', '/accountId')}}-{{ident('bar')}}-bar`
+	test = `foo-{{eval('/accountId','{{curl('POST', '{{prop('ServiceUrl')}}', '{ "query" : "{{/content/accountId}}-foo"}')}}')}}-{{ident('bar')}}-bar`
 	jexpr, err := NewJExpr(test)
 	if err != nil {
 		t.Errorf("error: %s\n", err.Error())
@@ -1045,7 +1114,7 @@ func TestParserCurl2(t *testing.T) {
 	defer ts.Close()
 	props := GetConfig(Gctx).CustomProperties
 	props["ServiceUrl"] = ts.URL
-	test = `foo-{{eval('/accountId','{{curl('POST', '{{prop('ServiceUrl')}}', '', '', '')}}')}}-{{ident('bar')}}-bar`
+	test = `foo-{{eval('/accountId','{{curl('POST', '{{prop('ServiceUrl')}}')}}')}}-{{ident('bar')}}-bar`
 	jexpr, err := NewJExpr(test)
 	if err != nil {
 		t.Errorf("error: %s\n", err.Error())
