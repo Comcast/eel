@@ -61,6 +61,22 @@ func EELGetSettings(ctx Context) (*EelSettings, error) {
 	return ctx.ConfigValue(EelConfig).(*EelSettings), nil
 }
 
+// EELGetSettings get current settings for read / write
+func EELUpdateSettings(ctx Context, eelSettings *EelSettings) error {
+	if Gctx == nil {
+		return errors.New("must call EELInit first")
+	}
+	if ctx == nil {
+		return errors.New("ctx cannot be nil")
+	}
+	if eelSettings == nil {
+		return errors.New("no settings")
+	}
+	ctx.AddValue(EelConfig, eelSettings)
+	InitHttpTransport(ctx)
+	return nil
+}
+
 // EELNewHandlerFactory creates handler factory for given folder with handler files.
 func EELNewHandlerFactory(ctx Context, configFolder string) (*HandlerFactory, []error) {
 	if Gctx == nil {

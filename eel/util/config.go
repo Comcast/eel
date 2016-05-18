@@ -59,6 +59,7 @@ type EelSettings struct {
 	SendCloudWatchMetrics          bool
 	DuplicateTimeout               int
 	CloseIdleConnectionIntervalSec int
+	CloseIdleConnectionsStarted    bool
 	RetryQueues                    []string
 	RetryServiceAvailable          bool
 	UseRetryQueue                  bool
