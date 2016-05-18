@@ -62,6 +62,7 @@ func handleEvent(ctx Context, stats *ServiceStats, event *JDoc, raw string, debu
 				publisher.GetHeaders()[traceHeaderKey] = ctx.LogValue("tx.traceId").(string)
 			}
 			ctx.AddLogValue("tx.traceId", publisher.GetHeaders()[traceHeaderKey])
+			ctx.AddValue("tx.traceId", publisher.GetHeaders()[traceHeaderKey])
 			// other log params
 			ctx.AddLogValue("trace.out.url", publisher.GetUrl())
 			ctx.AddLogValue("topic", handler.Topic)

@@ -91,7 +91,7 @@ func HitEndpoint(ctx Context, url string, payload string, verb string, headers m
 	// add trace header to outbound call
 	traceHeader := GetConfig(ctx).HttpTransactionHeader
 	if "" != traceHeader {
-		traceId := ctx.LogValue("tx.traceId")
+		traceId := ctx.Value("tx.traceId")
 		if nil == traceId {
 			traceId = ctx.Id()
 		}
