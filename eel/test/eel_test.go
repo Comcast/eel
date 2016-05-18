@@ -219,6 +219,7 @@ func TestEELLibraryError(t *testing.T) {
 	eelSettings.BackoffMethod = "Exponential"
 	eelSettings.HttpTimeout = 1000
 	eelSettings.ResponseHeaderTimeout = 1000
+	EELUpdateSettings(ctx, eelSettings)
 	_, errs := EELSimpleTransform(ctx, in, transformation, false)
 	if errs == nil {
 		t.Fatalf("no errors!\n")
