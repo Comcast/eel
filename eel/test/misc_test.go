@@ -524,6 +524,24 @@ func TestParserRegex2(t *testing.T) {
 	}
 }
 
+func TestParserRegexAll(t *testing.T) {
+	initTests("../../config-handlers")
+	e1, err := NewJDocFromString(event1)
+	if err != nil {
+		t.Fatal("could not get event1")
+	}
+	test := `{{regex('(650) 233-7344', '[0-9]+', 'true')}}`
+	jexpr, err := NewJExpr(test)
+	if err != nil {
+		t.Errorf("error: %s\n", err.Error())
+	}
+	result := jexpr.Execute(Gctx, e1)
+	expected := "6502337344"
+	if result.(string) != expected {
+		t.Errorf("wrong parsing result: %v expected: %v\n", result, expected)
+	}
+}
+
 func TestParserRegex3(t *testing.T) {
 	initTests("../../config-handlers")
 	e1, err := NewJDocFromString(event1)

@@ -239,13 +239,31 @@ Apply regular expression to string and return (first) match if any.
 Syntax:
 
 ```
-{{regex('<string>', '<regex>')}}
+{{regex('<string>', '<regex>', ['<all>'])}}
 ```
+
+Parameters:
+
+* string - string to for regex to operate on
+* regex - regular expression
+* all - optional, if true, concatenate all matches to one match, otherwise only return first match (if any)
 
 Example:
 
 ```
 {{regex('{{/content/_links/iot:account/href}}','[A-Z0-9]{10,}+')}}
+```
+
+Example 2:
+
+```
+{{regex('(650) 233-7344', '[0-9]+', 'true')}}
+```
+
+Result:
+
+```
+6502337344
 ```
 
 ### match
