@@ -92,7 +92,7 @@ func NewFunction(fn string) *JFunction {
 		return &JFunction{fnCase, 3, 100}
 	case "regex":
 		// apply regex to string value and return (first) result: regex('<string>', '<regex>')
-		return &JFunction{fnRegex, 2, 2}
+		return &JFunction{fnRegex, 2, 3}
 	case "match":
 		// apply regex to string value and return true if matches: match('<string>', '<regex>')
 		return &JFunction{fnMatch, 2, 2}
@@ -168,7 +168,7 @@ func NewFunction(fn string) *JFunction {
 // fnRegex regular expression function returns first matching value.
 func fnRegex(ctx Context, doc *JDoc, params []string) interface{} {
 	stats := ctx.Value(EelTotalStats).(*ServiceStats)
-	if params == nil || len(params) != 2 {
+	if params == nil || len(params) > 3 {
 		ctx.Log().Error("event", "execute_function", "function", "regex", "error", "wrong_number_of_parameters", "params", params)
 		stats.IncErrors()
 		AddError(ctx, SyntaxError{fmt.Sprintf("wrong number of parameters in call to regex function"), "regex", params})
@@ -182,7 +182,26 @@ func fnRegex(ctx Context, doc *JDoc, params []string) interface{} {
 		return nil
 
 	}
-	return reg.FindString(extractStringParam(params[0]))
+	all := false
+	if len(params) == 3 {
+		all, err = strconv.ParseBool(extractStringParam(params[2]))
+		if err != nil {
+			ctx.Log().Error("event", "execute_function", "function", "regex", "error", "non_boolean_parameter", "params", params)
+			stats.IncErrors()
+			AddError(ctx, SyntaxError{fmt.Sprintf("non boolean parameters in call to regex function"), "regex", params})
+			return nil
+		}
+	}
+	if all {
+		items := reg.FindAllString(extractStringParam(params[0]), -1)
+		res := ""
+		for _, it := range items {
+			res += it
+		}
+		return res
+	} else {
+		return reg.FindString(extractStringParam(params[0]))
+	}
 }
 
 // fnMatch regular expression function returns true if regex matches.
