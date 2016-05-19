@@ -6,7 +6,7 @@ body 		{background-color:black}
 h1   		{color:green; font-family:verdana;}
 h2   		{color:green; font-family:verdana;}
 h3   		{color:green; font-family:verdana;}
-p    		{color:green; font-family:verdana;}
+p 	   		{color:green; font-family:verdana;}
 td    		{color:green; font-family:verdana; text-align: left; vertical-align:bottom;}
 th    	 	{color:green; font-family:verdana; text-align: left; vertical-align:bottom;}
 textarea 	{border-radius: 5px; color:#555555; font-family:verdana; font-size: 16px;}
@@ -17,9 +17,43 @@ p.error		{color: red;}
 <div align="center">
 <h1>EEL Transformation Debugger</h1>
 <!--<p><img src="/img/eel.png" width="250"/></p>-->
-<form action="/test" method="POST">
 <p class="error">{{.ErrorMessage}}</p>
+<p>
+<form action="/test/handlers" method="POST" id="select">
+<input type="hidden" name="newhandlerselected" value="true">
+<select onchange="this.form.submit()" name="handler">
+{{range .AllHandlerNames}}
+<option value="{{.}}"{{if eq . $.SelectedHandler}} selected{{end}}>{{.}}</option>
+{{end}}
+</select>
+</form>
+</p>
+<table>
+<tr>
+<td>TenantId/Name</td><td>{{.SelectedHandler}}</td>
+</tr><tr>
+<td>Version</td><td>{{.CurrentHandler.Version}}</td>
+</tr><tr>
+<td>Info</td><td>{{.CurrentHandler.Info}}</td>
+</tr><tr>
+<td>File</td><td>{{.CurrentHandler.File}}</td>
+</tr><tr>
+<td>Active</td><td>{{.CurrentHandler.Active}}</td>
+</tr><tr>
+<td>TerminateOnMatch</td><td>{{.CurrentHandler.TerminateOnMatch}}</td>
+</tr><tr>
+<td>Endpoint</td><td>{{.CurrentHandler.Endpoint}}</td>
+</tr><tr>
+<td>Path</td><td>{{.CurrentHandler.Path}}</td>
+</tr><tr>
+<td>Verb</td><td>{{.CurrentHandler.Verb}}</td>
+</tr><tr>
+<td>Protocol</td><td>{{.CurrentHandler.Protocol}}</td>
+</tr>
+</table>
+<form action="/test/handlers" method="POST" id="transform">
 <div><input type="submit" value="Transform"></div>
+<input type="hidden" name="handler" value="{{.SelectedHandler}}">
 <p></p>
 <table>
 <tr>
@@ -53,17 +87,7 @@ p.error		{color: red;}
 <tr>
 <th>Named Transformations:</th>
 <th>Custom Properties:</th>
-<th>Filter:</th>
-</tr>
-<tr>
-<td>
-</td>
-<td>
-</td>
-<td>
-<input type=checkbox name="isfbe"{{if .IsFBE}} checked{{end}}>Is Filter By Example</input>
-<input type=checkbox name="isfinvt"{{if .IsFInvt}} checked{{end}}>Is Filter Inverted</input>
-</td>
+<th>Filters:</th>
 </tr>
 <tr>
 <td>
@@ -73,7 +97,7 @@ p.error		{color: red;}
 <textarea name="customproperties" rows="10" cols="60">{{.CustomProperties}}</textarea>&nbsp;
 </td>
 <td>
-<textarea name="filter" rows="10" cols="60">{{.Filter}}</textarea>
+<textarea name="filters" rows="10" cols="60">{{.Filters}}</textarea>
 </td>
 </tr>
 </table>
