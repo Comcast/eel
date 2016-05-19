@@ -23,6 +23,7 @@ import (
 	"net/http/httptest"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"testing"
 	"time"
 
@@ -227,8 +228,8 @@ func TestEELLibraryError(t *testing.T) {
 	if len(errs) != 1 {
 		t.Fatalf("unexpected number of errors: %d\n", len(errs))
 	}
-	expectedError := "error reaching endpoint: http://x.y.z: status: 0 message: Get http://x.y.z: dial tcp: lookup x.y.z: no such host"
-	if errs[0].Error() != expectedError {
+	//expectedError := "error reaching endpoint: http://x.y.z: status: 0 message: Get http://x.y.z: dial tcp: lookup x.y.z: no such host"
+	if !strings.Contains(errs[0].Error(), "error reaching endpoint") {
 		t.Fatalf("unexpecte error: %s\n", errs[0].Error())
 	}
 }
