@@ -622,13 +622,15 @@ func HandlersTestHandler(w http.ResponseWriter, r *http.Request) {
 		tht.ErrorMessage += e.Error() + "<br/>"
 	}
 	if tht.Filters != "" {
-		err = json.Unmarshal([]byte(tht.Filters), &hc.Filters)
+		var fts []*Filter
+		err = json.Unmarshal([]byte(tht.Filters), &fts)
 		if err != nil {
 			tht.ErrorMessage = "error parsing filter: " + err.Error()
 		} else {
-			buf, _ := json.MarshalIndent(hc.Filters, "", "\t")
+			buf, _ := json.MarshalIndent(fts, "", "\t")
 			tht.Filters = string(buf)
 		}
+		topicHandler.Filters = fts
 	}
 	if tht.CustomProperties != "" {
 		var ct map[string]interface{}
