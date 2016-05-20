@@ -78,26 +78,64 @@ p.error		{color: red;}
 <textarea name="transformation" rows="20" cols="60">{{.Transformation}}</textarea>&nbsp;
 </td>
 <td>
-<textarea name="result" rows="20" cols="60">{{.Response}}</textarea>
+<textarea name="result" rows="20" cols="60" readonly="true">{{.Response}}</textarea>
 </td>
 </tr>
-</table>
-<p></p>
-<table>
 <tr>
-<th>Named Transformations:</th>
-<th>Custom Properties:</th>
-<th>Filters:</th>
+<th></th>
+<th>Headers:</th>
+<th>Headers Out:</th>
 </tr>
 <tr>
 <td>
-<textarea name="transformations" rows="10" cols="60">{{.Transformations}}</textarea>&nbsp;
+</td>
+<td>
+<textarea name="headers" rows="10" cols="60">{{.Headers}}</textarea>&nbsp;
+</td>
+<td>
+<textarea name="headersout" rows="10" cols="60" readonly="true">{{.HeadersOut}}</textarea>&nbsp;
+</td>
+</tr>
+<tr>
+<th></th>
+<th>Custom Properties:</th>
+<th></th>
+</tr>
+<tr>
+<td>
 </td>
 <td>
 <textarea name="customproperties" rows="10" cols="60">{{.CustomProperties}}</textarea>&nbsp;
 </td>
 <td>
+</td>
+</tr>
+<tr>
+<th></th>
+<th>Filters:</th>
+<th></th>
+</tr>
+<tr>
+<td>
+</td>
+<td>
 <textarea name="filters" rows="10" cols="60">{{.Filters}}</textarea>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<th></th>
+<th>Named Transformations:</th>
+<th></th>
+</tr>
+<tr>
+<td>
+</td>
+<td>
+<textarea name="transformations" rows="10" cols="60">{{.Transformations}}</textarea>&nbsp;
+</td>
+<td>
 </td>
 </tr>
 </table>

@@ -55,6 +55,8 @@ type (
 		CurrentHandler  *HandlerConfiguration
 		SelectedHandler string
 		Filters         string
+		Headers         string
+		HeadersOut      string
 	}
 	AstTest struct {
 		Message          string
@@ -522,6 +524,7 @@ func HandlersTestHandler(w http.ResponseWriter, r *http.Request) {
 	handler := r.FormValue("handler")
 	newhandlerselected := r.FormValue("newhandlerselected")
 	savechanges := r.FormValue("savechanges")
+	headers := r.FormValue("headers")
 	message := r.FormValue("message")
 	if message == "" {
 		message = "{}"
@@ -590,11 +593,20 @@ func HandlersTestHandler(w http.ResponseWriter, r *http.Request) {
 				tht.Filters = string(buf)
 			}
 		}
+		if tht.AllHandlers[tht.SelectedHandler].HttpHeaders != nil {
+			buf, err := json.MarshalIndent(tht.AllHandlers[tht.SelectedHandler].HttpHeaders, "", "\t")
+			if err != nil {
+				tht.Headers = err.Error()
+			} else {
+				tht.Headers = string(buf)
+			}
+		}
 		tht.IsTBE = tht.AllHandlers[tht.SelectedHandler].IsTransformationByExample
 	} else {
 		tht.Transformation = transformation
 		tht.Transformations = transformations
 		tht.CustomProperties = customproperties
+		tht.Headers = headers
 		tht.Filters = filters
 		tht.IsTBE = istbe
 	}
@@ -644,6 +656,17 @@ func HandlersTestHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		topicHandler.CustomProperties = ct
 	}
+	if tht.Headers != "" {
+		var hdr map[string]string
+		err := json.Unmarshal([]byte(tht.Headers), &hdr)
+		if err != nil {
+			tht.ErrorMessage = "error parsing headers: " + err.Error()
+		} else {
+			buf, _ := json.MarshalIndent(hdr, "", "\t")
+			tht.Headers = string(buf)
+		}
+		topicHandler.HttpHeaders = hdr
+	}
 	if tht.Transformations != "" {
 		var nts map[string]*Transformation
 		err := json.Unmarshal([]byte(tht.Transformations), &nts)
@@ -679,6 +702,10 @@ func HandlersTestHandler(w http.ResponseWriter, r *http.Request) {
 		} else if publishers != nil && len(publishers) > 0 {
 			tht.Response = publishers[0].GetPayload()
 			tht.Path = publishers[0].GetPath()
+			if publishers[0].GetHeaders() != nil {
+				buf, _ := json.MarshalIndent(publishers[0].GetHeaders(), "", "\t")
+				tht.HeadersOut = string(buf)
+			}
 			out = tht.Response
 			if errs := GetErrors(ctx); errs != nil {
 				for _, e := range errs {
@@ -710,6 +737,16 @@ func HandlersTestHandler(w http.ResponseWriter, r *http.Request) {
 				fail = true
 			} else {
 				tht.CurrentHandler.CustomProperties = cp
+			}
+		}
+		if tht.Headers != "" {
+			var hdr map[string]string
+			err = json.Unmarshal([]byte(headers), &hdr)
+			if err != nil {
+				tht.ErrorMessage = "error parsing headers: " + err.Error()
+				fail = true
+			} else {
+				tht.CurrentHandler.HttpHeaders = hdr
 			}
 		}
 		if tht.Transformations != "" {
