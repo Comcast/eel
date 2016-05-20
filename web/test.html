@@ -53,17 +53,7 @@ p.error		{color: red;}
 <tr>
 <th>Named Transformations:</th>
 <th>Custom Properties:</th>
-<th>Filter:</th>
-</tr>
-<tr>
-<td>
-</td>
-<td>
-</td>
-<td>
-<input type=checkbox name="isfbe"{{if .IsFBE}} checked{{end}}>Is Filter By Example</input>
-<input type=checkbox name="isfinvt"{{if .IsFInvt}} checked{{end}}>Is Filter Inverted</input>
-</td>
+<th>Filters:</th>
 </tr>
 <tr>
 <td>
@@ -73,7 +63,7 @@ p.error		{color: red;}
 <textarea name="customproperties" rows="10" cols="60">{{.CustomProperties}}</textarea>&nbsp;
 </td>
 <td>
-<textarea name="filter" rows="10" cols="60">{{.Filter}}</textarea>
+<textarea name="filters" rows="10" cols="60">{{.Filters}}</textarea>
 </td>
 </tr>
 </table>

@@ -40,13 +40,11 @@ type (
 		Transformation   string
 		Transformations  string
 		CustomProperties string
-		Filter           string
+		Filters          string
 		ErrorMessage     string
 		Path             interface{}
 		PathExpression   string
 		IsTBE            bool
-		IsFBE            bool
-		IsFInvt          bool
 	}
 	AllTopicHandlersTest struct {
 		TopicHandlerTest
@@ -54,7 +52,6 @@ type (
 		AllHandlerNames []string
 		CurrentHandler  *HandlerConfiguration
 		SelectedHandler string
-		Filters         string
 		Headers         string
 		HeadersOut      string
 	}
@@ -391,7 +388,7 @@ func TopicTestHandler(w http.ResponseWriter, r *http.Request) {
 	t, _ := template.ParseFiles(filepath.Join(BasePath, "web/test.html"))
 	message := r.FormValue("message")
 	if message == "" {
-		message = ""
+		message = "{}"
 	}
 	transformation := r.FormValue("transformation")
 	if transformation == "" {
@@ -401,46 +398,34 @@ func TopicTestHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	transformations := r.FormValue("transformations")
 	customproperties := r.FormValue("customproperties")
-	filter := r.FormValue("filter")
+	filters := r.FormValue("filters")
 	istbe := false
 	if r.FormValue("istbe") == "on" {
 		istbe = true
-	}
-	isfbe := false
-	if r.FormValue("isfbe") == "on" {
-		isfbe = true
-	}
-	isfinvt := false
-	if r.FormValue("isfinvt") == "on" {
-		isfinvt = true
 	}
 	var tht TopicHandlerTest
 	tht.Message = message
 	tht.Transformation = transformation
 	tht.Transformations = transformations
 	tht.CustomProperties = customproperties
-	tht.Filter = filter
+	tht.Filters = filters
 	tht.IsTBE = istbe
-	tht.IsFBE = isfbe
-	tht.IsFInvt = isfinvt
 	hc := new(HandlerConfiguration)
 	err := json.Unmarshal([]byte(transformation), &hc.Transformation)
 	if err != nil {
 		tht.ErrorMessage = err.Error()
 	}
 	hc.IsTransformationByExample = istbe
-	hc.IsFilterByExample = isfbe
-	hc.IsFilterInverted = isfinvt
 	hc.IsTransformationByExample = istbe
 	hc.Version = "1.0"
 	hc.Name = "DEBUG"
-	if filter != "" {
-		err = json.Unmarshal([]byte(filter), &hc.Filter)
+	if filters != "" {
+		err = json.Unmarshal([]byte(filters), &hc.Filters)
 		if err != nil {
-			tht.ErrorMessage = "error parsing filter: " + err.Error()
+			tht.ErrorMessage = "error parsing filters: " + err.Error()
 		} else {
-			buf, _ := json.MarshalIndent(hc.Filter, "", "\t")
-			tht.Filter = string(buf)
+			buf, _ := json.MarshalIndent(hc.Filters, "", "\t")
+			tht.Filters = string(buf)
 		}
 	}
 	hf, _ := NewHandlerFactory(ctx, nil)
