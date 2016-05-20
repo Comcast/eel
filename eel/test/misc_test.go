@@ -714,6 +714,55 @@ func TestParserJS3(t *testing.T) {
 	}
 }
 
+var (
+	exists = `{
+	    "a": {
+	        "b": {
+	            "c": {
+	                "d": "xyz",
+					"e": null
+	            }
+	        }
+		}
+	}`
+)
+
+func TestParserExistsTrue(t *testing.T) {
+	initTests("../../config-handlers")
+	e1, err := NewJDocFromString(exists)
+	if err != nil {
+		t.Fatal("could not get event1")
+	}
+	test := `{{exists('/a/b/c/e')}}`
+	jexpr, err := NewJExpr(test)
+	if err != nil {
+		t.Errorf("error: %s\n", err.Error())
+	}
+	result := jexpr.Execute(Gctx, e1)
+	expected := true
+	if result.(bool) != expected {
+		t.Errorf("wrong parsing result: %v expected: %v\n", result, expected)
+	}
+}
+
+func TestParserExistsFalse(t *testing.T) {
+	initTests("../../config-handlers")
+	e1, err := NewJDocFromString(exists)
+	if err != nil {
+		t.Fatal("could not get event1")
+	}
+	test := `{{exists('/a/b/c/f')}}`
+	jexpr, err := NewJExpr(test)
+	if err != nil {
+		t.Errorf("error: %s\n", err.Error())
+	}
+	result := jexpr.Execute(Gctx, e1)
+	expected := false
+	if result.(bool) != expected {
+		t.Errorf("wrong parsing result: %v expected: %v\n", result, expected)
+	}
+}
+
 func TestParserRegex(t *testing.T) {
 	initTests("../../config-handlers")
 	e1, err := NewJDocFromString(iot)

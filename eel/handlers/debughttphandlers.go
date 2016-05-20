@@ -22,6 +22,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"path/filepath"
+	"sort"
 	"strconv"
 	"strings"
 	"sync"
@@ -46,6 +47,16 @@ type (
 		IsTBE            bool
 		IsFBE            bool
 		IsFInvt          bool
+	}
+	AllTopicHandlersTest struct {
+		TopicHandlerTest
+		AllHandlers     map[string]*HandlerConfiguration
+		AllHandlerNames []string
+		CurrentHandler  *HandlerConfiguration
+		SelectedHandler string
+		Filters         string
+		Headers         string
+		HeadersOut      string
 	}
 	AstTest struct {
 		Message          string
@@ -510,9 +521,13 @@ func TopicTestHandler(w http.ResponseWriter, r *http.Request) {
 func HandlersTestHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := Gctx.SubContext()
 	t, _ := template.ParseFiles(filepath.Join(BasePath, "web/handlers.html"))
+	handler := r.FormValue("handler")
+	newhandlerselected := r.FormValue("newhandlerselected")
+	savechanges := r.FormValue("savechanges")
+	headers := r.FormValue("headers")
 	message := r.FormValue("message")
 	if message == "" {
-		message = ""
+		message = "{}"
 	}
 	transformation := r.FormValue("transformation")
 	if transformation == "" {
@@ -522,98 +537,162 @@ func HandlersTestHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	transformations := r.FormValue("transformations")
 	customproperties := r.FormValue("customproperties")
-	filter := r.FormValue("filter")
+	filters := r.FormValue("filters")
 	istbe := false
 	if r.FormValue("istbe") == "on" {
 		istbe = true
 	}
-	isfbe := false
-	if r.FormValue("isfbe") == "on" {
-		isfbe = true
+	var tht AllTopicHandlersTest
+	allHandlers := GetHandlerFactory(ctx).GetAllHandlers(ctx)
+	tht.AllHandlers = make(map[string]*HandlerConfiguration)
+	tht.AllHandlerNames = make([]string, 0)
+	for _, hdlr := range allHandlers {
+		name := hdlr.TenantId + "/" + hdlr.Name
+		tht.AllHandlers[name] = hdlr
+		tht.AllHandlerNames = append(tht.AllHandlerNames, name)
+		sort.Strings(tht.AllHandlerNames)
 	}
-	isfinvt := false
-	if r.FormValue("isfinvt") == "on" {
-		isfinvt = true
+	if handler != "" {
+		tht.SelectedHandler = handler
+		tht.CurrentHandler = tht.AllHandlers[handler]
+	} else if len(tht.AllHandlerNames) > 0 {
+		tht.SelectedHandler = tht.AllHandlerNames[0]
+		tht.CurrentHandler = tht.AllHandlers[tht.AllHandlerNames[0]]
 	}
-	var tht TopicHandlerTest
 	tht.Message = message
-	tht.Transformation = transformation
-	tht.Transformations = transformations
-	tht.CustomProperties = customproperties
-	tht.Filter = filter
-	tht.IsTBE = istbe
-	tht.IsFBE = isfbe
-	tht.IsFInvt = isfinvt
-	hc := new(HandlerConfiguration)
-	err := json.Unmarshal([]byte(transformation), &hc.Transformation)
-	if err != nil {
-		tht.ErrorMessage = err.Error()
-	}
-	hc.IsTransformationByExample = istbe
-	hc.IsFilterByExample = isfbe
-	hc.IsFilterInverted = isfinvt
-	hc.IsTransformationByExample = istbe
-	hc.Version = "1.0"
-	hc.Name = "DEBUG"
-	if filter != "" {
-		err = json.Unmarshal([]byte(filter), &hc.Filter)
-		if err != nil {
-			tht.ErrorMessage = "error parsing filter: " + err.Error()
-		} else {
-			buf, _ := json.MarshalIndent(hc.Filter, "", "\t")
-			tht.Filter = string(buf)
+	if newhandlerselected == "true" {
+		if tht.AllHandlers[tht.SelectedHandler].Transformation != nil {
+			buf, err := json.MarshalIndent(tht.AllHandlers[tht.SelectedHandler].Transformation, "", "\t")
+			if err != nil {
+				tht.Transformation = err.Error()
+			} else {
+				tht.Transformation = string(buf)
+			}
 		}
+		if tht.AllHandlers[tht.SelectedHandler].Transformations != nil {
+			buf, err := json.MarshalIndent(tht.AllHandlers[tht.SelectedHandler].Transformations, "", "\t")
+			if err != nil {
+				tht.Transformation = err.Error()
+			} else {
+				tht.Transformations = string(buf)
+			}
+		}
+		if tht.AllHandlers[tht.SelectedHandler].CustomProperties != nil {
+			buf, err := json.MarshalIndent(tht.AllHandlers[tht.SelectedHandler].CustomProperties, "", "\t")
+			if err != nil {
+				tht.CustomProperties = err.Error()
+			} else {
+				tht.CustomProperties = string(buf)
+			}
+		}
+		if tht.AllHandlers[tht.SelectedHandler].Filters != nil {
+			buf, err := json.MarshalIndent(tht.AllHandlers[tht.SelectedHandler].Filters, "", "\t")
+			if err != nil {
+				tht.Filters = err.Error()
+			} else {
+				tht.Filters = string(buf)
+			}
+		}
+		if tht.AllHandlers[tht.SelectedHandler].HttpHeaders != nil {
+			buf, err := json.MarshalIndent(tht.AllHandlers[tht.SelectedHandler].HttpHeaders, "", "\t")
+			if err != nil {
+				tht.Headers = err.Error()
+			} else {
+				tht.Headers = string(buf)
+			}
+		}
+		tht.IsTBE = tht.AllHandlers[tht.SelectedHandler].IsTransformationByExample
+	} else {
+		tht.Transformation = transformation
+		tht.Transformations = transformations
+		tht.CustomProperties = customproperties
+		tht.Headers = headers
+		tht.Filters = filters
+		tht.IsTBE = istbe
+	}
+	hc := new(HandlerConfiguration)
+	err := json.Unmarshal([]byte(tht.Transformation), &hc.Transformation)
+	if err != nil {
+		tht.ErrorMessage = err.Error() + "<br/>"
+	} else {
+		tp, err := json.MarshalIndent(hc.Transformation, "", "\t")
+		if err == nil {
+			tht.Transformation = string(tp)
+		}
+	}
+	hc.IsTransformationByExample = tht.IsTBE
+	if tht.CurrentHandler != nil {
+		hc.Version = tht.CurrentHandler.Version
+		hc.Name = tht.CurrentHandler.Name
+		hc.Info = tht.CurrentHandler.Info
+	} else {
+		hc.Version = "1.0"
+		hc.Name = "DEBUG"
 	}
 	hf, _ := NewHandlerFactory(ctx, nil)
 	topicHandler, errs := hf.GetHandlerConfigurationFromJson(ctx, "", *hc)
 	for _, e := range errs {
 		tht.ErrorMessage += e.Error() + "<br/>"
 	}
-	if hc.Transformation != nil {
-		tp, err := json.MarshalIndent(hc.Transformation, "", "\t")
-		if err == nil {
-			tht.Transformation = string(tp)
+	if tht.Filters != "" {
+		var fts []*Filter
+		err = json.Unmarshal([]byte(tht.Filters), &fts)
+		if err != nil {
+			tht.ErrorMessage = "error parsing filter: " + err.Error()
+		} else {
+			buf, _ := json.MarshalIndent(fts, "", "\t")
+			tht.Filters = string(buf)
 		}
+		topicHandler.Filters = fts
 	}
-	mdoc, err := NewJDocFromString(message)
-	if err == nil {
-		tht.Message = mdoc.StringPretty()
-	}
-	if message != "" && topicHandler != nil {
-		if customproperties != "" {
-			var ct map[string]interface{}
-			err := json.Unmarshal([]byte(customproperties), &ct)
-			if err != nil {
-				tht.ErrorMessage = "error parsing custom properties: " + err.Error()
-			} else {
-				buf, _ := json.MarshalIndent(ct, "", "\t")
-				tht.CustomProperties = string(buf)
-			}
-			topicHandler.CustomProperties = ct
+	if tht.CustomProperties != "" {
+		var ct map[string]interface{}
+		err := json.Unmarshal([]byte(tht.CustomProperties), &ct)
+		if err != nil {
+			tht.ErrorMessage = "error parsing custom properties: " + err.Error()
+		} else {
+			buf, _ := json.MarshalIndent(ct, "", "\t")
+			tht.CustomProperties = string(buf)
 		}
-		if transformations != "" {
-			var nts map[string]*Transformation
-			err := json.Unmarshal([]byte(transformations), &nts)
+		topicHandler.CustomProperties = ct
+	}
+	if tht.Headers != "" {
+		var hdr map[string]string
+		err := json.Unmarshal([]byte(tht.Headers), &hdr)
+		if err != nil {
+			tht.ErrorMessage = "error parsing headers: " + err.Error()
+		} else {
+			buf, _ := json.MarshalIndent(hdr, "", "\t")
+			tht.Headers = string(buf)
+		}
+		topicHandler.HttpHeaders = hdr
+	}
+	if tht.Transformations != "" {
+		var nts map[string]*Transformation
+		err := json.Unmarshal([]byte(tht.Transformations), &nts)
+		if err != nil {
+			tht.ErrorMessage = "error parsing named transformations: " + err.Error()
+		} else {
+			buf, _ := json.MarshalIndent(nts, "", "\t")
+			tht.Transformations = string(buf)
+		}
+		for _, v := range nts {
+			tf, err := NewJDocFromInterface(v.Transformation)
 			if err != nil {
 				tht.ErrorMessage = "error parsing named transformations: " + err.Error()
-			} else {
-				buf, _ := json.MarshalIndent(nts, "", "\t")
-				tht.Transformations = string(buf)
 			}
-			for _, v := range nts {
-				tf, err := NewJDocFromInterface(v.Transformation)
-				if err != nil {
-					tht.ErrorMessage = "error parsing named transformations: " + err.Error()
-				}
-				v.SetTransformation(tf)
-			}
-			topicHandler.Transformations = nts
-			ctx.AddValue(EelHandlerConfig, &topicHandler)
+			v.SetTransformation(tf)
 		}
+		topicHandler.Transformations = nts
+		ctx.AddValue(EelHandlerConfig, &topicHandler)
+	}
+	if message != "" && topicHandler != nil {
 		mIn, err := NewJDocFromString(message)
 		if err != nil {
 			tht.ErrorMessage = "error parsing message: " + err.Error()
 			ctx.Log().Error("event", "test_handler_error", "error", err.Error())
+		} else {
+			tht.Message = mIn.StringPretty()
 		}
 		publishers, err := topicHandler.ProcessEvent(ctx, mIn)
 		out := ""
@@ -623,6 +702,10 @@ func HandlersTestHandler(w http.ResponseWriter, r *http.Request) {
 		} else if publishers != nil && len(publishers) > 0 {
 			tht.Response = publishers[0].GetPayload()
 			tht.Path = publishers[0].GetPath()
+			if publishers[0].GetHeaders() != nil {
+				buf, _ := json.MarshalIndent(publishers[0].GetHeaders(), "", "\t")
+				tht.HeadersOut = string(buf)
+			}
 			out = tht.Response
 			if errs := GetErrors(ctx); errs != nil {
 				for _, e := range errs {
@@ -631,6 +714,59 @@ func HandlersTestHandler(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 		ctx.Log().Info("event", "test_transform", "in", message, "out", out, "topic_handler", topicHandler)
+	}
+	if len(savechanges) > 0 {
+		fail := false
+		tht.CurrentHandler.Transformation = transformation
+		tht.CurrentHandler.IsTransformationByExample = istbe
+		if tht.Filters != "" {
+			var fts []*Filter
+			err = json.Unmarshal([]byte(filters), &fts)
+			if err != nil {
+				tht.ErrorMessage = "error parsing filter: " + err.Error()
+				fail = true
+			} else {
+				tht.CurrentHandler.Filters = fts
+			}
+		}
+		if tht.CustomProperties != "" {
+			var cp map[string]interface{}
+			err = json.Unmarshal([]byte(customproperties), &cp)
+			if err != nil {
+				tht.ErrorMessage = "error parsing custom properties: " + err.Error()
+				fail = true
+			} else {
+				tht.CurrentHandler.CustomProperties = cp
+			}
+		}
+		if tht.Headers != "" {
+			var hdr map[string]string
+			err = json.Unmarshal([]byte(headers), &hdr)
+			if err != nil {
+				tht.ErrorMessage = "error parsing headers: " + err.Error()
+				fail = true
+			} else {
+				tht.CurrentHandler.HttpHeaders = hdr
+			}
+		}
+		if tht.Transformations != "" {
+			var tt map[string]*Transformation
+			err = json.Unmarshal([]byte(transformations), &tt)
+			if err != nil {
+				tht.ErrorMessage = "error parsing transformations: " + err.Error()
+				fail = true
+			} else {
+				tht.CurrentHandler.Transformations = tt
+			}
+		}
+		if !fail {
+			err = tht.CurrentHandler.Save()
+			if err != nil {
+				tht.ErrorMessage = "error saving handler: " + err.Error()
+			} else {
+				tht.ErrorMessage = "saved handler at " + tht.CurrentHandler.File
+			}
+		}
 	}
 	err = t.Execute(w, tht)
 	if err != nil {

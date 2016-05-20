@@ -180,6 +180,15 @@ func (h *HandlerConfiguration) GetFilter() *JDoc {
 	return h.f
 }
 
+func (h *HandlerConfiguration) Save() error {
+	buf, err := json.MarshalIndent(h, "", "\t")
+	if err != nil {
+		return err
+	}
+	Gctx.Log().Info("file", h.File, "buf", string(buf))
+	return ioutil.WriteFile(h.File, buf, 0644)
+}
+
 func (hf *HandlerFactory) getPartialTopicHandlersForTenant(tenantId string, currentTopic string) ([]*HandlerConfiguration, bool) {
 	hls := make([]*HandlerConfiguration, 0)
 	segments := strings.Split(currentTopic, "/")
