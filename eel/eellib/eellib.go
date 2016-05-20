@@ -29,17 +29,17 @@ import (
 func EELInit(ctx Context) {
 	Gctx = ctx
 	eelSettings := new(EelSettings)
-	eelSettings.MaxAttempts = 2
+	eelSettings.MaxAttempts = 3
 	eelSettings.InitialDelay = 125
-	eelSettings.InitialBackoff = 3000
+	eelSettings.InitialBackoff = 500
 	eelSettings.BackoffMethod = "Exponential"
 	eelSettings.HttpTimeout = 3000
 	eelSettings.ResponseHeaderTimeout = 3000
 	eelSettings.MaxMessageSize = 512000
 	eelSettings.HttpTransactionHeader = "X-B3-TraceId"
 	eelSettings.HttpTenantHeader = "X-TenantId"
-	eelSettings.AppName = "eel"
-	eelSettings.Name = "eel"
+	eelSettings.AppName = "eellib"
+	eelSettings.Name = "eellib"
 	eelSettings.Version = "1.0"
 	ctx.AddConfigValue(EelConfig, eelSettings)
 	eelServiceStats := new(ServiceStats)
