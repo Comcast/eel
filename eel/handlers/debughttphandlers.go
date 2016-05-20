@@ -521,6 +521,7 @@ func HandlersTestHandler(w http.ResponseWriter, r *http.Request) {
 	t, _ := template.ParseFiles(filepath.Join(BasePath, "web/handlers.html"))
 	handler := r.FormValue("handler")
 	newhandlerselected := r.FormValue("newhandlerselected")
+	savechanges := r.FormValue("savechanges")
 	message := r.FormValue("message")
 	if message == "" {
 		message = "{}"
@@ -686,6 +687,49 @@ func HandlersTestHandler(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 		ctx.Log().Info("event", "test_transform", "in", message, "out", out, "topic_handler", topicHandler)
+	}
+	if len(savechanges) > 0 {
+		fail := false
+		tht.CurrentHandler.Transformation = transformation
+		tht.CurrentHandler.IsTransformationByExample = istbe
+		if tht.Filters != "" {
+			var fts []*Filter
+			err = json.Unmarshal([]byte(filters), &fts)
+			if err != nil {
+				tht.ErrorMessage = "error parsing filter: " + err.Error()
+				fail = true
+			} else {
+				tht.CurrentHandler.Filters = fts
+			}
+		}
+		if tht.CustomProperties != "" {
+			var cp map[string]interface{}
+			err = json.Unmarshal([]byte(customproperties), &cp)
+			if err != nil {
+				tht.ErrorMessage = "error parsing custom properties: " + err.Error()
+				fail = true
+			} else {
+				tht.CurrentHandler.CustomProperties = cp
+			}
+		}
+		if tht.Transformations != "" {
+			var tt map[string]*Transformation
+			err = json.Unmarshal([]byte(transformations), &tt)
+			if err != nil {
+				tht.ErrorMessage = "error parsing transformations: " + err.Error()
+				fail = true
+			} else {
+				tht.CurrentHandler.Transformations = tt
+			}
+		}
+		if !fail {
+			err = tht.CurrentHandler.Save()
+			if err != nil {
+				tht.ErrorMessage = "error saving handler: " + err.Error()
+			} else {
+				tht.ErrorMessage = "saved handler at " + tht.CurrentHandler.File
+			}
+		}
 	}
 	err = t.Execute(w, tht)
 	if err != nil {
