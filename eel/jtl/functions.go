@@ -158,6 +158,9 @@ func NewFunction(fn string) *JFunction {
 	case "len":
 		// returns length of object (string, array, map)
 		return &JFunction{fnLen, 1, 1}
+	case "exists":
+		// returns true if path exists in document
+		return &JFunction{fnExists, 1, 2}
 	default:
 		//gctx.Log.Error("event", "execute_function", "function", fn, "error", "not_implemented")
 		//stats.IncErrors()
@@ -1177,6 +1180,28 @@ func fnFalse(ctx Context, doc *JDoc, params []string) interface{} {
 		return ""
 	}
 	return false
+}
+
+// fnExists returns true if a particular path exists in a json document.
+func fnExists(ctx Context, doc *JDoc, params []string) interface{} {
+	stats := ctx.Value(EelTotalStats).(*ServiceStats)
+	if params == nil || len(params) == 0 || len(params) > 2 {
+		ctx.Log().Error("event", "execute_function", "function", "exists", "error", "wrong_number_of_parameters", "params", params)
+		stats.IncErrors()
+		AddError(ctx, SyntaxError{fmt.Sprintf("wrong number of parameters in call to exists function"), "exists", params})
+		return false
+	}
+	if len(params) == 2 {
+		var err error
+		doc, err = NewJDocFromString(extractStringParam(params[1]))
+		if err != nil {
+			ctx.Log().Error("event", "execute_function", "function", "exists", "error", "json_expected", "params", params)
+			stats.IncErrors()
+			AddError(ctx, SyntaxError{fmt.Sprintf("non json parameters in call to exists function"), "exists", params})
+			return false
+		}
+	}
+	return doc.HasPath(extractStringParam(params[0]))
 }
 
 func extractStringParam(param string) string {
