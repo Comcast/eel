@@ -40,6 +40,69 @@ type (
 	}
 )
 
+type (
+	JParam struct {
+		typ string
+		val interface{}
+		err error
+	}
+)
+
+func (p *JParam) GetVal() interface{} {
+	return p.val
+}
+
+func (p *JParam) GetBoolVal() bool {
+	switch p.val.(type) {
+	case bool:
+		return p.val.(bool)
+	}
+	return false
+}
+
+func (p *JParam) GetIntVal() int {
+	switch p.val.(type) {
+	case int:
+		return p.val.(int)
+	case int32:
+		return int(p.val.(int32))
+	case int64:
+		return int(p.val.(int64))
+	}
+	return 0
+}
+
+func (p *JParam) GetFloatVal() float64 {
+	switch p.val.(type) {
+	case float32:
+		return float64(p.val.(float32))
+	case float64:
+		return p.val.(float64)
+	}
+	return 0.0
+}
+
+func (p *JParam) GetJDocVal() *JDoc {
+	m, _ := NewJDocFromInterface(p.val)
+	return m
+}
+
+func (p *JParam) GetMapVal() map[string]interface{} {
+	switch p.val.(type) {
+	case map[string]interface{}:
+		return p.val.(map[string]interface{})
+	}
+	return nil
+}
+
+func (p *JParam) GetArrayVal() []interface{} {
+	switch p.val.(type) {
+	case []interface{}:
+		return p.val.([]interface{})
+	}
+	return nil
+}
+
 const (
 	TYPE_STRING = "string"
 	TYPE_INT    = "int"
