@@ -145,7 +145,7 @@ func (l *lexer) run() {
 
 // emit passes an item back to the client.
 func (l *lexer) emit(t lexItemType) {
-	// only trim tab and newline (formattings) but retain plain old white space
+	// trim tab, newline but not whitespace
 	token := l.input[l.start:l.pos]
 	token = strings.TrimLeft(token, "\t\n")
 	token = strings.TrimRight(token, "\t\n")
@@ -245,6 +245,34 @@ func lexParam(l *lexer) stateFn {
 			bc++
 		case r == '}':
 			bc--
+		case r == ',' && bc == 0:
+			l.backup()
+			l.emit(lexItemParam)
+			return lexParamList
+		case r == ')' && bc == 0:
+			l.backup()
+			l.emit(lexItemParam)
+			return lexParamList
+		}
+	}
+}
+
+func lexStringParam(l *lexer) stateFn {
+	bc := 0 // bracket count
+	for {
+		// push across nested function calls - these will be dealt with in separate
+		// recursive calls to the lexer by the parser - this may seem a bit unorthodox
+		// but it works very well
+		if bc < 0 {
+			return l.errorf("unbalanced brackets at %d: %s\n", l.pos, l.input)
+		}
+		switch r := l.next(); {
+		case r == eof:
+			return l.errorf("unclosed param at %d: %s\n", l.pos, l.input)
+		case r == '{':
+			bc++
+		case r == '}':
+			bc--
 		case r == '\'' && bc == 0:
 			l.emit(lexItemParam)
 			return lexParamList
@@ -273,8 +301,9 @@ func lexParamList(l *lexer) stateFn {
 			return lexRightMeta
 		case r == ',':
 			l.ignore()
-		case r == '\'':
 			return lexParam
+		case r == '\'':
+			return lexStringParam
 		}
 	}
 }

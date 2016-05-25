@@ -18,6 +18,7 @@ package jtl
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"regexp"
@@ -37,6 +38,16 @@ type (
 		minNumParams int
 		maxNumParams int
 	}
+)
+
+const (
+	TYPE_STRING = "string"
+	TYPE_INT    = "int"
+	TYPE_FLOAT  = "float"
+	TYPE_ARRAY  = "array"
+	TYPE_MAP    = "map"
+	TYPE_BOOL   = "bool"
+	TYPE_NULL   = "null"
 )
 
 // NewFunction gets function implementation by name.
@@ -648,6 +659,7 @@ func fnUuid(ctx Context, doc *JDoc, params []string) interface{} {
 
 // fnTraceId returns current tarce id used for logging.
 func fnTraceId(ctx Context, doc *JDoc, params []string) interface{} {
+	//OK
 	stats := ctx.Value(EelTotalStats).(*ServiceStats)
 	if params == nil || params[0] != "" {
 		ctx.Log().Error("event", "execute_function", "function", "traceid", "error", "no_parameters_expected", "params", params)
@@ -660,6 +672,7 @@ func fnTraceId(ctx Context, doc *JDoc, params []string) interface{} {
 
 // fnTime return current time in nano-seconds.
 func fnTime(ctx Context, doc *JDoc, params []string) interface{} {
+	//OK
 	stats := ctx.Value(EelTotalStats).(*ServiceStats)
 	if params == nil || params[0] != "" {
 		ctx.Log().Error("event", "execute_function", "function", "time", "error", "no_parameters_expected", "params", params)
@@ -672,11 +685,19 @@ func fnTime(ctx Context, doc *JDoc, params []string) interface{} {
 
 // fnIdent is a function that does nothing. Somtimes interesting for debugging.
 func fnIdent(ctx Context, doc *JDoc, params []string) interface{} {
+	//OK
 	stats := ctx.Value(EelTotalStats).(*ServiceStats)
 	if params == nil || len(params) != 1 {
 		ctx.Log().Error("event", "execute_function", "function", "ident", "error", "wrong_number_of_parameters", "params", params)
 		stats.IncErrors()
 		AddError(ctx, SyntaxError{fmt.Sprintf("wrong number of parameters in call to ident function"), "ident", params})
+		return ""
+	}
+	p, t, err := extractParam(params[0])
+	if err != nil {
+		ctx.Log().Error("event", "execute_function", "function", "ident", "error", "bad_parameter", "param", p, "type", t, "err", err.Error(), "params", params)
+		stats.IncErrors()
+		AddError(ctx, SyntaxError{fmt.Sprintf("bad parameter in call to ident function: %s", err.Error()), "ident", params})
 		return ""
 	}
 	return extractStringParam(params[0])
@@ -1207,6 +1228,49 @@ func fnExists(ctx Context, doc *JDoc, params []string) interface{} {
 func extractStringParam(param string) string {
 	param = strings.TrimSpace(param)
 	return param[1 : len(param)-1]
+}
+
+func extractParam(param string) (interface{}, string, error) {
+	param = strings.TrimSpace(param)
+	if param == "" {
+		return "", TYPE_NULL, nil
+	}
+	if len(param) >= 2 && strings.HasPrefix(param, "'") && strings.HasSuffix(param, "'") {
+		return param[1 : len(param)-1], TYPE_STRING, nil
+	}
+	if strings.HasPrefix(param, "{") && strings.HasSuffix(param, "}") {
+		var m map[string]interface{}
+		err := json.Unmarshal([]byte(param), &m)
+		if err != nil {
+			return nil, TYPE_MAP, err
+		} else {
+			return m, TYPE_MAP, nil
+		}
+	}
+	if strings.HasPrefix(param, "[") && strings.HasSuffix(param, "]") {
+		var a []interface{}
+		err := json.Unmarshal([]byte(param), &a)
+		if err != nil {
+			return nil, TYPE_ARRAY, err
+		} else {
+			return a, TYPE_ARRAY, nil
+		}
+	}
+	if param == "true" {
+		return true, TYPE_BOOL, nil
+	}
+	if param == "false" {
+		return false, TYPE_BOOL, nil
+	}
+	i, err := strconv.ParseInt(param, 10, 64)
+	if err == nil {
+		return i, TYPE_INT, nil
+	}
+	f, err := strconv.ParseFloat(param, 64)
+	if err == nil {
+		return f, TYPE_FLOAT, nil
+	}
+	return param, TYPE_STRING, errors.New("parameter unparsable")
 }
 
 // ExecuteFunction executes a function on a given JSON document with given parameters.
