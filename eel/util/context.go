@@ -60,7 +60,6 @@ func (e NetworkError) Error() string {
 type SyntaxError struct {
 	Message  string
 	Function string
-	Params   []string
 }
 
 func (e SyntaxError) Error() string {
@@ -70,7 +69,6 @@ func (e SyntaxError) Error() string {
 type RuntimeError struct {
 	Message  string
 	Function string
-	Params   []string
 }
 
 func (e RuntimeError) Error() string {

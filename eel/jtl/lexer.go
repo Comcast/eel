@@ -20,6 +20,8 @@ import (
 	"fmt"
 	"strings"
 	"unicode/utf8"
+
+	. "github.com/Comcast/eel/eel/util"
 )
 
 // lexer and parser for EEL based on http://cuddle.googlecode.com/hg/talk/lex.html#title-slide
@@ -50,6 +52,10 @@ const (
 	lexItemDot                             // 9 the cursor, spelled '.'
 	lexItemText                            // 10 plain text
 	lexItemInsideText                      // 11
+)
+
+const (
+	debugLexer = true
 )
 
 func (i *lexItem) typeString() string {
@@ -160,6 +166,9 @@ func (l *lexer) emit(t lexItemType) {
 }
 
 func lexText(l *lexer) stateFn {
+	if debugLexer {
+		Gctx.Log().Info("event", "TEXT")
+	}
 	for {
 		if strings.HasPrefix(l.input[l.pos:], leftMeta) {
 			if l.pos > l.start {
@@ -208,6 +217,9 @@ func lexText(l *lexer) stateFn {
 }
 
 func lexLeftMeta(l *lexer) stateFn {
+	if debugLexer {
+		Gctx.Log().Info("event", "LEFT_META")
+	}
 	if l.next() == '{' && l.next() == '{' {
 		l.emit(lexItemLeftMeta)
 		return lexInsideAction
@@ -216,6 +228,9 @@ func lexLeftMeta(l *lexer) stateFn {
 }
 
 func lexRightMeta(l *lexer) stateFn {
+	if debugLexer {
+		Gctx.Log().Info("event", "RIGHT_META")
+	}
 	if l.next() == '}' && l.next() == '}' {
 		l.emit(lexItemRightMeta)
 		return lexText
@@ -224,12 +239,18 @@ func lexRightMeta(l *lexer) stateFn {
 }
 
 func lexPath(l *lexer) stateFn {
+	if debugLexer {
+		Gctx.Log().Info("event", "PATH")
+	}
 	l.acceptRun("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890/-_,.:|!@#$%^&*+=<>?[] ")
 	l.emit(lexItemPath)
 	return lexRightMeta
 }
 
 func lexParam(l *lexer) stateFn {
+	if debugLexer {
+		Gctx.Log().Info("event", "PARAM")
+	}
 	bc := 0 // bracket count
 	for {
 		// push across nested function calls - these will be dealt with in separate
@@ -258,6 +279,9 @@ func lexParam(l *lexer) stateFn {
 }
 
 func lexStringParam(l *lexer) stateFn {
+	if debugLexer {
+		Gctx.Log().Info("event", "STRING_PARAM")
+	}
 	bc := 0 // bracket count
 	for {
 		// push across nested function calls - these will be dealt with in separate
@@ -281,6 +305,9 @@ func lexStringParam(l *lexer) stateFn {
 }
 
 func lexOpenParamList(l *lexer) stateFn {
+	if debugLexer {
+		Gctx.Log().Info("event", "OPEN_PARAM_LIST")
+	}
 	if l.next() == '(' {
 		l.emit(lexItemLeftBracket)
 	} else {
@@ -290,6 +317,9 @@ func lexOpenParamList(l *lexer) stateFn {
 }
 
 func lexParamList(l *lexer) stateFn {
+	if debugLexer {
+		Gctx.Log().Info("event", "PARAM_LIST")
+	}
 	for {
 		switch r := l.next(); {
 		case r == eof:
@@ -304,11 +334,16 @@ func lexParamList(l *lexer) stateFn {
 			return lexParam
 		case r == '\'':
 			return lexStringParam
+		default:
+			return lexParam
 		}
 	}
 }
 
 func lexInsideAction(l *lexer) stateFn {
+	if debugLexer {
+		Gctx.Log().Info("event", "INSIDE_ACTION")
+	}
 	for {
 		switch r := l.next(); {
 		case r == eof:

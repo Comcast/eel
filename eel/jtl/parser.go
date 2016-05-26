@@ -272,7 +272,8 @@ func (a *JExprItem) collapseLeaf(ctx Context, doc *JDoc) bool {
 			return false
 		}
 		// odd: currently parameter-less functions require a single blank string as parameter
-		a.val = f.ExecuteFunction(ctx, doc, []string{""}) // retain type of function return values
+		param := NewJParam("")
+		a.val = f.ExecuteFunction(ctx, doc, []*JParam{param}) // retain type of function return values
 		if a.val == nil {
 			a.val = ""
 		}
@@ -300,12 +301,12 @@ func (a *JExprItem) collapseLeaf(ctx Context, doc *JDoc) bool {
 			//ctx.Log.Debug("event", "ast_collapse_failure", "reason", "unknown_function", "val", a.val, "type", a.typeString())
 			return false
 		}
-		params := make([]string, 0)
+		params := make([]*JParam, 0)
 		for _, k := range a.mom.kids { // only execute if all paramters are ready
 			if k.typ != astParam {
 				return false
 			}
-			params = append(params, ToFlatString(k.val))
+			params = append(params, NewJParam(ToFlatString(k.val)))
 		}
 		a.mom.val = f.ExecuteFunction(ctx, doc, params) // retain type of function return values
 		a.mom.kids = make([]*JExprItem, 0)
