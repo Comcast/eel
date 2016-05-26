@@ -331,10 +331,11 @@ func lexParamList(l *lexer) stateFn {
 			return lexRightMeta
 		case r == ',':
 			l.ignore()
-			return lexParam
+			//return lexParam
 		case r == '\'':
 			return lexStringParam
 		default:
+			l.backup()
 			return lexParam
 		}
 	}
