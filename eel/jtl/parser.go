@@ -205,7 +205,8 @@ func (a *JExprItem) explodeParams() (bool, error) {
 		valStr := ToFlatString(a.val)
 		if strings.Contains(valStr, leftMeta) || strings.Contains(valStr, rightMeta) {
 			a.typ = astAgg
-			err = a.parse(extractStringParam(valStr))
+			//err = a.parse(extractStringParam(valStr))
+			err = a.parse(valStr)
 			if err != nil {
 				return false, err
 			}
@@ -306,7 +307,11 @@ func (a *JExprItem) collapseLeaf(ctx Context, doc *JDoc) bool {
 			if k.typ != astParam {
 				return false
 			}
-			params = append(params, NewJParam(ToFlatString(k.val)))
+			p := NewJParam(ToFlatString(k.val))
+			if debugLexer {
+				p.Log()
+			}
+			params = append(params, p)
 		}
 		a.mom.val = f.ExecuteFunction(ctx, doc, params) // retain type of function return values
 		a.mom.kids = make([]*JExprItem, 0)
@@ -329,7 +334,8 @@ func (a *JExprItem) collapseLeaf(ctx Context, doc *JDoc) bool {
 		}
 		if len(a.mom.kids) == 1 { // retain type for single value aggregations, except for nil which is converted to ""
 			if a.mom.mom != nil && a.mom.mom.typ == astFunction {
-				a.mom.val = "'" + ToFlatString(a.val) + "'"
+				//a.mom.val = "'" + ToFlatString(a.val) + "'"
+				a.mom.val = ToFlatString(a.val)
 				a.mom.typ = astParam
 			} else {
 				a.mom.val = a.val

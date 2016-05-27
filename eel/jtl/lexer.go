@@ -161,13 +161,16 @@ func (l *lexer) emit(t lexItemType) {
 	} else if token == escapedRightMeta {
 		token = rightMeta
 	}
+	if debugLexer {
+		Gctx.Log().Info("lexevent", "EMIT", "token", token)
+	}
 	l.items <- lexItem{t, token}
 	l.start = l.pos
 }
 
 func lexText(l *lexer) stateFn {
 	if debugLexer {
-		Gctx.Log().Info("event", "TEXT")
+		Gctx.Log().Info("lexevent", "TEXT")
 	}
 	for {
 		if strings.HasPrefix(l.input[l.pos:], leftMeta) {
@@ -218,7 +221,7 @@ func lexText(l *lexer) stateFn {
 
 func lexLeftMeta(l *lexer) stateFn {
 	if debugLexer {
-		Gctx.Log().Info("event", "LEFT_META")
+		Gctx.Log().Info("lexevent", "LEFT_META")
 	}
 	if l.next() == '{' && l.next() == '{' {
 		l.emit(lexItemLeftMeta)
@@ -229,7 +232,7 @@ func lexLeftMeta(l *lexer) stateFn {
 
 func lexRightMeta(l *lexer) stateFn {
 	if debugLexer {
-		Gctx.Log().Info("event", "RIGHT_META")
+		Gctx.Log().Info("lexevent", "RIGHT_META")
 	}
 	if l.next() == '}' && l.next() == '}' {
 		l.emit(lexItemRightMeta)
@@ -240,7 +243,7 @@ func lexRightMeta(l *lexer) stateFn {
 
 func lexPath(l *lexer) stateFn {
 	if debugLexer {
-		Gctx.Log().Info("event", "PATH")
+		Gctx.Log().Info("lexevent", "PATH")
 	}
 	l.acceptRun("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890/-_,.:|!@#$%^&*+=<>?[] ")
 	l.emit(lexItemPath)
@@ -249,7 +252,7 @@ func lexPath(l *lexer) stateFn {
 
 func lexParam(l *lexer) stateFn {
 	if debugLexer {
-		Gctx.Log().Info("event", "PARAM")
+		Gctx.Log().Info("lexevent", "PARAM")
 	}
 	bc := 0 // bracket count
 	for {
@@ -280,7 +283,7 @@ func lexParam(l *lexer) stateFn {
 
 func lexStringParam(l *lexer) stateFn {
 	if debugLexer {
-		Gctx.Log().Info("event", "STRING_PARAM")
+		Gctx.Log().Info("lexevent", "STRING_PARAM")
 	}
 	bc := 0 // bracket count
 	for {
@@ -306,7 +309,7 @@ func lexStringParam(l *lexer) stateFn {
 
 func lexOpenParamList(l *lexer) stateFn {
 	if debugLexer {
-		Gctx.Log().Info("event", "OPEN_PARAM_LIST")
+		Gctx.Log().Info("lexevent", "OPEN_PARAM_LIST")
 	}
 	if l.next() == '(' {
 		l.emit(lexItemLeftBracket)
@@ -318,7 +321,7 @@ func lexOpenParamList(l *lexer) stateFn {
 
 func lexParamList(l *lexer) stateFn {
 	if debugLexer {
-		Gctx.Log().Info("event", "PARAM_LIST")
+		Gctx.Log().Info("lexevent", "PARAM_LIST")
 	}
 	for {
 		switch r := l.next(); {
@@ -343,7 +346,7 @@ func lexParamList(l *lexer) stateFn {
 
 func lexInsideAction(l *lexer) stateFn {
 	if debugLexer {
-		Gctx.Log().Info("event", "INSIDE_ACTION")
+		Gctx.Log().Info("lexevent", "INSIDE_ACTION")
 	}
 	for {
 		switch r := l.next(); {

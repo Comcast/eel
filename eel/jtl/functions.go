@@ -57,6 +57,9 @@ func NewJParam(param string) *JParam {
 	if len(param) >= 2 && strings.HasPrefix(param, "'") && strings.HasSuffix(param, "'") {
 		return &JParam{param[1 : len(param)-1], TYPE_STRING, nil}
 	}
+	if strings.Contains(param, "{{") && strings.Contains(param, "}}") {
+		return &JParam{param, TYPE_EXPR, nil}
+	}
 	if strings.HasPrefix(param, "{") && strings.HasSuffix(param, "}") {
 		var m map[string]interface{}
 		err := json.Unmarshal([]byte(param), &m)
@@ -90,6 +93,10 @@ func NewJParam(param string) *JParam {
 		return &JParam{f, TYPE_FLOAT, nil}
 	}
 	return &JParam{param, TYPE_STRING, errors.New("parameter unparsable")}
+}
+
+func (p *JParam) Log() {
+	Gctx.Log().Info("PARAM", *p, "type", p.GetType(), "val", p.GetVal(), "error", p.GetErr())
 }
 
 func (p *JParam) GetType() string {
@@ -171,6 +178,7 @@ const (
 	TYPE_MAP    = "map"
 	TYPE_BOOL   = "bool"
 	TYPE_NULL   = "null"
+	TYPE_EXPR   = "expression"
 )
 
 // NewFunction gets function implementation by name.
@@ -778,7 +786,7 @@ func fnHeader(ctx Context, doc *JDoc, params []*JParam) interface{} {
 		return ""
 	}
 	if len(params) == 1 && len(params[0].GetStringVal()) > 2 {
-		key := extractStringParam(params[0].GetStringVal())
+		key := params[0].GetStringVal()
 		return h.Get(key)
 	} else {
 		return h
@@ -1352,10 +1360,10 @@ func fnExists(ctx Context, doc *JDoc, params []*JParam) interface{} {
 	return doc.HasPath(params[0].GetStringVal())
 }
 
-func extractStringParam(param string) string {
+/*func extractStringParam(param string) string {
 	param = strings.TrimSpace(param)
 	return param[1 : len(param)-1]
-}
+}*/
 
 // ExecuteFunction executes a function on a given JSON document with given parameters.
 func (f *JFunction) ExecuteFunction(ctx Context, doc *JDoc, params []*JParam) interface{} {
