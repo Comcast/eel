@@ -38,11 +38,16 @@ var (
 )
 
 var (
+	// proxy params
 	env         = flag.String("env", "default", "environment name such as qa, prod for logging")
 	basePath    = flag.String("path", "", "base path for config.json and handlers (optional)")
 	configPath  = flag.String("config", "", "path to config.json (optional)")
 	handlerPath = flag.String("handlers", "", "path to handlers (optional)")
 	logLevel    = flag.String("loglevel", L_InfoLevel, "log level (optional)")
+	// cmd params
+	in    = flag.String("in", "", "incoming event string or @file")
+	tf    = flag.String("tf", "", "transformation string or @file")
+	istbe = flag.Bool("istbe", true, "is template by example flag")
 )
 
 // useCores if GOMAXPROCS not set use all cores you got.
@@ -76,6 +81,7 @@ func startProxyServices(ctx Context) {
 	http.HandleFunc("/reload", ReloadConfigHandler)
 	http.HandleFunc("/vet", VetHandler)
 	http.HandleFunc("/test", TopicTestHandler)
+	http.HandleFunc("/test/handlers", HandlersTestHandler)
 	http.HandleFunc("/test/process/", ProcessExpressionHandler)
 	http.HandleFunc("/test/ast", ParserDebugHandler)
 	http.HandleFunc("/test/astjson/", GetASTJsonHandler)
@@ -132,17 +138,21 @@ func initLogging() {
 
 func main() {
 	flag.Parse()
-	initLogging()
-	ReloadConfig()
-	GetConfig(Gctx).Version = Version
-	InitHttpTransport(Gctx)
-	ctx := Gctx.SubContext()
-	ctx.Log().Info("event", "starting", "version", Version)
-	useCores(ctx)
-	dc := NewLocalInMemoryDupChecker(GetConfig(ctx).DuplicateTimeout, 10000)
-	Gctx.AddValue(EelDuplicateChecker, dc)
-	dp := NewWorkDispatcher(GetConfig(ctx).WorkerPoolSize, GetConfig(ctx).MessageQueueDepth)
-	dp.Start(ctx)
-	Gctx.AddValue(EelDispatcher, dp)
-	startProxyServices(ctx)
+	if *tf != "" {
+		eelCmd(*in, *tf, *istbe)
+	} else {
+		initLogging()
+		ReloadConfig()
+		GetConfig(Gctx).Version = Version
+		InitHttpTransport(Gctx)
+		ctx := Gctx.SubContext()
+		ctx.Log().Info("event", "starting", "version", Version)
+		useCores(ctx)
+		dc := NewLocalInMemoryDupChecker(GetConfig(ctx).DuplicateTimeout, 10000)
+		Gctx.AddValue(EelDuplicateChecker, dc)
+		dp := NewWorkDispatcher(GetConfig(ctx).WorkerPoolSize, GetConfig(ctx).MessageQueueDepth)
+		dp.Start(ctx)
+		Gctx.AddValue(EelDispatcher, dp)
+		startProxyServices(ctx)
+	}
 }

@@ -16,7 +16,10 @@
 
 package util
 
-import "time"
+import (
+	"fmt"
+	"time"
+)
 
 // Context is the interface for a request context and logging.
 type Context interface {
@@ -42,4 +45,75 @@ type Logger interface {
 	Warn(args ...interface{})
 	Metric(statKey interface{}, args ...interface{})
 	RuntimeLogLoop(interval time.Duration, iterations int)
+}
+
+type NetworkError struct {
+	Endpoint string
+	Message  string
+	Status   int
+}
+
+func (e NetworkError) Error() string {
+	return fmt.Sprintf("error reaching endpoint: %s: status: %d message: %s", e.Endpoint, e.Status, e.Message)
+}
+
+type SyntaxError struct {
+	Message  string
+	Function string
+	Params   []string
+}
+
+func (e SyntaxError) Error() string {
+	return fmt.Sprintf("%s", e.Message)
+}
+
+type RuntimeError struct {
+	Message  string
+	Function string
+	Params   []string
+}
+
+func (e RuntimeError) Error() string {
+	return fmt.Sprintf("%s", e.Message)
+}
+
+type ParseError struct {
+	Message string
+}
+
+func (e ParseError) Error() string {
+	return fmt.Sprintf("%s", e.Message)
+}
+
+// ClearErrors clears any stale errors from current transacction in case lib user recycles contexts
+func ClearErrors(ctx Context) {
+	if ctx == nil {
+		return
+	}
+	ctx.AddValue(EelErrors, make([]error, 0))
+}
+
+// AddError adds error to list of errors in current transaction in current context for lib use
+func AddError(ctx Context, err error) {
+	if ctx == nil || err == nil {
+		return
+	}
+	if ctx.Value(EelErrors) == nil {
+		ctx.AddValue(EelErrors, make([]error, 0))
+	}
+	e := ctx.Value(EelErrors).([]error)
+	e = append(e, err)
+	ctx.AddValue(EelErrors, e)
+}
+
+// GetErrors gets list of errors in current transaction from current context for lib use
+func GetErrors(ctx Context) []error {
+	if ctx == nil || ctx.Value(EelErrors) == nil {
+		return nil
+	}
+	errs := ctx.Value(EelErrors).([]error)
+	if len(errs) == 0 {
+		return nil
+	}
+	return errs
 }

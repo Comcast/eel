@@ -88,7 +88,7 @@ If set to false the transformation handler will be disabled. Usually set to true
 ### Parameters for Event Transformation
 
 This section details how to use JPath expressions to describe structural JSON event transformations. There are
-two different flavors of syntax you can choose from, "by path" and "by example". Depending on the use cause
+two different flavors of syntax you can choose from, "by path" and "by example". Depending on the use case
 one is usually more elegant than the other. Choosing the syntax style is done by setting the
 boolean flag `IsTransformationByExample`.
 
@@ -142,8 +142,8 @@ _*Example 3:*_ Filter everything except for `/content/accountId` and `/content/a
 ```
 "IsTransformationByExample" : false,
 "Transformation": {
-   "{{/content/accountId}}":"{{.}}",
-   "{{/content/adapterId}}":"{{.}}"
+   "{{/content/accountId}}":"{{/content/accountId}}",
+   "{{/content/adapterId}}":"{{/content/adapterId}}"
 }
 ```
 
@@ -292,7 +292,7 @@ endpoint(s) configured in [../config-eel/config.json](../config-eel/config.json)
 #### Protocol
 
 Protocol to use for sending transformed events downstream. Default is `http` and for now this is the only
-protocol supported. Eel come with a pluggable publisher framework and the idea is to support protocol other
+protocol supported. EEL comes with a pluggable publisher framework and the idea is to support protocols other
 than http in the future.
 
 #### Verb
@@ -312,7 +312,7 @@ example `Path` is `target`. Thus, this handler will forward incoming events to
 `http://localhost:8082/target`. Note that the path must be a string, therefore the JPath expression
 must result in string. May be an array of multiple JPath expressions for fanning out to multiple paths.
 
-Example 1: Use the `id` element of the JSON event if present, otherwise use the constant `DefaultPath`.
+Example 1: Use the `id` element of the JSON event if present, otherwise use a blank path `""`.
 
 ```
 "Path" : "{{/content/id}}"
@@ -343,8 +343,8 @@ Arbitrary list of HTTP header key-value pairs to be set when forwarding events. 
 be simple constants or complex JPath expressions. Headers are optional.
 
 One header that could be configured here is the
-transaction ID as defined in [../config-eel/config.json](../config-eel/config.json) used for logging.
-For compliance with the zipkin framework this header is set to "X-B3-TraceId" by default.
+trace ID as defined in [../config-eel/config.json](../config-eel/config.json) for logging.
+For compliance with the Zipkin framework this header is set to "X-B3-TraceId" by default.
 
 _*Example 1:*_ Using elements from the incoming event for generating a trace header.
 
@@ -441,8 +441,11 @@ All event filtering parameters are optional.
 Filters are optional. You can have zero, one or more filters.
 `Filters` describes a list of patterns that must be matched by the incoming event. If the event does not match all of the patterns,
 EEL will discard the event and not forward it. Filters lets you choose between by-path syntax and
-by-example syntax using the `IsFilterByExample` parameter. If the additional parameter `IsFilterInverted` is
+by-example syntax using the `IsFilterByExample` parameter. If the parameter `IsFilterInverted` is
 set to `true`, events will be filtered if they do NOT match the pattern described by `Filter`.
+If the parameter `FilterAfterTransformation` is set to `true`, the filter will be applied to the
+outgoing event (after the transformation), otherwise it will be applied to the incoming event
+(before the transformation).
 
 _*Example 1:*_ Let everything come through.
 
@@ -453,7 +456,8 @@ _*Example 1:*_ Let everything come through.
       "*" : "*"
     },
     "IsFilterByExample" : true,
-    "IsFilterInverted" : false
+    "IsFilterInverted" : false,
+	"FilterAfterTransformation" : false
   }
 ]
 ```
@@ -469,7 +473,8 @@ _*Example 2:*_ Only process events with `id` present regardless of its value.
        }
     },
     "IsFilterByExample" : true,
-    "IsFilterInverted" : false
+    "IsFilterInverted" : false,
+	"FilterAfterTransformation" : false
   }
 ]
 ```
@@ -485,7 +490,8 @@ _*Example 3:*_ Only process events with `id` present and value `"123"`.
        }
     },
     "IsFilterByExample" : true,
-    "IsFilterInverted" : false
+    "IsFilterInverted" : false,
+	"FilterAfterTransformation" : false
   }
 ]
 ```
@@ -501,8 +507,24 @@ _*Example 4:*_ Only process events with `id` present and value `"123"` or `"xyz"
        }
     },
     "IsFilterByExample" : true,
-    "IsFilterInverted" : false
+    "IsFilterInverted" : false,
+	"FilterAfterTransformation" : false
   }
+]
+```
+
+_*Example 5:*_ Only process events where `message` is `found_problem`.
+
+```
+"Filters": [
+	{
+		"Filter": {
+			"{{equals('{{/message}}','found_problem')}}": false
+		},
+	    "IsFilterByExample" : false,
+	    "IsFilterInverted" : false,
+		"FilterAfterTransformation" : false
+	}
 ]
 ```
 

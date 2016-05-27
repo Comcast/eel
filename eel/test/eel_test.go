@@ -23,6 +23,7 @@ import (
 	"net/http/httptest"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"testing"
 	"time"
 
@@ -111,7 +112,7 @@ func TestEELLibrary2(t *testing.T) {
 	//t.Logf("response: %s\n", resp)
 }
 
-func TestEELLibrary3(t *testing.T) {
+func TestEELLibrary3Sequential(t *testing.T) {
 	// initialize context
 	ctx := NewDefaultContext(L_InfoLevel)
 	EELInit(ctx)
@@ -126,27 +127,111 @@ func TestEELLibrary3(t *testing.T) {
 		"message": "hello world!!!",
 	}
 	// process event and get publisher objects in return - typically we expect exactly one publisher (unless event was filtered)
-	outs, err := EELTransformEvent(ctx, in, eelHandlerFactory)
-	if err != nil {
-		t.Fatalf("could not transform event: %s\n", err.Error())
+	outs, errs := EELTransformEvent(ctx, in, eelHandlerFactory)
+	if errs != nil {
+		t.Fatalf("could not transform event: %v\n", errs)
 	}
 	if len(outs) != 1 {
 		t.Fatalf("unexpected number of results: %d\n", len(outs))
 	}
 	if !DeepEquals(outs[0], in) {
-		t.Fatalf("unexpected transformation result")
+		t.Fatalf("unexpected transformation result\n")
 	}
-	//publishers, err := EELGetPublishers(ctx, in, eelHandlerFactory)
-	//if err != nil {
-	//	t.Fatalf("could not transform event: %s\n", err.Error())
-	//}
-	//for _, p := range publishers {
-	//	resp, err := p.Publish()
-	//	if err != nil {
-	//		t.Fatalf("could not publish event: %s\n", err.Error())
-	//	}
-	//	t.Logf("response: %s\n", resp)
-	//}
+}
+
+func TestEELLibrary3Concurrent(t *testing.T) {
+	// initialize context
+	ctx := NewDefaultContext(L_InfoLevel)
+	EELInit(ctx)
+	// load handlers from folder: note parameter is an array of one or more folders
+	eelHandlerFactory, warnings := EELNewHandlerFactory(ctx, "../../config-handlers")
+	// check if parsing handlers caused warnings
+	for _, w := range warnings {
+		t.Logf("warning loading handlers: %s\n", w)
+	}
+	// prepare incoming test event
+	in := map[string]interface{}{
+		"message": "hello world!!!",
+	}
+	// process event and get publisher objects in return - typically we expect exactly one publisher (unless event was filtered)
+	outs, errs := EELTransformEventConcurrent(ctx, in, eelHandlerFactory)
+	if errs != nil {
+		t.Fatalf("could not transform event: %v\n", errs)
+	}
+	if len(outs) != 1 {
+		t.Fatalf("unexpected number of results: %d\n", len(outs))
+	}
+	if !DeepEquals(outs[0], in) {
+		t.Fatalf("unexpected transformation result\n")
+	}
+}
+
+func TestEELLibrary4(t *testing.T) {
+	ctx := NewDefaultContext(L_InfoLevel)
+	in := `{ "message" : "hello world!!!" }`
+	expected, err := NewJDocFromString(`{ "event" : { "message" : "hello world!!!" }}`)
+	if err != nil {
+		t.Fatalf("could not parse expected event: %s\n", err.Error())
+	}
+	transformation := `{ "{{/event}}" : "{{/}}" }`
+	EELInit(ctx)
+	out, errs := EELSimpleTransform(ctx, in, transformation, false)
+	if errs != nil {
+		t.Fatalf("bad tranformation: %v\n", errs)
+	}
+	outDoc, err := NewJDocFromString(out)
+	if err != nil {
+		t.Fatalf("could not parse out event: %s\n", err.Error())
+	}
+	if !DeepEquals(expected.GetOriginalObject(), outDoc.GetOriginalObject()) {
+		t.Fatalf("unexpected transformation result: %s\n", out)
+	}
+}
+
+func TestEELLibrary5(t *testing.T) {
+	ctx := NewDefaultContext(L_InfoLevel)
+	//in := `{ "message" : "hello world!!!" }`
+	in := ``
+	// note: results of type string are surrounded by double quotes
+	expected := `"xyz"`
+	expr := `{{ident('xyz')}}`
+	EELInit(ctx)
+	out, errs := EELSimpleEvalExpression(ctx, in, expr)
+	if errs != nil {
+		t.Fatalf("bad tranformation: %v\n", errs)
+	}
+	if out != expected {
+		t.Fatalf("unexpected eval result: %s expected: %s\n", out, expected)
+	}
+}
+
+func TestEELLibraryError(t *testing.T) {
+	ctx := NewDefaultContext(L_InfoLevel)
+	in := `{}`
+	transformation := `{ "{{/event}}" : "{{curl('GET','http://x.y.z')}}" }`
+	EELInit(ctx)
+	eelSettings, err := EELGetSettings(ctx)
+	if err != nil {
+		t.Fatalf("error getting settings: %s\n", err.Error())
+	}
+	eelSettings.MaxAttempts = 3
+	eelSettings.InitialDelay = 125
+	eelSettings.InitialBackoff = 1000
+	eelSettings.BackoffMethod = "Exponential"
+	eelSettings.HttpTimeout = 1000
+	eelSettings.ResponseHeaderTimeout = 1000
+	EELUpdateSettings(ctx, eelSettings)
+	_, errs := EELSimpleTransform(ctx, in, transformation, false)
+	if errs == nil {
+		t.Fatalf("no errors!\n")
+	}
+	if len(errs) != 1 {
+		t.Fatalf("unexpected number of errors: %d\n", len(errs))
+	}
+	//expectedError := "error reaching endpoint: http://x.y.z: status: 0 message: Get http://x.y.z: dial tcp: lookup x.y.z: no such host"
+	if !strings.Contains(errs[0].Error(), "error reaching endpoint") {
+		t.Fatalf("unexpecte error: %s\n", errs[0].Error())
+	}
 }
 
 func TestDontTouchEvent(t *testing.T) {

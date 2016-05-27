@@ -18,6 +18,7 @@ package jtl
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"regexp"
 	"strconv"
@@ -44,23 +45,22 @@ func NewFunction(fn string) *JFunction {
 	switch fn {
 	case "curl":
 		// hit external web service
-		// jpath expressions of the form {{/...}} will be evaluated prior to function execution
-		// selector - optional jpath to be applied to (json) response
-		// payload - to be sent to external mapping service
-		// url - url of external mapping service
 		// method - POST, GET etc.
-		// curl('<method>','<url>','<payload>','<selector>',['<header-map>'])
-		// curl('POST', 'http://foo.com/bar/json', 'foo-{{/content/bar}}', '/content/comcastId')
-		// example: {{curl('POST', 'http://foo.com/bar/json', '{{/content/bar}}', '/content/comcastId')}}
+		// url - url of external service
+		// payload - payload to be sent to external service
+		// headers - headers to be sent to external service
+		// retries - if true, applies retry policy as specified in config.json in case of failure, no retries if false
+		// curl('<method>','<url>',['<payload>'],['<header-map>'],['<retries>'])
+		// example curl('POST', 'http://foo.com/bar/json', 'foo-{{/content/bar}}')
 		return &JFunction{fnCurl, 2, 5}
 	case "uuid":
 		// returns UUID string
 		// uuid()
 		return &JFunction{fnUuid, 0, 0}
 	case "header":
-		// returns a value given the http request header key
+		// returns a value given the http request header key, or all headers if no key is given
 		// header('mykey')
-		return &JFunction{fnHeader, 1, 1}
+		return &JFunction{fnHeader, 0, 1}
 	case "ident":
 		// returns input parameter unchanged, for debugging only
 		// ident('foo')
@@ -91,8 +91,11 @@ func NewFunction(fn string) *JFunction {
 		// case('<path_1>','<comparison_value_1>','<return_value_1>', '<path_2>','<comparison_value_2>','<return_value_2>,...,'<default>')
 		return &JFunction{fnCase, 3, 100}
 	case "regex":
-		// apply regex to string value: regex('<string>', '<regex>')
-		return &JFunction{fnRegex, 2, 2}
+		// apply regex to string value and return (first) result: regex('<string>', '<regex>')
+		return &JFunction{fnRegex, 2, 3}
+	case "match":
+		// apply regex to string value and return true if matches: match('<string>', '<regex>')
+		return &JFunction{fnMatch, 2, 2}
 	case "and":
 		// boolean and: and('<bool>', '<bool>', ...)
 		return &JFunction{fnAnd, 1, 100}
@@ -150,8 +153,14 @@ func NewFunction(fn string) *JFunction {
 		// chooses elements for list or array based on pattern
 		return &JFunction{fnChoose, 2, 2}
 	case "crush":
-		// experimental function for collapsing a JSON document into a flat array
+		// collapse a JSON document into a flat array
 		return &JFunction{fnCrush, 1, 1}
+	case "len":
+		// returns length of object (string, array, map)
+		return &JFunction{fnLen, 1, 1}
+	case "exists":
+		// returns true if path exists in document
+		return &JFunction{fnExists, 1, 2}
 	default:
 		//gctx.Log.Error("event", "execute_function", "function", fn, "error", "not_implemented")
 		//stats.IncErrors()
@@ -159,22 +168,62 @@ func NewFunction(fn string) *JFunction {
 	}
 }
 
-// fnRegex regular expression function.
+// fnRegex regular expression function returns first matching value.
 func fnRegex(ctx Context, doc *JDoc, params []string) interface{} {
 	stats := ctx.Value(EelTotalStats).(*ServiceStats)
-	if params == nil || len(params) != 2 {
+	if params == nil || len(params) > 3 {
 		ctx.Log().Error("event", "execute_function", "function", "regex", "error", "wrong_number_of_parameters", "params", params)
 		stats.IncErrors()
+		AddError(ctx, SyntaxError{fmt.Sprintf("wrong number of parameters in call to regex function"), "regex", params})
 		return nil
 	}
 	reg, err := regexp.Compile(extractStringParam(params[1]))
 	if err != nil {
-		ctx.Log().Error("event", "execute_function", "function", "regex", "error", "invalid_regex", "params", params)
+		ctx.Log().Error("event", "execute_function", "function", "regex", "error", "invalid_regex", "params", params, "message", err.Error())
 		stats.IncErrors()
+		AddError(ctx, RuntimeError{fmt.Sprintf("invalid regex in call to regex function: %s", err.Error()), "regex", params})
 		return nil
 
 	}
-	return reg.FindString(extractStringParam(params[0]))
+	all := false
+	if len(params) == 3 {
+		all, err = strconv.ParseBool(extractStringParam(params[2]))
+		if err != nil {
+			ctx.Log().Error("event", "execute_function", "function", "regex", "error", "non_boolean_parameter", "params", params)
+			stats.IncErrors()
+			AddError(ctx, SyntaxError{fmt.Sprintf("non boolean parameters in call to regex function"), "regex", params})
+			return nil
+		}
+	}
+	if all {
+		items := reg.FindAllString(extractStringParam(params[0]), -1)
+		res := ""
+		for _, it := range items {
+			res += it
+		}
+		return res
+	} else {
+		return reg.FindString(extractStringParam(params[0]))
+	}
+}
+
+// fnMatch regular expression function returns true if regex matches.
+func fnMatch(ctx Context, doc *JDoc, params []string) interface{} {
+	stats := ctx.Value(EelTotalStats).(*ServiceStats)
+	if params == nil || len(params) != 2 {
+		ctx.Log().Error("event", "execute_function", "function", "match", "error", "wrong_number_of_parameters", "params", params)
+		stats.IncErrors()
+		AddError(ctx, SyntaxError{fmt.Sprintf("wrong number of parameters in call to match function"), "match", params})
+		return nil
+	}
+	reg, err := regexp.Compile(extractStringParam(params[1]))
+	if err != nil {
+		ctx.Log().Error("event", "execute_function", "function", "match", "error", "invalid_regex", "params", params, "message", err.Error())
+		stats.IncErrors()
+		AddError(ctx, RuntimeError{fmt.Sprintf("invalid regex in call to match function: %s", err.Error()), "match", params})
+		return nil
+	}
+	return reg.MatchString(extractStringParam(params[0]))
 }
 
 // fnAlt alternative function.
@@ -183,6 +232,7 @@ func fnAlt(ctx Context, doc *JDoc, params []string) interface{} {
 	if params == nil || len(params) < 2 {
 		ctx.Log().Error("event", "execute_function", "function", "alt", "error", "wrong_number_of_parameters", "params", params)
 		stats.IncErrors()
+		AddError(ctx, SyntaxError{fmt.Sprintf("wrong number of parameters in call to alt function"), "alt", params})
 		return nil
 	}
 	for _, p := range params {
@@ -199,6 +249,7 @@ func fnAnd(ctx Context, doc *JDoc, params []string) interface{} {
 	if params == nil || len(params) < 1 {
 		ctx.Log().Error("event", "execute_function", "function", "and", "error", "wrong_number_of_parameters", "params", params)
 		stats.IncErrors()
+		AddError(ctx, SyntaxError{fmt.Sprintf("wrong number of parameters in call to and function"), "and", params})
 		return nil
 	}
 	result := true
@@ -207,6 +258,7 @@ func fnAnd(ctx Context, doc *JDoc, params []string) interface{} {
 		if err != nil {
 			ctx.Log().Error("event", "execute_function", "function", "and", "error", "non_boolean_parameter", "params", params)
 			stats.IncErrors()
+			AddError(ctx, SyntaxError{fmt.Sprintf("non boolean parameters in call to and function"), "and", params})
 			return nil
 		}
 		result = result && b
@@ -220,6 +272,7 @@ func fnOr(ctx Context, doc *JDoc, params []string) interface{} {
 	if params == nil || len(params) < 1 {
 		ctx.Log().Error("event", "execute_function", "function", "or", "error", "wrong_number_of_parameters", "params", params)
 		stats.IncErrors()
+		AddError(ctx, SyntaxError{fmt.Sprintf("wrong number of parameters in call to or function"), "or", params})
 		return nil
 	}
 	result := false
@@ -228,6 +281,7 @@ func fnOr(ctx Context, doc *JDoc, params []string) interface{} {
 		if err != nil {
 			ctx.Log().Error("event", "execute_function", "function", "or", "error", "non_boolean_parameter", "params", params)
 			stats.IncErrors()
+			AddError(ctx, SyntaxError{fmt.Sprintf("non boolean parameters in call to or function"), "or", params})
 			return nil
 		}
 		result = result || b
@@ -241,12 +295,14 @@ func fnNot(ctx Context, doc *JDoc, params []string) interface{} {
 	if params == nil || len(params) != 1 {
 		ctx.Log().Error("event", "execute_function", "function", "not", "error", "wrong_number_of_parameters", "params", params)
 		stats.IncErrors()
+		AddError(ctx, SyntaxError{fmt.Sprintf("wrong number of parameters in call to not function"), "not", params})
 		return nil
 	}
 	result, err := strconv.ParseBool(extractStringParam(params[0]))
 	if err != nil {
 		ctx.Log().Error("event", "execute_function", "function", "not", "error", "non_boolean_parameter", "params", params)
 		stats.IncErrors()
+		AddError(ctx, SyntaxError{fmt.Sprintf("non boolean parameters in call to not function"), "not", params})
 		return nil
 	}
 	return !result
@@ -258,6 +314,7 @@ func fnContains(ctx Context, doc *JDoc, params []string) interface{} {
 	if params == nil || len(params) < 1 || len(params) > 2 {
 		ctx.Log().Error("event", "execute_function", "function", "contains", "error", "wrong_number_of_parameters", "params", params)
 		stats.IncErrors()
+		AddError(ctx, SyntaxError{fmt.Sprintf("wrong number of parameters in call to contains function"), "contains", params})
 		return nil
 	}
 	if len(params) == 2 {
@@ -266,6 +323,7 @@ func fnContains(ctx Context, doc *JDoc, params []string) interface{} {
 		if err != nil {
 			ctx.Log().Error("event", "execute_function", "function", "contains", "error", "non_json_parameter", "params", params)
 			stats.IncErrors()
+			AddError(ctx, SyntaxError{fmt.Sprintf("non json parameters in call to contains function"), "contains", params})
 			return nil
 		}
 	}
@@ -273,6 +331,7 @@ func fnContains(ctx Context, doc *JDoc, params []string) interface{} {
 	if err != nil {
 		ctx.Log().Error("event", "execute_function", "function", "contains", "error", "non_json_parameter", "params", params)
 		stats.IncErrors()
+		AddError(ctx, SyntaxError{fmt.Sprintf("non json parameters in call to contains function"), "contains", params})
 		return nil
 	}
 	matches, _ := doc.MatchesPattern(containee)
@@ -285,18 +344,21 @@ func fnChoose(ctx Context, doc *JDoc, params []string) interface{} {
 	if params == nil || len(params) != 2 {
 		ctx.Log().Error("event", "execute_function", "function", "choose", "error", "wrong_number_of_parameters", "params", params)
 		stats.IncErrors()
+		AddError(ctx, SyntaxError{fmt.Sprintf("wrong number of parameters in call to choose function"), "choose", params})
 		return nil
 	}
 	mydoc, err := NewJDocFromString(extractStringParam(params[0]))
 	if err != nil {
 		ctx.Log().Error("event", "execute_function", "function", "choose", "error", "non_json_parameter", "params", params)
 		stats.IncErrors()
+		AddError(ctx, SyntaxError{fmt.Sprintf("non json parameters in call to choose function"), "choose", params})
 		return nil
 	}
 	pattern, err := NewJDocFromString(extractStringParam(params[1]))
 	if err != nil {
 		ctx.Log().Error("event", "execute_function", "function", "choose", "error", "non_json_parameter", "params", params)
 		stats.IncErrors()
+		AddError(ctx, SyntaxError{fmt.Sprintf("non json parameters in call to choose function"), "choose", params})
 		return nil
 	}
 	choice := doc.choose(mydoc.GetOriginalObject(), pattern.GetOriginalObject())
@@ -309,12 +371,14 @@ func fnCrush(ctx Context, doc *JDoc, params []string) interface{} {
 	if params == nil || len(params) != 1 {
 		ctx.Log().Error("event", "execute_function", "function", "crush", "error", "wrong_number_of_parameters", "params", params)
 		stats.IncErrors()
+		AddError(ctx, SyntaxError{fmt.Sprintf("wrong number of parameters in call to choose function"), "crush", params})
 		return nil
 	}
 	mydoc, err := NewJDocFromString(extractStringParam(params[0]))
 	if err != nil {
 		ctx.Log().Error("event", "execute_function", "function", "crush", "error", "non_json_parameter", "params", params)
 		stats.IncErrors()
+		AddError(ctx, SyntaxError{fmt.Sprintf("non json parameters in call to crush function"), "crush", params})
 		return nil
 	}
 	crush := doc.crush(mydoc.GetOriginalObject(), nil)
@@ -327,12 +391,14 @@ func fnEquals(ctx Context, doc *JDoc, params []string) interface{} {
 	if params == nil || len(params) < 1 || len(params) > 2 {
 		ctx.Log().Error("event", "execute_function", "function", "equals", "error", "wrong_number_of_parameters", "params", params)
 		stats.IncErrors()
+		AddError(ctx, SyntaxError{fmt.Sprintf("wrong number of parameters in call to equals function"), "equals", params})
 		return nil
 	}
 	pattern, err := NewJDocFromString(extractStringParam(params[0]))
 	if err != nil && len(params) == 1 {
 		ctx.Log().Error("event", "execute_function", "function", "equals", "error", "non_json_parameter", "params", params)
 		stats.IncErrors()
+		AddError(ctx, SyntaxError{fmt.Sprintf("non json parameters in call to equals function"), "equals", params})
 		return nil
 	}
 	if len(params) == 2 {
@@ -351,12 +417,14 @@ func fnIfte(ctx Context, doc *JDoc, params []string) interface{} {
 	if params == nil || len(params) < 2 || len(params) > 3 {
 		ctx.Log().Error("event", "execute_function", "function", "ifte", "error", "wrong_number_of_parameters", "params", params)
 		stats.IncErrors()
+		AddError(ctx, SyntaxError{fmt.Sprintf("wrong number of parameters in call to ifte function"), "ifte", params})
 		return nil
 	}
 	conditionMet, err := strconv.ParseBool(extractStringParam(params[0]))
 	if err != nil {
 		ctx.Log().Error("event", "execute_function", "function", "ifte", "error", "non_boolean_parameter", "params", params)
 		stats.IncErrors()
+		AddError(ctx, SyntaxError{fmt.Sprintf("non boolean parameters in call to contains function"), "ifte", params})
 		return nil
 	}
 	//TODO: preserve parameter type (bool, string, json, int, float), also applies to alt() etc.
@@ -372,6 +440,7 @@ func fnIfte(ctx Context, doc *JDoc, params []string) interface{} {
 		if err != nil {
 			ctx.Log().Error("event", "execute_function", "function", "ifte", "error", "invalid_json", "params", params)
 			stats.IncErrors()
+			AddError(ctx, SyntaxError{fmt.Sprintf("non json parameters in call to ifte function"), "ifte", params})
 			return nil
 
 		}
@@ -387,6 +456,7 @@ func fnCase(ctx Context, doc *JDoc, params []string) interface{} {
 	if params == nil || len(params) < 3 || len(params)%3 != 1 {
 		ctx.Log().Error("event", "execute_function", "function", "case", "error", "wrong_number_of_parameters", "params", params)
 		stats.IncErrors()
+		AddError(ctx, SyntaxError{fmt.Sprintf("wrong number of parameters in call to case function"), "case", params})
 		return nil
 	}
 	for i := 0; i < len(params)/3; i++ {
@@ -403,6 +473,7 @@ func fnJs(ctx Context, doc *JDoc, params []string) interface{} {
 	if params == nil || len(params) < 1 {
 		ctx.Log().Error("event", "execute_function", "function", "js", "error", "wrong_number_of_parameters", "params", params)
 		stats.IncErrors()
+		AddError(ctx, SyntaxError{fmt.Sprintf("wrong number of parameters in call to js function"), "js", params})
 		return nil
 	}
 	vm := otto.New()
@@ -414,6 +485,7 @@ func fnJs(ctx Context, doc *JDoc, params []string) interface{} {
 	if err != nil {
 		ctx.Log().Error("event", "execute_function", "function", "js", "error", "vm_error", "params", params, "detail", err.Error())
 		stats.IncErrors()
+		AddError(ctx, RuntimeError{fmt.Sprintf("js vm error: %s", err.Error), "js", params})
 		return nil
 	}
 	if len(params) > 1 {
@@ -422,6 +494,7 @@ func fnJs(ctx Context, doc *JDoc, params []string) interface{} {
 		if err != nil {
 			ctx.Log().Error("event", "execute_function", "function", "js", "error", "vm_val_error", "params", params, "detail", err.Error())
 			stats.IncErrors()
+			AddError(ctx, RuntimeError{fmt.Sprintf("js vm value error: %s", err.Error), "js", params})
 			return nil
 		}
 	}
@@ -440,6 +513,7 @@ func fnJs(ctx Context, doc *JDoc, params []string) interface{} {
 	if err != nil {
 		ctx.Log().Error("event", "execute_function", "function", "js", "error", "vm_val_conv_error", "params", params, "detail", err.Error())
 		stats.IncErrors()
+		AddError(ctx, RuntimeError{fmt.Sprintf("js vm value conversion error: %s", err.Error), "js", params})
 		return nil
 	}
 	return ret
@@ -451,7 +525,19 @@ func fnCurl(ctx Context, doc *JDoc, params []string) interface{} {
 	if params == nil || len(params) < 2 || len(params) > 5 {
 		ctx.Log().Error("event", "execute_function", "function", "curl", "error", "wrong_number_of_parameters", "params", params)
 		stats.IncErrors()
+		AddError(ctx, SyntaxError{fmt.Sprintf("wrong number of parameters in call to curl function"), "curl", params})
 		return nil
+	}
+	var err error
+	retry := false
+	if len(params) >= 5 {
+		retry, err = strconv.ParseBool(extractStringParam(params[4]))
+		if err != nil {
+			stats.IncErrors()
+			ctx.Log().Error("event", "execute_function", "function", "curl", "error", "non_boolean_parameter", "params", params)
+			AddError(ctx, SyntaxError{"non boolean parameter in call to curl function", "curl", params})
+			return nil
+		}
 	}
 	url := extractStringParam(params[1])
 	if ctx.ConfigValue("debug.url") != nil {
@@ -459,11 +545,12 @@ func fnCurl(ctx Context, doc *JDoc, params []string) interface{} {
 	}
 	// compose http headers: at a minimum use trace header (if available), then add extra headers (if given in param #5)
 	hmap := make(map[string]interface{})
-	if len(params) == 5 {
-		hdoc, err := NewJDocFromString(extractStringParam(params[4]))
+	if len(params) >= 4 {
+		hdoc, err := NewJDocFromString(extractStringParam(params[3]))
 		if err != nil {
 			stats.IncErrors()
 			ctx.Log().Error("event", "execute_function", "function", "curl", "error", "invalid_headers", "detail", err.Error(), "params", params)
+			AddError(ctx, SyntaxError{fmt.Sprintf("invalid headers parameters in call to curl function"), "curl", params})
 		} else {
 			hmap = hdoc.GetMapValue("/")
 		}
@@ -481,72 +568,63 @@ func fnCurl(ctx Context, doc *JDoc, params []string) interface{} {
 		body = extractStringParam(params[2])
 	}
 	ctx.AddLogValue("destination", "external_service")
-	resp, status, err := HitEndpoint(ctx, url, body, extractStringParam(params[0]), headers, nil)
+	var resp string
+	var status int
+	if retry {
+		resp, status, err = GetRetrier(ctx).RetryEndpoint(ctx, url, body, extractStringParam(params[0]), headers, nil)
+	} else {
+		resp, status, err = HitEndpoint(ctx, url, body, extractStringParam(params[0]), headers, nil)
+	}
 	if err != nil {
 		// this error will already be counted by hitEndpoint
 		ctx.Log().Error("event", "execute_function", "function", "curl", "error", "unexpected_response", "status", strconv.Itoa(status), "detail", err.Error(), "response", resp, "params", params)
+		AddError(ctx, NetworkError{url, err.Error(), status})
 		return nil
 	}
 	if status < 200 || status >= 300 {
 		// this error will already be counted by hitEndpoint
 		ctx.Log().Error("event", "execute_function", "function", "curl", "error", "unexpected_response", "status", strconv.Itoa(status), "response", resp, "params", params)
+		AddError(ctx, NetworkError{url, "could not reach endpoint", status})
 		return nil
 	}
-	selector := ""
-	if len(params) >= 4 {
-		selector = extractStringParam(params[3])
-	}
-	if selector != "" {
-		j, _ := NewJDocFromString("")
-		if !j.IsValidPath(selector) {
-			ctx.Log().Error("event", "execute_function", "function", "curl", "error", "invalid_path_selector", "params", params, "selector", selector, "params", params)
-			stats.IncErrors()
-			return nil
-		}
-		jresp, err := NewJDocFromString(resp)
-		if err != nil {
-			ctx.Log().Error("event", "execute_function", "function", "curl", "error", "no_json_response", "params", params, "detail", err.Error(), "response", resp)
-			stats.IncErrors()
-			return nil
-		}
-		result := jresp.EvalPath(ctx, selector)
-		if result == nil {
-			ctx.Log().Error("event", "execute_function", "function", "curl", "error", "selector_yields_blank_response", "params", params, "response", resp, "selector", selector)
-			stats.IncErrors()
-			return nil
-		}
-		return result
+	var res interface{}
+	err = json.Unmarshal([]byte(resp), &res)
+	if err != nil {
+		return resp
 	} else {
-		var res interface{}
-		err := json.Unmarshal([]byte(resp), &res)
-		if err != nil {
-			return resp
-		} else {
-			return res
-		}
+		return res
 	}
 }
 
 // fnmHeader function to obtain http header value from incoming event by key.
 func fnHeader(ctx Context, doc *JDoc, params []string) interface{} {
 	stats := ctx.Value(EelTotalStats).(*ServiceStats)
-	if params == nil || len(params) != 1 {
+	if params == nil || len(params) > 1 {
 		ctx.Log().Error("event", "execute_function", "function", "header", "error", "wrong_number_of_parameters", "params", params)
 		stats.IncErrors()
+		AddError(ctx, SyntaxError{"wrong number of parameters in call to header function", "header", params})
 		return ""
 	}
-	key := extractStringParam(params[0])
 	header := ctx.Value(EelRequestHeader)
 	if header == nil {
 		ctx.Log().Info("event", "execute_function", "function", "header", "message", "header_object_not_found")
+		stats.IncErrors()
+		AddError(ctx, RuntimeError{"header object not found in call to header function", "header", params})
 		return ""
 	}
 	h, ok := header.(http.Header)
 	if !ok {
 		ctx.Log().Info("event", "execute_function", "function", "header", "message", "header_object_not_valid")
+		AddError(ctx, RuntimeError{"header object not valid in call to header function", "header", params})
+		stats.IncErrors()
 		return ""
 	}
-	return h.Get(key)
+	if len(params) == 1 && len(params[0]) > 2 {
+		key := extractStringParam(params[0])
+		return h.Get(key)
+	} else {
+		return h
+	}
 }
 
 // fnUuid return a new uuid.
@@ -555,12 +633,14 @@ func fnUuid(ctx Context, doc *JDoc, params []string) interface{} {
 	if params == nil || params[0] != "" {
 		ctx.Log().Error("event", "execute_function", "function", "uuid", "error", "no_parameters_expected", "params", params)
 		stats.IncErrors()
+		AddError(ctx, SyntaxError{fmt.Sprintf("no parameters expected in call to uuid function"), "uuid", params})
 		return ""
 	}
 	uuid, err := NewUUID()
 	if err != nil {
 		ctx.Log().Error("event", "execute_function", "function", "uuid", "error", "uuid_generator", "params", params)
 		stats.IncErrors()
+		AddError(ctx, RuntimeError{fmt.Sprintf("uuid generator error in call to uuid function"), "uuid", params})
 		return ""
 	}
 	return uuid
@@ -572,6 +652,7 @@ func fnTraceId(ctx Context, doc *JDoc, params []string) interface{} {
 	if params == nil || params[0] != "" {
 		ctx.Log().Error("event", "execute_function", "function", "traceid", "error", "no_parameters_expected", "params", params)
 		stats.IncErrors()
+		AddError(ctx, SyntaxError{fmt.Sprintf("no parameters expected in call to uuid function"), "traceid", params})
 		return ""
 	}
 	return ctx.LogValue("tx.traceId")
@@ -583,6 +664,7 @@ func fnTime(ctx Context, doc *JDoc, params []string) interface{} {
 	if params == nil || params[0] != "" {
 		ctx.Log().Error("event", "execute_function", "function", "time", "error", "no_parameters_expected", "params", params)
 		stats.IncErrors()
+		AddError(ctx, SyntaxError{fmt.Sprintf("no parameters expected in call to uuid function"), "time", params})
 		return ""
 	}
 	return time.Now().UnixNano()
@@ -594,6 +676,7 @@ func fnIdent(ctx Context, doc *JDoc, params []string) interface{} {
 	if params == nil || len(params) != 1 {
 		ctx.Log().Error("event", "execute_function", "function", "ident", "error", "wrong_number_of_parameters", "params", params)
 		stats.IncErrors()
+		AddError(ctx, SyntaxError{fmt.Sprintf("wrong number of parameters in call to ident function"), "ident", params})
 		return ""
 	}
 	return extractStringParam(params[0])
@@ -605,6 +688,7 @@ func fnUpper(ctx Context, doc *JDoc, params []string) interface{} {
 	if params == nil || len(params) != 1 {
 		ctx.Log().Error("event", "execute_function", "function", "upper", "error", "wrong_number_of_parameters", "params", params)
 		stats.IncErrors()
+		AddError(ctx, SyntaxError{fmt.Sprintf("wrong number of parameters in call to upper function"), "upper", params})
 		return ""
 	}
 	return strings.ToUpper(extractStringParam(params[0]))
@@ -616,6 +700,7 @@ func fnLower(ctx Context, doc *JDoc, params []string) interface{} {
 	if params == nil || len(params) != 1 {
 		ctx.Log().Error("event", "execute_function", "function", "lower", "error", "wrong_number_of_parameters", "params", params)
 		stats.IncErrors()
+		AddError(ctx, SyntaxError{fmt.Sprintf("wrong number of parameters in call to lower function"), "lower", params})
 		return ""
 	}
 	return strings.ToLower(extractStringParam(params[0]))
@@ -627,18 +712,21 @@ func fnSubstr(ctx Context, doc *JDoc, params []string) interface{} {
 	if params == nil || len(params) != 3 {
 		ctx.Log().Error("event", "execute_function", "function", "substr", "error", "wrong_number_of_parameters", "params", params)
 		stats.IncErrors()
+		AddError(ctx, SyntaxError{fmt.Sprintf("wrong number of parameters in call to substr function"), "substr", params})
 		return ""
 	}
 	i, err := strconv.Atoi(extractStringParam(params[1]))
 	if err != nil {
-		ctx.Log().Error("event", "execute_function", "function", "substr", "error", "param_1_not_int", "params", params)
+		ctx.Log().Error("event", "execute_function", "function", "substr", "error", "param_not_int", "params", params)
 		stats.IncErrors()
+		AddError(ctx, SyntaxError{fmt.Sprintf("non int parameters in call to substr function"), "substr", params})
 		return ""
 	}
 	j, err := strconv.Atoi(extractStringParam(params[2]))
 	if err != nil {
-		ctx.Log().Error("event", "execute_function", "function", "substr", "error", "param_2_not_int", "params", params)
+		ctx.Log().Error("event", "execute_function", "function", "substr", "error", "param_not_int", "params", params)
 		stats.IncErrors()
+		AddError(ctx, SyntaxError{fmt.Sprintf("non int parameters in call to substr function"), "substr", params})
 		return ""
 	}
 	return extractStringParam(params[0])[i:j]
@@ -647,25 +735,46 @@ func fnSubstr(ctx Context, doc *JDoc, params []string) interface{} {
 // fnEval function to exaluate a jpath expression agains current document or against a document passed in as parameter. Often useful in combination with fnCurl.
 func fnEval(ctx Context, doc *JDoc, params []string) interface{} {
 	stats := ctx.Value(EelTotalStats).(*ServiceStats)
-	if params == nil {
+	if params == nil || len(params) == 0 || len(params) > 2 {
 		ctx.Log().Error("event", "execute_function", "function", "eval", "error", "wrong_number_of_parameters", "params", params)
 		stats.IncErrors()
+		AddError(ctx, SyntaxError{fmt.Sprintf("wrong number of parameters in call to eval function"), "eval", params})
 		return ""
 	} else if len(params) == 1 {
 		return doc.EvalPath(ctx, extractStringParam(params[0]))
-	} else if len(params) == 2 {
+	} else {
 		ldoc, err := NewJDocFromString(extractStringParam(params[1]))
 		if err != nil {
 			ctx.Log().Error("event", "execute_function", "function", "eval", "error", "json_expected", "params", params)
 			stats.IncErrors()
+			AddError(ctx, SyntaxError{fmt.Sprintf("non json parameters in call to eval function"), "eval", params})
 			return ""
 		}
 		return ldoc.EvalPath(ctx, extractStringParam(params[0]))
-	} else {
-		ctx.Log().Error("event", "execute_function", "function", "eval", "error", "wrong_number_of_parameters", "params", params)
-		stats.IncErrors()
-		return ""
 	}
+}
+
+// fnLen functions returns length of parameter.
+func fnLen(ctx Context, doc *JDoc, params []string) interface{} {
+	stats := ctx.Value(EelTotalStats).(*ServiceStats)
+	if params == nil || len(params) != 1 {
+		ctx.Log().Error("event", "execute_function", "function", "len", "error", "wrong_number_of_parameters", "params", params)
+		stats.IncErrors()
+		AddError(ctx, SyntaxError{fmt.Sprintf("wrong number of parameters in call to len function"), "len", params})
+		return nil
+	}
+	var obj interface{}
+	err := json.Unmarshal([]byte(extractStringParam(params[0])), &obj)
+	if err != nil {
+		return len(extractStringParam(params[0]))
+	}
+	switch obj.(type) {
+	case []interface{}:
+		return len(obj.([]interface{}))
+	case map[string]interface{}:
+		return len(obj.(map[string]interface{}))
+	}
+	return 0
 }
 
 // fnJoin functions joins two JSON documents given as parameters and returns results.
@@ -674,19 +783,22 @@ func fnJoin(ctx Context, doc *JDoc, params []string) interface{} {
 	if params == nil || len(params) != 2 {
 		ctx.Log().Error("event", "execute_function", "function", "join", "error", "wrong_number_of_parameters", "params", params)
 		stats.IncErrors()
-		return ""
+		AddError(ctx, SyntaxError{fmt.Sprintf("wrong number of parameters in call to join function"), "join", params})
+		return nil
 	}
 	docA, err := NewJDocFromString(extractStringParam(params[0]))
 	if err != nil {
-		ctx.Log().Error("event", "execute_function", "function", "join", "error", "json_expected_p0", "params", params)
+		ctx.Log().Error("event", "execute_function", "function", "join", "error", "non_json_parameter", "params", params)
 		stats.IncErrors()
-		return ""
+		AddError(ctx, SyntaxError{fmt.Sprintf("non json parameters in call to join function"), "join", params})
+		return nil
 	}
 	docB, err := NewJDocFromString(extractStringParam(params[1]))
 	if err != nil {
-		ctx.Log().Error("event", "execute_function", "function", "join", "error", "json_expected_p1", "params", params)
+		ctx.Log().Error("event", "execute_function", "function", "join", "error", "non_json_parameter", "params", params)
 		stats.IncErrors()
-		return ""
+		AddError(ctx, SyntaxError{fmt.Sprintf("non json parameters in call to join function"), "join", params})
+		return nil
 	}
 	var section interface{}
 	section = docA.GetOriginalObject()
@@ -716,13 +828,15 @@ func fnJoin(ctx Context, doc *JDoc, params []string) interface{} {
 		if m == nil {
 			ctx.Log().Error("event", "execute_function", "function", "join", "error", "merge_failed", "params", params)
 			stats.IncErrors()
-			return ""
+			AddError(ctx, RuntimeError{fmt.Sprintf("merge failed in call to join function"), "join", params})
+			return nil
 		}
 		docC, err := NewJDocFromInterface(m)
 		if err != nil {
 			ctx.Log().Error("event", "execute_function", "function", "join", "error", "invalid_merge_json", "params", params)
 			stats.IncErrors()
-			return ""
+			AddError(ctx, RuntimeError{fmt.Sprintf("non json merge result in call to join function"), "join", params})
+			return nil
 		}
 		return docC.GetOriginalObject()
 	}
@@ -734,6 +848,7 @@ func fnProp(ctx Context, doc *JDoc, params []string) interface{} {
 	if params == nil || len(params) != 1 {
 		ctx.Log().Error("event", "execute_function", "function", "prop", "error", "wrong_number_of_parameters", "params", params)
 		stats.IncErrors()
+		AddError(ctx, SyntaxError{fmt.Sprintf("wrong number of parameters in call to prop function"), "prop", params})
 		return ""
 	}
 	cp := GetCustomProperties(ctx)
@@ -746,6 +861,7 @@ func fnProp(ctx Context, doc *JDoc, params []string) interface{} {
 	if props == nil || props[extractStringParam(params[0])] == nil {
 		ctx.Log().Error("event", "execute_function", "function", "prop", "error", "property_not_found", "params", params)
 		stats.IncErrors()
+		AddError(ctx, RuntimeError{fmt.Sprintf("property %s not found in call to prop function", extractStringParam(params[0])), "prop", params})
 		return ""
 	}
 	return doc.ParseExpression(ctx, props[extractStringParam(params[0])])
@@ -757,12 +873,14 @@ func fnTenant(ctx Context, doc *JDoc, params []string) interface{} {
 	if params == nil || params[0] != "" {
 		ctx.Log().Error("event", "execute_function", "function", "tenant", "error", "no_parameters_expected", "params", params)
 		stats.IncErrors()
+		AddError(ctx, SyntaxError{fmt.Sprintf("no parameters expected in call to tenant function"), "tenant", params})
 		return ""
 	}
 	h := GetCurrentHandlerConfig(ctx)
 	if h == nil {
 		ctx.Log().Error("event", "execute_function", "function", "tenant", "error", "no_handler", "params", params)
 		stats.IncErrors()
+		AddError(ctx, RuntimeError{fmt.Sprintf("current handler not found in call to tenant function"), "tenant", params})
 		return ""
 	}
 	return h.TenantId
@@ -774,24 +892,28 @@ func fnTransform(ctx Context, doc *JDoc, params []string) interface{} {
 	if params == nil || len(params) == 0 || len(params) > 4 {
 		ctx.Log().Error("event", "execute_function", "function", "transform", "error", "wrong_number_of_parameters", "params", params)
 		stats.IncErrors()
-		return ""
+		AddError(ctx, SyntaxError{fmt.Sprintf("wrong number of parameters in call to transform function"), "transform", params})
+		return nil
 	}
 	h := GetCurrentHandlerConfig(ctx)
 	if h == nil {
 		ctx.Log().Error("event", "execute_function", "function", "transform", "error", "no_handler", "params", params)
 		stats.IncErrors()
-		return ""
+		AddError(ctx, RuntimeError{fmt.Sprintf("current handler not found in call to transform function"), "transform", params})
+		return nil
 	}
 	if h.Transformations == nil {
 		ctx.Log().Error("event", "execute_function", "function", "transform", "error", "no_named_transformations", "params", params)
 		stats.IncErrors()
-		return ""
+		AddError(ctx, RuntimeError{fmt.Sprintf("no named transformations found in call to transform function"), "transform", params})
+		return nil
 	}
 	t := h.Transformations[extractStringParam(params[0])]
 	if t == nil {
 		ctx.Log().Error("event", "execute_function", "function", "transform", "error", "unknown_transformation", "params", params)
 		stats.IncErrors()
-		return ""
+		AddError(ctx, RuntimeError{fmt.Sprintf("no named transformation %s found in call to transform function", extractStringParam(params[0])), "transform", params})
+		return nil
 	}
 	var section interface{}
 	section = doc.GetOriginalObject()
@@ -800,7 +922,8 @@ func fnTransform(ctx Context, doc *JDoc, params []string) interface{} {
 		if err != nil {
 			ctx.Log().Error("event", "execute_function", "function", "transform", "error", "invalid_json", "params", params)
 			stats.IncErrors()
-			return ""
+			AddError(ctx, SyntaxError{fmt.Sprintf("non json parameters in call to transform function"), "transform", params})
+			return nil
 		}
 	}
 	var pattern *JDoc
@@ -810,6 +933,7 @@ func fnTransform(ctx Context, doc *JDoc, params []string) interface{} {
 		if err != nil {
 			ctx.Log().Error("event", "execute_function", "function", "transform", "error", "non_json_parameter", "params", params)
 			stats.IncErrors()
+			AddError(ctx, SyntaxError{fmt.Sprintf("non json parameters in call to transform function"), "transform", params})
 			return nil
 		}
 	}
@@ -820,6 +944,7 @@ func fnTransform(ctx Context, doc *JDoc, params []string) interface{} {
 		if err != nil {
 			ctx.Log().Error("event", "execute_function", "function", "transform", "error", "non_json_parameter", "params", params)
 			stats.IncErrors()
+			AddError(ctx, SyntaxError{fmt.Sprintf("non json parameters in call to transform function"), "transform", params})
 			return nil
 		}
 	}
@@ -836,7 +961,8 @@ func fnTransform(ctx Context, doc *JDoc, params []string) interface{} {
 	if err != nil {
 		ctx.Log().Error("event", "execute_function", "function", "transform", "error", err.Error(), "params", params)
 		stats.IncErrors()
-		return ""
+		AddError(ctx, RuntimeError{fmt.Sprintf("transformation error in call to transform function"), "transform", params})
+		return nil
 	}
 	var littleRes *JDoc
 	if t.IsTransformationByExample {
@@ -853,24 +979,28 @@ func fnITransform(ctx Context, doc *JDoc, params []string) interface{} {
 	if params == nil || len(params) == 0 || len(params) > 4 {
 		ctx.Log().Error("event", "execute_function", "function", "itransform", "error", "wrong_number_of_parameters", "params", params)
 		stats.IncErrors()
-		return ""
+		AddError(ctx, SyntaxError{fmt.Sprintf("wrong number of parameters in call to itransform function"), "itransform", params})
+		return nil
 	}
 	h := GetCurrentHandlerConfig(ctx)
 	if h == nil {
 		ctx.Log().Error("event", "execute_function", "function", "itransform", "error", "no_handler", "params", params)
 		stats.IncErrors()
-		return ""
+		AddError(ctx, RuntimeError{fmt.Sprintf("current handler not found in call to itransform function"), "itransform", params})
+		return nil
 	}
 	if h.Transformations == nil {
 		ctx.Log().Error("event", "execute_function", "function", "itransform", "error", "no_named_transformations", "params", params)
 		stats.IncErrors()
-		return ""
+		AddError(ctx, RuntimeError{fmt.Sprintf("no named transformations found in call to itransform function"), "itransform", params})
+		return nil
 	}
 	t := h.Transformations[extractStringParam(params[0])]
 	if t == nil {
 		ctx.Log().Error("event", "execute_function", "function", "itransform", "error", "unknown_transformation", "params", params)
 		stats.IncErrors()
-		return ""
+		AddError(ctx, RuntimeError{fmt.Sprintf("no named transformation %s found in call to itransform function", extractStringParam(params[0])), "itransform", params})
+		return nil
 	}
 	var section interface{}
 	section = doc.GetOriginalObject()
@@ -879,7 +1009,8 @@ func fnITransform(ctx Context, doc *JDoc, params []string) interface{} {
 		if err != nil {
 			ctx.Log().Error("event", "execute_function", "function", "itransform", "error", "invalid_json", "params", params)
 			stats.IncErrors()
-			return ""
+			AddError(ctx, SyntaxError{fmt.Sprintf("non json parameters in call to itransform function"), "itransform", params})
+			return nil
 		}
 	}
 	var pattern *JDoc
@@ -889,6 +1020,7 @@ func fnITransform(ctx Context, doc *JDoc, params []string) interface{} {
 		if err != nil {
 			ctx.Log().Error("event", "execute_function", "function", "itransform", "error", "non_json_parameter", "params", params)
 			stats.IncErrors()
+			AddError(ctx, SyntaxError{fmt.Sprintf("non json parameters in call to itransform function"), "itransform", params})
 			return nil
 		}
 	}
@@ -899,6 +1031,7 @@ func fnITransform(ctx Context, doc *JDoc, params []string) interface{} {
 		if err != nil {
 			ctx.Log().Error("event", "execute_function", "function", "itransform", "error", "non_json_parameter", "params", params)
 			stats.IncErrors()
+			AddError(ctx, SyntaxError{fmt.Sprintf("non json parameters in call to itransform function"), "itransform", params})
 			return nil
 		}
 	}
@@ -920,7 +1053,8 @@ func fnITransform(ctx Context, doc *JDoc, params []string) interface{} {
 			if err != nil {
 				ctx.Log().Error("event", "execute_function", "function", "itransform", "error", err.Error(), "params", params)
 				stats.IncErrors()
-				return ""
+				AddError(ctx, RuntimeError{fmt.Sprintf("transformation error in call to itransform function"), "itransform", params})
+				return nil
 			}
 			var littleRes *JDoc
 			if t.IsTransformationByExample {
@@ -975,7 +1109,8 @@ func fnITransform(ctx Context, doc *JDoc, params []string) interface{} {
 		if err != nil {
 			ctx.Log().Error("event", "execute_function", "function", "itransform", "error", err.Error(), "params", params)
 			stats.IncErrors()
-			return ""
+			AddError(ctx, RuntimeError{fmt.Sprintf("transformation error in call to itransform function: %s", err.Error()), "itransform", params})
+			return nil
 		}
 		var littleRes *JDoc
 		if t.IsTransformationByExample {
@@ -993,6 +1128,7 @@ func fnFormat(ctx Context, doc *JDoc, params []string) interface{} {
 	if params == nil || len(params) == 0 || len(params) > 3 {
 		ctx.Log().Error("event", "execute_function", "function", "format", "error", "wrong_number_of_parameters", "params", params)
 		stats.IncErrors()
+		AddError(ctx, SyntaxError{fmt.Sprintf("wrong number of parameters in call to format function"), "format", params})
 		return ""
 	}
 	ts := time.Now()
@@ -1001,6 +1137,7 @@ func fnFormat(ctx Context, doc *JDoc, params []string) interface{} {
 		if err != nil {
 			ctx.Log().Error("event", "execute_function", "function", "format", "error", "time_stamp_expected", "params", params)
 			stats.IncErrors()
+			AddError(ctx, SyntaxError{fmt.Sprintf("time stamp parameter expected in call to format function"), "format", params})
 			return ""
 		}
 		ts = time.Unix(int64(ms/1000), 0)
@@ -1015,6 +1152,7 @@ func fnFormat(ctx Context, doc *JDoc, params []string) interface{} {
 			ts = ts.In(tz)
 		} else {
 			ctx.Log().Error("event", "failed_loading_location", "location", extractStringParam(params[2]), "error", err.Error())
+			AddError(ctx, RuntimeError{fmt.Sprintf("failed loading location %s", extractStringParam(params[2])), "format", params})
 		}
 	}
 	return ts.Format(layout)
@@ -1026,6 +1164,7 @@ func fnTrue(ctx Context, doc *JDoc, params []string) interface{} {
 	if params == nil || params[0] != "" {
 		ctx.Log().Error("event", "execute_function", "function", "true", "error", "wrong_number_of_parameters", "params", params)
 		stats.IncErrors()
+		AddError(ctx, SyntaxError{fmt.Sprintf("no parameters expected in call to true function"), "true", params})
 		return ""
 	}
 	return true
@@ -1037,9 +1176,32 @@ func fnFalse(ctx Context, doc *JDoc, params []string) interface{} {
 	if params == nil || params[0] != "" {
 		ctx.Log().Error("event", "execute_function", "function", "false", "error", "wrong_number_of_parameters", "params", params)
 		stats.IncErrors()
+		AddError(ctx, SyntaxError{fmt.Sprintf("no parameters expected in call to false function"), "false", params})
 		return ""
 	}
 	return false
+}
+
+// fnExists returns true if a particular path exists in a json document.
+func fnExists(ctx Context, doc *JDoc, params []string) interface{} {
+	stats := ctx.Value(EelTotalStats).(*ServiceStats)
+	if params == nil || len(params) == 0 || len(params) > 2 {
+		ctx.Log().Error("event", "execute_function", "function", "exists", "error", "wrong_number_of_parameters", "params", params)
+		stats.IncErrors()
+		AddError(ctx, SyntaxError{fmt.Sprintf("wrong number of parameters in call to exists function"), "exists", params})
+		return false
+	}
+	if len(params) == 2 {
+		var err error
+		doc, err = NewJDocFromString(extractStringParam(params[1]))
+		if err != nil {
+			ctx.Log().Error("event", "execute_function", "function", "exists", "error", "json_expected", "params", params)
+			stats.IncErrors()
+			AddError(ctx, SyntaxError{fmt.Sprintf("non json parameters in call to exists function"), "exists", params})
+			return false
+		}
+	}
+	return doc.HasPath(extractStringParam(params[0]))
 }
 
 func extractStringParam(param string) string {
