@@ -48,18 +48,22 @@ type (
 	}
 )
 
-func NewJParam(param string) *JParam {
+func NewJParam(param string, typeHint string) *JParam {
 	//TODO: add ctx and expected type and errors
+	//TODO: validate type hint
 	param = strings.TrimSpace(param)
 	if param == "" || param == "''" {
 		return &JParam{"", TYPE_NULL, nil}
 	}
-	if len(param) >= 2 && strings.HasPrefix(param, "'") && strings.HasSuffix(param, "'") {
+	/*if len(param) >= 2 && strings.HasPrefix(param, "'") && strings.HasSuffix(param, "'") {
 		return &JParam{param[1 : len(param)-1], TYPE_STRING, nil}
+	}*/
+	if typeHint == TYPE_STRING {
+		return &JParam{param, TYPE_STRING, nil}
 	}
-	if strings.Contains(param, "{{") && strings.Contains(param, "}}") {
+	/*if strings.Contains(param, "{{") && strings.Contains(param, "}}") {
 		return &JParam{param, TYPE_EXPR, nil}
-	}
+	}*/
 	if strings.HasPrefix(param, "{") && strings.HasSuffix(param, "}") {
 		var m map[string]interface{}
 		err := json.Unmarshal([]byte(param), &m)
@@ -171,6 +175,7 @@ func (p *JParam) GetArrayVal() []interface{} {
 }
 
 const (
+	//TODO: change to enum?
 	TYPE_STRING = "string"
 	TYPE_INT    = "int"
 	TYPE_FLOAT  = "float"
@@ -178,7 +183,7 @@ const (
 	TYPE_MAP    = "map"
 	TYPE_BOOL   = "bool"
 	TYPE_NULL   = "null"
-	TYPE_EXPR   = "expression"
+	//TYPE_EXPR   = "expression"
 )
 
 // NewFunction gets function implementation by name.

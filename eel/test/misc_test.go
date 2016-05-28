@@ -198,7 +198,7 @@ func TestParserFormat(t *testing.T) {
 		t.Fatal("could not get event1")
 	}
 	expected := "Tue Aug 18 17:35:56 2015"
-	test := "{{format('1439937356000','Mon Jan 2 15:04:05 2006','EST')}}"
+	test := "{{format(1439937356000,'Mon Jan 2 15:04:05 2006','EST')}}"
 	jexpr, err := NewJExpr(test)
 	if err != nil {
 		t.Fatalf("error: %s\n", err.Error())
@@ -219,7 +219,7 @@ func TestParserJoin(t *testing.T) {
 	if err != nil {
 		t.Errorf("could not load expected response: %s\n", err.Error())
 	}
-	test := "{{join('{\"a\":\"1\"}','{\"b\":\"2\"}')}}"
+	test := `{{join('{"a":"1"}','{"b":"2"}')}}`
 	jexpr, err := NewJExpr(test)
 	if err != nil {
 		t.Errorf("error: %s\n", err.Error())

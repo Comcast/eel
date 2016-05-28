@@ -28,12 +28,18 @@ import (
 type astType int
 
 const (
-	astPath     astType = iota // 0 simple path
-	astFunction                // 1 curl etc.
-	astParam                   // 2 'foo'
-	astText                    // 3 plain text
-	astAgg                     // 4 concatenation of sub elements
+	astPath        astType = iota // 0 simple path
+	astFunction                   // 1 curl etc.
+	astParam                      // 2 true
+	astStringParam                // 3 'foo'
+	astText                       // 3 plain text
+	astAgg                        // 4 concatenation of sub elements
 )
+
+// {{equals({{ident('fo')}}o,'foo')}}
+// {{equals('{{ident('fo')}}o','foo')}}
+// {{ident('{{ident({{equals(foo,'foo')}})}}ue')}}
+// {{ident({{join({"a":"1"},{"b":"2"})}})}}
 
 // JExprItem represents a node in an abstract syntax tree of a parsed jpath expression. Pointer to root node also used as handle for a parser instance.
 type JExprItem struct {
@@ -116,10 +122,19 @@ func (a *JExprItem) parse(expr string) error {
 			a.kids = append(a.kids, t)
 		case lexItemParam:
 			if f != nil {
+				//TODO: param errors
 				p := newJExprItem(astParam, item.val, f)
 				f.kids = append(f.kids, p)
 			} else {
 				return errors.New("param without function")
+			}
+		case lexItemStringParam:
+			if f != nil {
+				//TODO: param errors
+				p := newJExprItem(astStringParam, item.val[1:len(item.val)-1], f)
+				f.kids = append(f.kids, p)
+			} else {
+				return errors.New("string param without function")
 			}
 		case lexItemRightBracket:
 			if f != nil {
@@ -152,6 +167,8 @@ func (a *JExprItem) typeString() string {
 		return "FUNCTION"
 	case astParam:
 		return "PARAM"
+	case astStringParam:
+		return "STRPARAM"
 	case astText:
 		return "TEXT"
 	case astAgg:
@@ -201,11 +218,13 @@ func (a *JExprItem) list(level int, list [][]string) [][]string {
 func (a *JExprItem) explodeParams() (bool, error) {
 	exploded := false
 	var err error
-	if a.typ == astParam && !a.exploded {
+	if (a.typ == astParam || a.typ == astStringParam) && !a.exploded {
 		valStr := ToFlatString(a.val)
-		if strings.Contains(valStr, leftMeta) || strings.Contains(valStr, rightMeta) {
+		/*if a.typ == astStringParam {
+			valStr = valStr[1 : len(valStr)-1]
+		}*/
+		if strings.Contains(valStr, leftMeta) || strings.Contains(valStr, rightMeta) { // TODO: condition seems brittle
 			a.typ = astAgg
-			//err = a.parse(extractStringParam(valStr))
 			err = a.parse(valStr)
 			if err != nil {
 				return false, err
@@ -255,9 +274,14 @@ func (a *JExprItem) collapseLeaf(ctx Context, doc *JDoc) bool {
 			a.val = ""
 		}
 		if a.mom.typ == astAgg {
-			a.typ = astText
+			a.typ = astText //TODO: should aggregation always be of type string?
 		} else if a.mom.typ == astFunction {
-			a.typ = astParam
+			switch a.val.(type) {
+			case string:
+				a.typ = astStringParam
+			default:
+				a.typ = astParam
+			}
 		} else {
 			//ctx.Log.Debug("event", "ast_collapse_failure", "reason", "wrong_type", "val", a.val, "type", a.typeString())
 		}
@@ -273,18 +297,23 @@ func (a *JExprItem) collapseLeaf(ctx Context, doc *JDoc) bool {
 			return false
 		}
 		// odd: currently parameter-less functions require a single blank string as parameter
-		param := NewJParam("")
+		param := NewJParam("", TYPE_STRING)
 		a.val = f.ExecuteFunction(ctx, doc, []*JParam{param}) // retain type of function return values
 		if a.val == nil {
 			a.val = ""
 		}
 		if a.mom.typ == astAgg {
-			a.typ = astText
+			a.typ = astText //TODO: should aggregation always be of type string?
 		} else if a.mom.typ == astFunction {
-			a.typ = astParam
+			switch a.val.(type) {
+			case string:
+				a.typ = astStringParam
+			default:
+				a.typ = astParam
+			}
 		}
 		return true
-	case astParam: // function with parameters
+	case astParam, astStringParam: // function with parameters
 		if a.mom == nil {
 			//ctx.Log.Debug("event", "ast_collapse_failure", "reason", "mom_is_nil", "val", a.val, "type", a.typeString())
 			return false
@@ -304,10 +333,15 @@ func (a *JExprItem) collapseLeaf(ctx Context, doc *JDoc) bool {
 		}
 		params := make([]*JParam, 0)
 		for _, k := range a.mom.kids { // only execute if all paramters are ready
-			if k.typ != astParam {
+			if k.typ != astParam && k.typ != astStringParam {
 				return false
 			}
-			p := NewJParam(ToFlatString(k.val))
+			p := new(JParam)
+			if k.typ == astStringParam {
+				p = NewJParam(ToFlatString(k.val), TYPE_STRING)
+			} else {
+				p = NewJParam(ToFlatString(k.val), "")
+			}
 			if debugLexer {
 				p.Log()
 			}
@@ -316,7 +350,13 @@ func (a *JExprItem) collapseLeaf(ctx Context, doc *JDoc) bool {
 		a.mom.val = f.ExecuteFunction(ctx, doc, params) // retain type of function return values
 		a.mom.kids = make([]*JExprItem, 0)
 		if a.mom.mom.typ == astFunction {
-			a.mom.typ = astParam
+			switch a.mom.val.(type) {
+			case string:
+				a.mom.typ = astStringParam
+				//a.mom.val = "'" + a.mom.val.(string) + "'"
+			default:
+				a.mom.typ = astParam
+			}
 		} else if a.mom.mom.typ == astAgg {
 			a.mom.typ = astText
 		} else {
@@ -335,8 +375,15 @@ func (a *JExprItem) collapseLeaf(ctx Context, doc *JDoc) bool {
 		if len(a.mom.kids) == 1 { // retain type for single value aggregations, except for nil which is converted to ""
 			if a.mom.mom != nil && a.mom.mom.typ == astFunction {
 				//a.mom.val = "'" + ToFlatString(a.val) + "'"
-				a.mom.val = ToFlatString(a.val)
-				a.mom.typ = astParam
+				switch a.val.(type) {
+				case string:
+					//a.mom.val = "'" + a.val.(string) + "'"
+					a.mom.val = a.val
+					a.mom.typ = astStringParam
+				default:
+					a.mom.val = a.val
+					a.mom.typ = astParam
+				}
 			} else {
 				a.mom.val = a.val
 				a.mom.typ = astText
@@ -353,8 +400,8 @@ func (a *JExprItem) collapseLeaf(ctx Context, doc *JDoc) bool {
 				txt += ToFlatString(k.val)
 			}
 			if a.mom.mom != nil && a.mom.mom.typ == astFunction {
-				a.mom.val = "'" + txt + "'"
-				a.mom.typ = astParam
+				a.mom.val = txt
+				a.mom.typ = astStringParam
 			} else {
 				a.mom.val = txt
 				a.mom.typ = astText
@@ -419,6 +466,9 @@ func (a *JExprItem) Execute(ctx Context, doc *JDoc) interface{} {
 
 // ExecuteDebug executes parsed jpath expression in debug mode and returns result as interface as well as detailed tabular debug information.
 func (a *JExprItem) ExecuteDebug(ctx Context, doc *JDoc) (interface{}, [][][]string) {
+	//fmt.Printf("//////ast:\n")
+	//a.print(0)
+	//fmt.Printf("//////\n")
 	trees := make([][][]string, 0)
 	trees = append(trees, a.list(0, nil))
 	for {

@@ -48,14 +48,15 @@ const (
 	lexItemRightBracket                    // 5 )
 	lexItemPath                            // 6 simple jpath
 	lexItemFunction                        // 7 curl etc.
-	lexItemParam                           // 8 'foo'
-	lexItemDot                             // 9 the cursor, spelled '.'
-	lexItemText                            // 10 plain text
-	lexItemInsideText                      // 11
+	lexItemParam                           // 8 true
+	lexItemStringParam                     // 9 'foo'
+	lexItemDot                             // 10 the cursor, spelled '.'
+	lexItemText                            // 11 plain text
+	lexItemInsideText                      // 12
 )
 
 const (
-	debugLexer = true
+	debugLexer = false
 )
 
 func (i *lexItem) typeString() string {
@@ -78,6 +79,8 @@ func (i *lexItem) typeString() string {
 		return "FUNCTION"
 	case lexItemParam:
 		return "PARAM"
+	case lexItemStringParam:
+		return "STRPARAM"
 	case lexItemDot:
 		return "DOT"
 	case lexItemText:
@@ -301,7 +304,7 @@ func lexStringParam(l *lexer) stateFn {
 		case r == '}':
 			bc--
 		case r == '\'' && bc == 0:
-			l.emit(lexItemParam)
+			l.emit(lexItemStringParam)
 			return lexParamList
 		}
 	}
