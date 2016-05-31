@@ -10,7 +10,7 @@
 		"{{/data/ident}}": "{{ident('{{/content/name}}')}}",
 		"{{/data/upper}}": "{{upper('{{/content/name}}')}}",
 		"{{/data/lower}}": "{{lower('{{/content/name}}')}}",
-		"{{/data/substr}}": "{{substr('{{/content/name}}','0','1')}}"
+		"{{/data/substr}}": "{{substr('{{/content/name}}',0,1)}}"
 	},
 	"IsTransformationByExample": false,
 	"Path": "",
