@@ -268,9 +268,9 @@ func lexParam(l *lexer) stateFn {
 		switch r := l.next(); {
 		case r == eof:
 			return l.errorf("unclosed param at %d: %s\n", l.pos, l.input)
-		case r == '{':
+		case r == '{', r == '[':
 			bc++
-		case r == '}':
+		case r == '}', r == ']':
 			bc--
 		case r == ',' && bc == 0:
 			l.backup()
@@ -299,9 +299,9 @@ func lexStringParam(l *lexer) stateFn {
 		switch r := l.next(); {
 		case r == eof:
 			return l.errorf("unclosed param at %d: %s\n", l.pos, l.input)
-		case r == '{':
+		case r == '{', r == '[':
 			bc++
-		case r == '}':
+		case r == '}', r == ']':
 			bc--
 		case r == '\'' && bc == 0:
 			l.emit(lexItemStringParam)
