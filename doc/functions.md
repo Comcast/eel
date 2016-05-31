@@ -191,7 +191,7 @@ Example 1:
 Example 2:
 
 ```
-{{js('return 40+{{/content/number}}')}}
+{{js('40+{{/content/number}}')}}
 ```
 
 ### alt
@@ -211,7 +211,8 @@ Parameters:
 Example:
 
 ```
-{{alt('{{eval('/item','{{curl('GET', '{{prop('MoleculeMappingServiceUrl')}}{{/content/accountId}}')}}')}}')}}','{{/content/accountId}}')}}
+{{alt('{{eval('/item',{{curl('GET', '{{prop('MoleculeMappingServiceUrl')}}{{/content/accountId}}')}})}}','{{/content/accountId}}')}}
+
 ```
 
 Here the account ID is returned unmodified if we cannot map it to a Comcast GUID.
@@ -301,7 +302,7 @@ Syntax:
 Example:
 
 ```
-{{join({{eval('/code/data')}}, {\"protocol\":\"apns\"})}}
+{{join({{eval('/code/data')}}, {"protocol":"apns"})}}
 ```
 
 ### format
@@ -416,7 +417,7 @@ Parameters:
 Example:
 
 ```
-{{ifte({{equals({{/data/name}},'')}}','','by {{/data/name}}')}}
+{{ifte({{equals({{/data/name}},'')}},'','by {{/data/name}}')}}
 ```
 
 ### equals
