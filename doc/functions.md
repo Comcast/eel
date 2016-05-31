@@ -49,7 +49,7 @@ Note also the use of the prop() function to look up the URL of the external serv
 _Example 3:_
 
 ```
-"Path" : "{{curl('POST', 'http://mappingservice', '{ \"query\" : \"{{/content/id}}\"}')}}"
+"Path" : "{{curl('POST', 'http://mappingservice', { \"query\" : \"{{/content/id}}\"})}}"
 ```
 
 Similar to Example 1 but here we are assuming that `mappingservice` expects to receive a JSON encoded query via POST.
@@ -66,7 +66,7 @@ Used to hit an external web service.
 Syntax:
 
 ```
-{{curl('<method>','<url>',['<payload>'],[<'headers'>],[<'retries'>])}}
+{{curl('<method>','<url>',['<payload>'],[<headers>],[<retries>])}}
 ```
 
 Example:
@@ -100,7 +100,7 @@ Returns input parameter unchanged.
 Syntax:
 
 ```
-{{ident('<param>')}}
+{{ident(<param>)}}
 ```
 
 Example:
@@ -116,7 +116,7 @@ Evaluates a JPath expression against the current document or document provided a
 Syntax:
 
 ```
-eval('<path>', ['<doc>'])
+eval('<path>', [<doc>])
 ```
 
 Parameters:
@@ -145,7 +145,7 @@ document rather than the current document.
 Example:
 
 ```
-{{eval('/accountId', '{"accountId":"42"}')}}
+{{eval('/accountId', {"accountId":"42"})}}
 
 ```
 
@@ -223,13 +223,19 @@ Returns length of given object (string, array, map).
 Syntax:
 
 ```
-{{len('<object>')}}
+{{len(<object>)}}
 ```
 
 Example:
 
 ```
-{{len('[1,2,3]')}}
+{{len([1,2,3])}}
+```
+
+Response:
+
+```
+3
 ```
 
 ### regex
@@ -239,7 +245,7 @@ Apply regular expression to string and return (first) match if any.
 Syntax:
 
 ```
-{{regex('<string>', '<regex>', ['<all>'])}}
+{{regex('<string>', '<regex>', [<all>])}}
 ```
 
 Parameters:
@@ -257,7 +263,7 @@ Example:
 Example 2:
 
 ```
-{{regex('(650) 233-7344', '[0-9]+', 'true')}}
+{{regex('(650) 233-7344', '[0-9]+', true)}}
 ```
 
 Result:
@@ -289,13 +295,13 @@ Join two JSON documents. Key conflicts will be resolved randomly.
 Syntax:
 
 ```
-{{join('<docA>','<docB>')}}
+{{join(<docA>, <docB>)}}
 ```
 
 Example:
 
 ```
-{{join('{{eval('/code/data')}}','{\"protocol\":\"apns\"}')}}
+{{join({{eval('/code/data')}}, {\"protocol\":\"apns\"})}}
 ```
 
 ### format
@@ -305,7 +311,7 @@ Format human readable time strings from epoch ms.
 Syntax:
 
 ```
-format('<ms>',['<layout>'],['<timezone>'])
+format(<ms>,['<layout>'],['<timezone>'])
 ```
 
 Layout must follow the golang spec and provide the format string by example using Mon Jan 2 15:04:05 MST 2006.
@@ -319,7 +325,7 @@ Parameters:
 Example:
 
 ```
-{{format('1439937356000','3:04pm', 'EST')}}
+{{format(1439937356000,'3:04pm', 'EST')}}
 ```
 
 ### and
@@ -329,13 +335,13 @@ Boolean and for one or more parameters.
 Syntax:
 
 ```
-{{and('<bool>', '<bool>', ...)}}
+{{and(<bool>, <bool>, ...)}}
 ```
 
 Example:
 
 ```
-{{and('false', '{{ident('true')}}')}}
+{{and(false, {{ident(true)}})}}
 ```
 
 ### or
@@ -345,13 +351,13 @@ Boolean or for one or more parameters.
 Syntax:
 
 ```
-{{or('<bool>', '<bool>', ...)}}
+{{or(<bool>, <bool>, ...)}}
 ```
 
 Example:
 
 ```
-{{or('false', '{{ident('true')}}')}}
+{{or(false, {{ident(true)}})}}
 ```
 
 ### not
@@ -361,13 +367,13 @@ Boolean not for one parameter.
 Syntax:
 
 ```
-{{not('<bool>')}}
+{{not(<bool>)}}
 ```
 
 Example:
 
 ```
-{{not('{{equals('{{/foo}}', 'bar')}}')}}
+{{not({{equals({{/foo}}, 'bar')}})}}
 ```
 
 ### contains
@@ -377,7 +383,7 @@ Checks if current document contains another document.
 Syntax:
 
 ```
-{{contains('<doc1>', ['<doc2>'])}}
+{{contains(<doc1>, [<doc2>])}}
 ```
 
 Parameters:
@@ -388,7 +394,7 @@ Parameters:
 Example:
 
 ```
-{{contains('{{/content}}', '{{curl('GET', 'http://mappingservice/{{/content/id}}', '', '')}}')}}
+{{contains({{/content}}, {{curl('GET', 'http://mappingservice/{{/content/id}}')}})}}
 ```
 
 ### ifte
@@ -398,7 +404,7 @@ If condition then this else that.
 Syntax:
 
 ```
-{{ifte('<condition>','<then>',['<else>'])}}
+{{ifte(<condition>, <then>, [<else>])}}
 ```
 
 Parameters:
@@ -410,7 +416,7 @@ Parameters:
 Example:
 
 ```
-{{ifte('{{equals('{{/data/name}}','')}}','','by {{/data/name}}')}}
+{{ifte({{equals({{/data/name}},'')}}','','by {{/data/name}}')}}
 ```
 
 ### equals
@@ -422,7 +428,7 @@ documents or two strings for equality.
 Syntax:
 
 ```
-{{equals('<doc1>',['<doc2>'])}}
+{{equals(<doc1>,[<doc2>])}}
 ```
 
 Parameters:
@@ -433,7 +439,7 @@ Parameters:
 Example:
 
 ```
-{{equals('{"foo":"bar"}','{"foo":"bar"}')}}
+{{equals({"foo":"bar"},{"foo":"bar"})}}
 ```
 
 Alternate two-parameter version for string comparison:
@@ -452,7 +458,7 @@ Parameters:
 Example:
 
 ```
-{{equals('foo','{{/data/bar}}')}}
+{{equals('foo',{{/data/bar}})}}
 ```
 
 ### transform
@@ -462,7 +468,7 @@ Applies named transformation.
 Syntax:
 
 ```
-{{transform('<name_of_transformation>', ['<doc>'],['<pattern>'],['<join>'])}}
+{{transform('<name_of_transformation>', [<doc>],[<pattern>],[<join>])}}
 ```
 
 Parameters:
@@ -475,7 +481,7 @@ Parameters:
 Example:
 
 ```
-{{transform('myt2', '{{/}}')}}
+{{transform('myt2', {{/}})}}
 ```
 
 Example Transformations section in topic handler config:
@@ -505,7 +511,7 @@ pattern and join parameters will all be applied to each element in the array.
 Syntax:
 
 ```
-{{transform('<name_of_transformation>', ['<doc>'],['<pattern>'],['<join>'])}}
+{{transform('<name_of_transformation>', [<doc>],[<pattern>],[<join>])}}
 ```
 
 Parameters:
@@ -523,7 +529,7 @@ Chooses elements from an array or map that match a given pattern.
 Syntax:
 
 ```
-{{choose('<doc>','<pattern>')}}
+{{choose(<doc>,<pattern>)}}
 ```
 
 Parameters:
@@ -534,7 +540,7 @@ Parameters:
 Example:
 
 ```
-{{choose('{{/}}','{{prop('mypattern')}}')}}
+{{choose({{/}},{{prop('mypattern')}})}}
 
 "CustomProperties" : {
 	"mypattern" : {
@@ -550,7 +556,7 @@ Converts an array of arrays into a flat array.
 Syntax:
 
 ```
-{{crush('<doc>')}}
+{{crush(<doc>)}}
 ```
 
 Parameters:
@@ -560,7 +566,7 @@ Parameters:
 Example:
 
 ```
-{{crush('{{prop('mydoc')}}')}}
+{{crush({{prop('mydoc')}})}}
 
 "CustomProperties" : {
 	"mydoc" : [
@@ -679,7 +685,7 @@ Returns substring of input string.
 Syntax:
 
 ```
-{{substring('<string>','<startidx>','<endidx>')}}
+{{substring('<string>', <startidx>, <endidx>)}}
 ```
 
 Example:
@@ -712,7 +718,7 @@ Simplification of a nested ifte(equals(),'foo', ifte(equals(...),...)) cascade.
 Syntax:
 
 ```
-{{case('<value_1>','<comparison_value_1>','<return_value_1>', '<value_2>','<comparison_value_2>','<return_value_2>,...,'<default>')}}
+{{case(<value_1>, <comparison_value_1>, <return_value_1>, <value_2>, <comparison_value_2>, <return_value_2>, ..., <default>)}}
 ```
 
 If value1 == comparison_value_1 then return return_value_1. Else, if value2 == comparison_value_2 then return return_value_2. Otherwise, return the default value.

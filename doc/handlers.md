@@ -101,7 +101,7 @@ _*Example 1:*_ Identity transformation (doesn't change a thing).
 ```
 "IsTransformationByExample" : false,
 "Transformation" : {
-   "{{/}}":"{{/}}"
+   "{{/}}": "{{/}}"
 }
 ```
 
@@ -111,8 +111,8 @@ new element `"sync":true` is injected.
 ```
 "IsTransformationByExample" : false,
 "Transformation" : {
-   "{{/event}}":"{{/content}}",
-   "{{/sync}}":true
+   "{{/event}}": "{{/content}}",
+   "{{/sync}}": true
 }
 ```
 
@@ -142,8 +142,8 @@ _*Example 3:*_ Filter everything except for `/content/accountId` and `/content/a
 ```
 "IsTransformationByExample" : false,
 "Transformation": {
-   "{{/content/accountId}}":"{{/content/accountId}}",
-   "{{/content/adapterId}}":"{{/content/adapterId}}"
+   "{{/content/accountId}}": "{{/content/accountId}}",
+   "{{/content/adapterId}}": "{{/content/adapterId}}"
 }
 ```
 
@@ -175,7 +175,7 @@ _*Example 4*_: Injecting JSON response from external service into event.
 ```
 "IsTransformationByExample" : false,
 "Transformation" : {
-  "{{/comcast/quote}}":"{{curl('GET', 'http://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20yahoo.finance.quotes%20where%20symbol%20in%20%28%22CMCSA%22%29%0A%09%09&env=http%3A%2F%2Fdatatables.org%2Falltables.env&format=json', '', '/query/results/quote/LastTradePriceOnly')}}"
+  "{{/comcast/quote}}":"{{eval('/query/results/quote/LastTradePriceOnly', {{curl('GET', 'http://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20yahoo.finance.quotes%20where%20symbol%20in%20%28%22CMCSA%22%29%0A%09%09&env=http%3A%2F%2Fdatatables.org%2Falltables.env&format=json')}})}}"
 }
 ```
 
@@ -198,8 +198,8 @@ JPath expression does not start with `/`.
 ```
 "IsTransformationByExample" : false,
 "Transformation" : {
-   "{{event}}":"{{/content}}",
-   "{{/sync}}":true
+   "{{event}}": "{{/content}}",
+   "{{/sync}}": true
 }
 ```
 
@@ -210,8 +210,8 @@ JPath expression is missing a closing bracket `}`.
 ```
 "IsTransformationByExample" : false,
 "Transformation" : {
-   "{{/event}}":"{{/content}",
-   "{{/sync}}":true
+   "{{/event}}": "{{/content}",
+   "{{/sync}}": true
 }
 ```
 
@@ -266,11 +266,11 @@ _*Example:*_
 ```
 "IsTransformationByExample" : false,
 "Transformation" : {
-  "{{/comcast/quote}}" : "{{eval('/LastTradePriceOnly','{{prop('comcast')}}')}}",
-  "{{/comcast/name}}" : "{{eval('/LastTradePriceOnly','{{prop('comcast')}}')}}"
+  "{{/comcast/quote}}" : "{{eval('/LastTradePriceOnly',{{prop('comcast')}})}}",
+  "{{/comcast/name}}" : "{{eval('/LastTradePriceOnly',{{prop('comcast')}})}}"
 },
 "CustomProperties" : {
-  "comcast":"{{curl('GET', 'http://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20yahoo.finance.quotes%20where%20symbol%20in%20%28%22CMCSA%22%29%0A%09%09&env=http%3A%2F%2Fdatatables.org%2Falltables.env&format=json', '', '/query/results/quote')}}"
+  "comcast":"{{eval('/query/results/quote', {{curl('GET', 'http://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20yahoo.finance.quotes%20where%20symbol%20in%20%28%22CMCSA%22%29%0A%09%09&env=http%3A%2F%2Fdatatables.org%2Falltables.env&format=json')}})}}"
 }
 ```
 
@@ -519,7 +519,7 @@ _*Example 5:*_ Only process events where `message` is `found_problem`.
 "Filters": [
 	{
 		"Filter": {
-			"{{equals('{{/message}}','found_problem')}}": false
+			"{{equals({{/message}},'found_problem')}}": false
 		},
 	    "IsFilterByExample" : false,
 	    "IsFilterInverted" : false,
