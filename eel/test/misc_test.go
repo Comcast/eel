@@ -219,7 +219,7 @@ func TestParserJoin(t *testing.T) {
 	if err != nil {
 		t.Errorf("could not load expected response: %s\n", err.Error())
 	}
-	test := `{{join('{"a":"1"}','{"b":"2"}')}}`
+	test := `{{join({"a":"1"},{"b":"2"})}}`
 	jexpr, err := NewJExpr(test)
 	if err != nil {
 		t.Errorf("error: %s\n", err.Error())
@@ -294,7 +294,7 @@ func TestParserEqualsTrue(t *testing.T) {
 	if err != nil {
 		t.Fatal("could not get event1")
 	}
-	test := "{{equals('" + e1.StringPretty() + "')}}"
+	test := "{{equals(" + e1.StringPretty() + ")}}"
 	ast, err := NewJExpr(test)
 	if err != nil {
 		t.Errorf("error: %s\n", err.Error())
@@ -422,7 +422,7 @@ func TestParserContainsTrue(t *testing.T) {
 	if err != nil {
 		t.Fatal("could not get event1")
 	}
-	test := `{{and('{{contains('{"content":{"message":"High WiFi" } }','{{/}}')}}','{{contains('{"content":{"phonenumber": "16501112222" } }','{{/}}')}}')}}`
+	test := `{{and({{contains({"content":{"message":"High WiFi" } },{{/}})}},{{contains({"content":{"phonenumber": "16501112222" } },{{/}})}})}}`
 	jexpr, err := NewJExpr(test)
 	if err != nil {
 		t.Errorf("error: %s\n", err.Error())
@@ -440,7 +440,7 @@ func TestParserContainsFalse(t *testing.T) {
 	if err != nil {
 		t.Fatal("could not get event1")
 	}
-	test := `{{and('{{contains('{"content":{"message":"High WiFi" } }','{{/}}')}}','{{contains('{"content":{"phonenumber": "16501112223" } }','{{/}}')}}')}}`
+	test := `{{and({{contains({"content":{"message":"High WiFi" } },{{/}})}},{{contains({"content":{"phonenumber": "16501112223" } },{{/}})}})}}`
 	jexpr, err := NewJExpr(test)
 	if err != nil {
 		t.Errorf("error: %s\n", err.Error())
@@ -458,7 +458,7 @@ func TestParserOrTrue(t *testing.T) {
 	if err != nil {
 		t.Fatal("could not get event1")
 	}
-	test := `{{or('false', '{{ident('true')}}')}}`
+	test := `{{or(false, {{ident(true)}})}}`
 	jexpr, err := NewJExpr(test)
 	if err != nil {
 		t.Errorf("error: %s\n", err.Error())
@@ -476,7 +476,7 @@ func TestParserOrFalse(t *testing.T) {
 	if err != nil {
 		t.Fatal("could not get event1")
 	}
-	test := `{{or('false', '{{ident('false')}}')}}`
+	test := `{{or(false, {{ident(false)}})}}`
 	jexpr, err := NewJExpr(test)
 	if err != nil {
 		t.Errorf("error: %s\n", err.Error())
@@ -494,7 +494,7 @@ func TestParserNotFalse(t *testing.T) {
 	if err != nil {
 		t.Fatal("could not get event1")
 	}
-	test := `{{not('{{ident('true')}}')}}`
+	test := `{{not({{ident(true)}})}}`
 	jexpr, err := NewJExpr(test)
 	if err != nil {
 		t.Errorf("error: %s\n", err.Error())
@@ -530,7 +530,7 @@ func TestParserRegexAll(t *testing.T) {
 	if err != nil {
 		t.Fatal("could not get event1")
 	}
-	test := `{{regex('(650) 233-7344', '[0-9]+', 'true')}}`
+	test := `{{regex('(650) 233-7344', '[0-9]+', true)}}`
 	jexpr, err := NewJExpr(test)
 	if err != nil {
 		t.Errorf("error: %s\n", err.Error())
@@ -584,7 +584,7 @@ func TestParserLen2(t *testing.T) {
 	if err != nil {
 		t.Fatal("could not get event1")
 	}
-	test := `{{len('[1,2,3]')}}`
+	test := `{{len([1,2,3])}}`
 	jexpr, err := NewJExpr(test)
 	if err != nil {
 		t.Errorf("error: %s\n", err.Error())
@@ -602,7 +602,7 @@ func TestParserLen3(t *testing.T) {
 	if err != nil {
 		t.Fatal("could not get event1")
 	}
-	test := `{{len('{"a":"b"}')}}`
+	test := `{{len({"a":"b"})}}`
 	jexpr, err := NewJExpr(test)
 	if err != nil {
 		t.Errorf("error: %s\n", err.Error())
@@ -620,7 +620,7 @@ func TestParserAndTrue(t *testing.T) {
 	if err != nil {
 		t.Fatal("could not get event1")
 	}
-	test := `{{and('true', '{{ident('true')}}')}}`
+	test := `{{and(true, {{ident(true)}})}}`
 	jexpr, err := NewJExpr(test)
 	if err != nil {
 		t.Errorf("error: %s\n", err.Error())
@@ -638,7 +638,7 @@ func TestParserAndFalse(t *testing.T) {
 	if err != nil {
 		t.Fatal("could not get event1")
 	}
-	test := `{{and('true', '{{ident('false')}}')}}`
+	test := `{{and(true, {{ident(false)}})}}`
 	jexpr, err := NewJExpr(test)
 	if err != nil {
 		t.Errorf("error: %s\n", err.Error())
@@ -841,7 +841,7 @@ func TestEvalSpaceIncluded(t *testing.T) {
 	if err != nil {
 		t.Fatal("could not get event1")
 	}
-	test := `{{eval('/content/fo: o','{"content": {"fo: o":"bar"} }')}}`
+	test := `{{eval('/content/fo: o',{"content": {"fo: o":"bar"} })}}`
 	jexpr, err := NewJExpr(test)
 	if err != nil {
 		t.Errorf("error: %s\n", err.Error())
