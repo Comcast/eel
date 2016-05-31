@@ -175,7 +175,7 @@ _*Example 4*_: Injecting JSON response from external service into event.
 ```
 "IsTransformationByExample" : false,
 "Transformation" : {
-  "{{/comcast/quote}}":"{{curl('GET', 'http://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20yahoo.finance.quotes%20where%20symbol%20in%20%28%22CMCSA%22%29%0A%09%09&env=http%3A%2F%2Fdatatables.org%2Falltables.env&format=json', '', '/query/results/quote/LastTradePriceOnly')}}"
+  "{{/comcast/quote}}":"{{eval('/query/results/quote/LastTradePriceOnly','{{curl('GET', 'http://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20yahoo.finance.quotes%20where%20symbol%20in%20%28%22CMCSA%22%29%0A%09%09&env=http%3A%2F%2Fdatatables.org%2Falltables.env&format=json')}}')}}"
 }
 ```
 
@@ -270,7 +270,7 @@ _*Example:*_
   "{{/comcast/name}}" : "{{eval('/LastTradePriceOnly','{{prop('comcast')}}')}}"
 },
 "CustomProperties" : {
-  "comcast":"{{curl('GET', 'http://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20yahoo.finance.quotes%20where%20symbol%20in%20%28%22CMCSA%22%29%0A%09%09&env=http%3A%2F%2Fdatatables.org%2Falltables.env&format=json', '', '/query/results/quote')}}"
+  "comcast":"{{eval('/query/results/quote','{{curl('GET', 'http://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20yahoo.finance.quotes%20where%20symbol%20in%20%28%22CMCSA%22%29%0A%09%09&env=http%3A%2F%2Fdatatables.org%2Falltables.env&format=json')}}')}}"
 }
 ```
 
