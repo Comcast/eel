@@ -191,7 +191,7 @@ Example 1:
 Example 2:
 
 ```
-{{js('return 40+{{/content/number}}')}}
+{{js('40+{{/content/number}}')}}
 ```
 
 ### alt
