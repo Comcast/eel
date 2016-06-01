@@ -297,7 +297,7 @@ func (a *JExprItem) collapseLeaf(ctx Context, doc *JDoc) bool {
 			return false
 		}
 		// odd: currently parameter-less functions require a single blank string as parameter
-		param := NewJParam("", TYPE_STRING)
+		param := NewJParam(ctx, "", TYPE_STRING)
 		a.val = f.ExecuteFunction(ctx, doc, []*JParam{param}) // retain type of function return values
 		if a.val == nil {
 			a.val = ""
@@ -338,9 +338,9 @@ func (a *JExprItem) collapseLeaf(ctx Context, doc *JDoc) bool {
 			}
 			p := new(JParam)
 			if k.typ == astStringParam {
-				p = NewJParam(ToFlatString(k.val), TYPE_STRING)
+				p = NewJParam(ctx, ToFlatString(k.val), TYPE_STRING)
 			} else {
-				p = NewJParam(ToFlatString(k.val), "")
+				p = NewJParam(ctx, ToFlatString(k.val), "")
 			}
 			if debugLexer {
 				p.Log()
