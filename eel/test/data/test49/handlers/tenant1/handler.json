@@ -7,7 +7,7 @@
     "IsMatchByExample": false,
     "TerminateOnMatch": true,
     "Transformation": {
-      "{{/}}": "{{itransform('myt','{{/}}','','{{prop('myjoin')}}')}}"
+      "{{/}}": "{{itransform('myt','{{/}}','',{{prop('myjoin')}})}}"
     },
     "IsTransformationByExample": false,
 	"Transformations" : {

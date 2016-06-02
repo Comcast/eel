@@ -1078,13 +1078,16 @@ func fnTransform(ctx Context, doc *JDoc, params []*JParam) interface{} {
 		section = params[1].GetVal()
 	}
 	var pattern *JDoc
-	if len(params) >= 3 && params[2].GetType() != TYPE_NULL {
-		pattern = params[2].GetJDocVal()
+	if len(params) >= 3 {
+		if params[2].GetType() == TYPE_MAP || params[2].GetType() == TYPE_ARRAY {
+			pattern = params[2].GetJDocVal()
+		}
 	}
 	var join *JDoc
-	if len(params) == 4 && params[3].GetType() != TYPE_NULL {
-		//var err error
-		join = params[3].GetJDocVal()
+	if len(params) == 4 {
+		if params[3].GetType() == TYPE_MAP || params[3].GetType() == TYPE_ARRAY {
+			join = params[3].GetJDocVal()
+		}
 	}
 	if pattern != nil {
 		c, _ := doc.contains(section, pattern.GetOriginalObject(), 0)
@@ -1146,13 +1149,16 @@ func fnITransform(ctx Context, doc *JDoc, params []*JParam) interface{} {
 		section = params[1].GetVal()
 	}
 	var pattern *JDoc
-	if len(params) >= 3 && params[2].GetType() != TYPE_NULL {
-		pattern = params[2].GetJDocVal()
+	if len(params) >= 3 {
+		if params[2].GetType() == TYPE_MAP || params[2].GetType() == TYPE_ARRAY {
+			pattern = params[2].GetJDocVal()
+		}
 	}
 	var join *JDoc
 	if len(params) == 4 && params[3].GetType() != TYPE_NULL {
-		//var err error
-		join = params[3].GetJDocVal()
+		if params[3].GetType() == TYPE_MAP || params[3].GetType() == TYPE_ARRAY {
+			join = params[3].GetJDocVal()
+		}
 	}
 	switch section.(type) {
 	// apply sub-transformation iteratively to all array elements
@@ -1167,7 +1173,6 @@ func fnITransform(ctx Context, doc *JDoc, params []*JParam) interface{} {
 			if join != nil {
 				a = doc.merge(join.GetOriginalObject(), a)
 			}
-			//ctx.Log().Info("A", a, "MERGED", amerged, "JOIN", join.GetOriginalObject())
 			littleDoc, err := NewJDocFromInterface(a)
 			if err != nil {
 				ctx.Log().Error("event", "execute_function", "function", "itransform", "error", err.Error(), "params", params)
