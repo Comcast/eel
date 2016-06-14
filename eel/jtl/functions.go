@@ -586,7 +586,7 @@ func fnIfte(ctx Context, doc *JDoc, params []*JParam) interface{} {
 // Example: case('<path_1>','<comparison_value_1>','<return_value_1>', '<path_2>','<comparison_value_2>','<return_value_2>,...,'<default>')
 func fnCase(ctx Context, doc *JDoc, params []*JParam) interface{} {
 	stats := ctx.Value(EelTotalStats).(*ServiceStats)
-	if params == nil || len(params) < 3 || len(params)%3 != 1 {
+	if params == nil || len(params) < 3 || len(params)%3 > 1 {
 		ctx.Log().Error("event", "execute_function", "function", "case", "error", "wrong_number_of_parameters", "params", params)
 		stats.IncErrors()
 		AddError(ctx, SyntaxError{fmt.Sprintf("wrong number of parameters in call to case function"), "case"})
@@ -598,7 +598,10 @@ func fnCase(ctx Context, doc *JDoc, params []*JParam) interface{} {
 			return params[i*3+2].GetVal()
 		}
 	}
-	return params[len(params)-1].GetVal()
+	if len(params)%3 == 1 {
+		return params[len(params)-1].GetVal()
+	}
+	return ""
 }
 
 // fnJs JavaScript function. Kind of useful for everything that does not have a built-in function.
@@ -717,7 +720,7 @@ func fnCurl(ctx Context, doc *JDoc, params []*JParam) interface{} {
 	if status < 200 || status >= 300 {
 		// this error will already be counted by hitEndpoint
 		ctx.Log().Error("event", "execute_function", "function", "curl", "error", "unexpected_response", "status", strconv.Itoa(status), "response", resp, "params", params)
-		AddError(ctx, NetworkError{url, "could not reach endpoint", status})
+		AddError(ctx, NetworkError{url, "endpoint returned error", status})
 		return nil
 	}
 	var res interface{}
