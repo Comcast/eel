@@ -21,6 +21,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
 	"regexp"
 	"strconv"
 	"strings"
@@ -676,9 +677,15 @@ func fnCurl(ctx Context, doc *JDoc, params []*JParam) interface{} {
 			return nil
 		}
 	}
-	url := params[1].GetStringVal()
+	endpoint := params[1].GetStringVal()
+
+	//urlencode query string
+	parsed, _ := url.Parse(endpoint)
+	parsed.RawQuery = parsed.Query().Encode()
+	endpoint = parsed.String()
+
 	if ctx.ConfigValue("debug.url") != nil {
-		url = ctx.ConfigValue("debug.url").(string)
+		endpoint = ctx.ConfigValue("debug.url").(string)
 	}
 	// compose http headers: at a minimum use trace header (if available), then add extra headers (if given in param #5)
 	hmap := make(map[string]interface{})
@@ -707,20 +714,20 @@ func fnCurl(ctx Context, doc *JDoc, params []*JParam) interface{} {
 	var resp string
 	var status int
 	if retry {
-		resp, status, err = GetRetrier(ctx).RetryEndpoint(ctx, url, body, params[0].GetStringVal(), headers, nil)
+		resp, status, err = GetRetrier(ctx).RetryEndpoint(ctx, endpoint, body, params[0].GetStringVal(), headers, nil)
 	} else {
-		resp, status, err = HitEndpoint(ctx, url, body, params[0].GetStringVal(), headers, nil)
+		resp, status, err = HitEndpoint(ctx, endpoint, body, params[0].GetStringVal(), headers, nil)
 	}
 	if err != nil {
 		// this error will already be counted by hitEndpoint
 		ctx.Log().Error("event", "execute_function", "function", "curl", "error", "unexpected_response", "status", strconv.Itoa(status), "detail", err.Error(), "response", resp, "params", params)
-		AddError(ctx, NetworkError{url, err.Error(), status})
+		AddError(ctx, NetworkError{endpoint, err.Error(), status})
 		return nil
 	}
 	if status < 200 || status >= 300 {
 		// this error will already be counted by hitEndpoint
 		ctx.Log().Error("event", "execute_function", "function", "curl", "error", "unexpected_response", "status", strconv.Itoa(status), "response", resp, "params", params)
-		AddError(ctx, NetworkError{url, "endpoint returned error", status})
+		AddError(ctx, NetworkError{endpoint, "endpoint returned error", status})
 		return nil
 	}
 	var res interface{}

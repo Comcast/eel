@@ -201,14 +201,19 @@ func EELTransformEvent(ctx Context, event interface{}, eelHandlerFactory *Handle
 	ctx = ctx.SubContext()
 	ClearErrors(ctx)
 	publishers, errs := EELGetPublishers(ctx, event, eelHandlerFactory)
-	if errs != nil {
+	if errs != nil && publishers == nil {
 		return nil, errs
 	}
 	events := make([]interface{}, 0)
 	for _, p := range publishers {
 		events = append(events, p.GetPayloadParsed().GetOriginalObject())
 	}
-	return events, GetErrors(ctx)
+	if errs != nil {
+		errs = append(errs, GetErrors(ctx)...)
+	} else {
+		errs = GetErrors(ctx)
+	}
+	return events, errs
 }
 
 // EELTransformEventConcurrent is the concurrent version of EELTransformEvent. Useful when processing multiple
@@ -223,14 +228,19 @@ func EELTransformEventConcurrent(ctx Context, event interface{}, eelHandlerFacto
 	ctx = ctx.SubContext()
 	ClearErrors(ctx)
 	publishers, errs := EELGetPublishersConcurrent(ctx, event, eelHandlerFactory)
-	if errs != nil {
+	if errs != nil && publishers == nil {
 		return nil, errs
 	}
 	events := make([]interface{}, 0)
 	for _, p := range publishers {
 		events = append(events, p.GetPayloadParsed().GetOriginalObject())
 	}
-	return events, GetErrors(ctx)
+	if errs != nil {
+		errs = append(errs, GetErrors(ctx)...)
+	} else {
+		errs = GetErrors(ctx)
+	}
+	return events, errs
 }
 
 // EELSingleTransform can work with raw JSON transformation or a transformation wrapped in a config handler.
