@@ -139,9 +139,9 @@ func EventHandler(w http.ResponseWriter, r *http.Request) {
 			work := WorkRequest{Message: string(body), Ctx: ctx}
 			select {
 			case dp.WorkQueue <- &work:
-				ctx.Log().Info("status", "200", "event", "accepted", "trace.in.data", string(body), "remote_address", r.RemoteAddr, "user_agent", r.UserAgent())
+				ctx.Log().Info("status", "202", "event", "accepted", "trace.in.data", string(body), "remote_address", r.RemoteAddr, "user_agent", r.UserAgent())
 				ctx.Log().Metric("accepted", M_Namespace, "xrs", M_Metric, "accepted", M_Unit, "Count", M_Dims, "app="+AppId+"&env="+EnvName+"&instance="+InstanceName, M_Val, 1.0)
-				w.WriteHeader(http.StatusOK)
+				w.WriteHeader(http.StatusAccepted)
 				w.Write(StatusProcessed)
 			case <-time.After(time.Millisecond * time.Duration(GetConfig(ctx).MessageQueueTimeout)):
 				// consider spilling over to SQS here

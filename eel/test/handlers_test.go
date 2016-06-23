@@ -75,7 +75,7 @@ func TestReloadHandler(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error posting notification: %s\n", err.Error())
 	}
-	if resp.Status != "200 OK" {
+	if resp.StatusCode != 200 {
 		t.Fatalf("eel returned unhappy status: %s\n", resp.Status)
 	}
 	status, err := ioutil.ReadAll(resp.Body)
@@ -106,7 +106,7 @@ func TestVetHandler(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error posting notification: %s\n", err.Error())
 	}
-	if resp.Status != "200 OK" {
+	if resp.StatusCode != 200 {
 		t.Fatalf("eel returned unhappy status: %s\n", resp.Status)
 	}
 	status, err := ioutil.ReadAll(resp.Body)
@@ -198,7 +198,7 @@ func TestEventHandlerDebug(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error posting notification: %s\n", err.Error())
 	}
-	if resp.Status != "200 OK" {
+	if resp.StatusCode != 200 {
 		t.Fatalf("eel returned unhappy status: %s\n", resp.Status)
 	}
 	bs, err := ioutil.ReadAll(resp.Body)
@@ -246,7 +246,7 @@ func TestEventHandlerSync(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error posting notification: %s\n", err.Error())
 	}
-	if resp.Status != "200 OK" {
+	if resp.StatusCode != 200 {
 		t.Fatalf("eel returned unhappy status: %s\n", resp.Status)
 	}
 	bs, err := ioutil.ReadAll(resp.Body)
@@ -283,7 +283,7 @@ func TestEventHandler(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error posting notification: %s\n", err.Error())
 	}
-	if resp.Status != "200 OK" {
+	if resp.StatusCode != 202 {
 		t.Fatalf("eel returned unhappy status: %s\n", resp.Status)
 	}
 	event, err := ioutil.ReadAll(resp.Body)

@@ -573,7 +573,7 @@ func transformEvent(t *testing.T, folder string, headers map[string]string) {
 	if err != nil {
 		t.Fatalf("error posting elements event: %s\n", err.Error())
 	}
-	if resp.Status != "200 OK" {
+	if resp.StatusCode != 200 && resp.StatusCode != 202 {
 		t.Fatalf("eel returned unhappy status: %s\n", resp.Status)
 	}
 	_, err = ioutil.ReadAll(resp.Body)
@@ -657,7 +657,7 @@ func fanoutEvent(t *testing.T, folder string, numExpectedResults int, recursive 
 	if err != nil {
 		t.Fatalf("error posting elements event: %s\n", err.Error())
 	}
-	if resp.Status != "200 OK" {
+	if resp.StatusCode != 200 && resp.StatusCode != 202 {
 		t.Fatalf("eel returned unhappy status: %s\n", resp.Status)
 	}
 	_, err = ioutil.ReadAll(resp.Body)
