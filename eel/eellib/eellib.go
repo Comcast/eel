@@ -191,6 +191,36 @@ func EELGetPublishersConcurrent(ctx Context, event interface{}, eelHandlerFactor
 }
 
 // EELTransformEvent transforms single event based on set of configuration handlers. Can yield multiple results.
+func EELTransformEventByHandlerName(ctx Context, event interface{}, eelHandlerFactory *HandlerFactory, tenant string, name string) ([]interface{}, []error) {
+	if Gctx == nil {
+		return nil, []error{errors.New("must call EELInit first")}
+	}
+	if ctx == nil {
+		return nil, []error{errors.New("ctx cannot be nil")}
+	}
+	ctx = ctx.SubContext()
+	ClearErrors(ctx)
+
+	handler := eelHandlerFactory.GetHandlerByName(ctx, tenant, name)
+	if handler == nil {
+		return nil, []error{errors.New("no handler " + tenant + " / " + name)}
+	}
+	eventDoc, err := NewJDocFromInterface(event)
+	if err != nil {
+		return nil, []error{errors.New("bad event")}
+	}
+	publishers, err := handler.ProcessEvent(ctx, eventDoc)
+	if err != nil && publishers == nil {
+		return nil, []error{err}
+	}
+	events := make([]interface{}, 0)
+	for _, p := range publishers {
+		events = append(events, p.GetPayloadParsed().GetOriginalObject())
+	}
+	return events, GetErrors(ctx)
+}
+
+// EELTransformEvent transforms single event based on set of configuration handlers. Can yield multiple results.
 func EELTransformEvent(ctx Context, event interface{}, eelHandlerFactory *HandlerFactory) ([]interface{}, []error) {
 	if Gctx == nil {
 		return nil, []error{errors.New("must call EELInit first")}
