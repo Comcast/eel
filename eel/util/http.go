@@ -48,7 +48,7 @@ func GetResponse(ctx Context, kv map[string]interface{}) []byte {
 	kv["tx.traceId"] = ctx.Value("tx.traceId")
 	buf, err := json.Marshal(kv)
 	if err != nil {
-		return []byte(`{ "error" : "` + err.Error() + `", "tax.traceId" : ` + ctx.Value("tx.traceId").(string) + `}`)
+		return []byte(`{ "error" : "` + err.Error() + `", "tx.traceId" : ` + ctx.Value("tx.traceId").(string) + `}`)
 	}
 	return buf
 }
