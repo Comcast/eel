@@ -24,6 +24,7 @@ import (
 	"net/http/httptest"
 	"reflect"
 	"strconv"
+	"strings"
 
 	"testing"
 
@@ -292,8 +293,8 @@ func TestEventHandler(t *testing.T) {
 		t.Fatalf("couldn't read eel debug response: %s\n", err.Error())
 	}
 	eventStr := string(event)
-	expected := `{"status":"processed"}`
-	if eventStr != expected {
+	expected := `"status":"processed"`
+	if !strings.Contains(eventStr, expected) {
 		t.Fatalf("wrong response from eel: expected:\n %s received:\n %s\n", expected, eventStr)
 	}
 }
@@ -303,7 +304,7 @@ func TestEventHandlerInvalidJSON(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(EventHandler))
 	defer ts.Close()
 	event := `foo bar`
-	expectedResponse := `{"error":"invalid json"}`
+	expectedResponse := `"error":"invalid json"`
 	client := &http.Client{}
 	r, _ := http.NewRequest("POST", ts.URL, bytes.NewBufferString(event))
 	r.Header.Add("Content-Type", "application/json")
@@ -320,10 +321,7 @@ func TestEventHandlerInvalidJSON(t *testing.T) {
 	if err != nil {
 		t.Fatalf("couldn't read eel debug response: %s\n", err.Error())
 	}
-	if len(response) != len(expectedResponse) {
-		t.Fatalf("wrong length of eel response: expected %d received %d\n", len(expectedResponse), len(event))
-	}
-	if string(response) != expectedResponse {
+	if !strings.Contains(string(response), expectedResponse) {
 		t.Fatalf("wrong response from eel: expected:\n %s received:\n %s\n", expectedResponse, response)
 	}
 }
@@ -333,7 +331,7 @@ func TestEventHandlerBlankMessage(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(EventHandler))
 	defer ts.Close()
 	event := ``
-	expectedResponse := `{"error":"empty body"}`
+	expectedResponse := `"error":"empty body"`
 	client := &http.Client{}
 	r, _ := http.NewRequest("POST", ts.URL, bytes.NewBufferString(event))
 	r.Header.Add("Content-Type", "application/json")
@@ -350,10 +348,7 @@ func TestEventHandlerBlankMessage(t *testing.T) {
 	if err != nil {
 		t.Fatalf("couldn't read eel debug response: %s\n", err.Error())
 	}
-	if len(response) != len(expectedResponse) {
-		t.Fatalf("wrong length of eel response: expected %d received %d\n", len(expectedResponse), len(response))
-	}
-	if string(response) != expectedResponse {
+	if !strings.Contains(string(response), expectedResponse) {
 		t.Fatalf("wrong response from eel: expected:\n %s received:\n %s\n", expectedResponse, response)
 	}
 }
@@ -363,7 +358,7 @@ func TestEventHandlerLargeMessage(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(EventHandler))
 	defer ts.Close()
 	event := string(make([]byte, 1000000))
-	expectedResponse := `{"error":"request too large"}`
+	expectedResponse := `"error":"request too large"`
 	client := &http.Client{}
 	r, _ := http.NewRequest("POST", ts.URL, bytes.NewBufferString(event))
 	r.Header.Add("Content-Type", "application/json")
@@ -380,10 +375,7 @@ func TestEventHandlerLargeMessage(t *testing.T) {
 	if err != nil {
 		t.Fatalf("couldn't read eel debug response: %s\n", err.Error())
 	}
-	if len(response) != len(expectedResponse) {
-		t.Fatalf("wrong length of eel response: expected %d received %d\n", len(expectedResponse), len(response))
-	}
-	if string(response) != expectedResponse {
+	if !strings.Contains(string(response), expectedResponse) {
 		t.Fatalf("wrong response from eel: expected:\n %s received:\n %s\n", expectedResponse, response)
 	}
 }
@@ -397,7 +389,7 @@ func TestDropDuplicateEvent(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(EventHandler))
 	defer ts.Close()
 	event := `{"foo":"bar"}`
-	expectedResponse := `{"status":"duplicate eliminated"}`
+	expectedResponse := `"status":"duplicate eliminated"`
 	client := &http.Client{}
 	r, _ := http.NewRequest("POST", ts.URL, bytes.NewBufferString(event))
 	r.Header.Add("Content-Type", "application/json")
@@ -418,10 +410,7 @@ func TestDropDuplicateEvent(t *testing.T) {
 	if err != nil {
 		t.Fatalf("couldn't read eel debug response: %s\n", err.Error())
 	}
-	if len(response) != len(expectedResponse) {
-		t.Fatalf("wrong length of eel response: expected %d received %d\n", len(expectedResponse), len(response))
-	}
-	if string(response) != expectedResponse {
+	if !strings.Contains(string(response), expectedResponse) {
 		t.Fatalf("wrong response from eel: expected:\n %s received:\n %s\n", expectedResponse, response)
 	}
 }

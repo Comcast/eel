@@ -78,7 +78,7 @@ func DummyEventHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	if r.ContentLength > GetConfig(ctx).MaxMessageSize {
 		ctx.Log().Error("dummy", true, "status", "413", "event", "rejected", "reason", "message_too_large", "msg.length", r.ContentLength, "msg.max.length", GetConfig(ctx).MaxMessageSize, "remote_address", r.RemoteAddr, "user_agent", r.UserAgent())
-		http.Error(w, string(StatusRequestTooLarge), http.StatusRequestEntityTooLarge)
+		http.Error(w, string(GetResponse(ctx, StatusRequestTooLarge)), http.StatusRequestEntityTooLarge)
 		return
 	}
 	defer r.Body.Close()
@@ -87,33 +87,32 @@ func DummyEventHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "POST" {
 		ctx.Log().Error("dummy", true, "status", "400", "event", "rejected", "reason", "http_post_required", "method", r.Method, "remote_address", r.RemoteAddr, "user_agent", r.UserAgent())
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write(StatusHttpPostRequired)
+		w.Write(GetResponse(ctx, StatusHttpPostRequired))
 		return
 	}
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		ctx.Log().Error("dummy", true, "status", "500", "event", "rejected", "reason", "error_reading_message", "error", err.Error(), "remote_address", r.RemoteAddr, "user_agent", r.UserAgent())
 		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, `{"error":"%s"}`, err.Error())
-		fmt.Fprintf(w, "\n")
+		w.Write(GetResponse(ctx, map[string]interface{}{"error": err.Error()}))
 		return
 	}
 	if body == nil || len(body) == 0 {
 		ctx.Log().Error("dummy", true, "status", "400", "event", "rejected", "reason", "blank_message", "remote_address", r.RemoteAddr, "user_agent", r.UserAgent())
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write(StatusEmptyBody)
+		w.Write(GetResponse(ctx, StatusEmptyBody))
 		return
 	}
 	_, err = NewJDocFromString(string(body))
 	if err != nil {
 		ctx.Log().Error("dummy", true, "status", "400", "event", "rejected", "reason", "invalid_json", "error", err.Error(), "content", string(body), "remote_address", r.RemoteAddr, "user_agent", r.UserAgent())
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write(StatusInvalidJson)
+		w.Write(GetResponse(ctx, StatusInvalidJson))
 		return
 	}
 	ctx.Log().Info("dummy", true, "status", "200", "event", "accepted", "content", string(body), "remote_address", r.RemoteAddr, "user_agent", r.UserAgent())
 	w.WriteHeader(http.StatusOK)
-	w.Write(StatusProcessedDummy)
+	w.Write(GetResponse(ctx, StatusProcessedDummy))
 }
 
 // FortyTwoHandler http handler providing 42 as a service.

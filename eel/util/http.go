@@ -18,6 +18,7 @@ package util
 
 import (
 	"bytes"
+	"encoding/json"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -25,20 +26,32 @@ import (
 )
 
 var (
-	StatusQueueFull           = []byte(`{"error":"queue full"}`)
-	StatusInvalidJson         = []byte(`{"error":"invalid json"}`)
-	StatusEmptyBody           = []byte(`{"error":"empty body"}`)
-	StatusProcessed           = []byte(`{"status":"processed"}`)
-	StatusProcessedDummy      = []byte(`{"status":"processed", "dummy":true}`)
-	StatusDuplicateEliminated = []byte(`{"status":"duplicate eliminated"}`)
-	StatusRequestTooLarge     = []byte(`{"error":"request too large"}`)
-	StatusHttpPostRequired    = []byte(`{"error":"http post required"}`)
-	StatusUnknownTopic        = []byte(`{"error":"unknown topic"}`)
-	StatusAlreadySubscribed   = []byte(`{"error":"already subscribed"}`)
-	StatusNotEvenSubscribed   = []byte(`{"error":"not even subscribed"}`)
+	StatusQueueFull           = map[string]interface{}{"error": "queue full"}
+	StatusInvalidJson         = map[string]interface{}{"error": "invalid json"}
+	StatusEmptyBody           = map[string]interface{}{"error": "empty body"}
+	StatusProcessed           = map[string]interface{}{"status": "processed"}
+	StatusProcessedDummy      = map[string]interface{}{"status": "processed", "dummy": true}
+	StatusDuplicateEliminated = map[string]interface{}{"status": "duplicate eliminated"}
+	StatusRequestTooLarge     = map[string]interface{}{"error": "request too large"}
+	StatusHttpPostRequired    = map[string]interface{}{"error": "http post required"}
+	StatusUnknownTopic        = map[string]interface{}{"error": "unknown topic"}
+	StatusAlreadySubscribed   = map[string]interface{}{"error": "already subscribed"}
+	StatusNotEvenSubscribed   = map[string]interface{}{"error": "not even subscribed"}
 
 	HttpStatusTooManyRequests = 429
 )
+
+func GetResponse(ctx Context, kv map[string]interface{}) []byte {
+	if kv == nil {
+		kv = make(map[string]interface{}, 0)
+	}
+	kv["tx.traceId"] = ctx.Value("tx.traceId")
+	buf, err := json.Marshal(kv)
+	if err != nil {
+		return []byte(`{ "error" : "` + err.Error() + `", "tx.traceId" : ` + ctx.Value("tx.traceId").(string) + `}`)
+	}
+	return buf
+}
 
 func GetHttpClient(ctx Context) *http.Client {
 	if ctx.Value(EelHttpClient) != nil {
@@ -46,13 +59,6 @@ func GetHttpClient(ctx Context) *http.Client {
 	}
 	return nil
 }
-
-/*func GetHttpTransport(ctx Context) *http.Transport {
-	if ctx.Value(EelHttpTransport) != nil {
-		return ctx.Value(EelHttpTransport).(*http.Transport)
-	}
-	return nil
-}*/
 
 // InitHttpTransport initializes http transport with some parameters from config.json.
 func InitHttpTransport(ctx Context) {

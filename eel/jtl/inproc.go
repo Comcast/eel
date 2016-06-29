@@ -60,7 +60,7 @@ func EventHandler(w http.ResponseWriter, r *http.Request) {
 		ctx.Log().Error("status", "413", "event", "rejected", "reason", "message_too_large", "msg.length", r.ContentLength, "msg.max.length", GetConfig(ctx).MaxMessageSize, "remote_address", r.RemoteAddr, "user_agent", r.UserAgent())
 		ctx.Log().Metric("rejected", M_Namespace, "xrs", M_Metric, "rejected", M_Unit, "Count", M_Dims, "app="+AppId+"&env="+EnvName+"&instance="+InstanceName, M_Val, 1.0)
 		w.WriteHeader(http.StatusRequestEntityTooLarge)
-		w.Write(StatusRequestTooLarge)
+		w.Write(GetResponse(ctx, StatusRequestTooLarge))
 		stats.IncErrors()
 		return
 	}
@@ -71,7 +71,7 @@ func EventHandler(w http.ResponseWriter, r *http.Request) {
 		ctx.Log().Error("status", "400", "event", "rejected", "reason", "http_post_required", "method", r.Method, "remote_address", r.RemoteAddr, "user_agent", r.UserAgent())
 		ctx.Log().Metric("rejected", M_Namespace, "xrs", M_Metric, "rejected", M_Unit, "Count", M_Dims, "app="+AppId+"&env="+EnvName+"&instance="+InstanceName, M_Val, 1.0)
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write(StatusHttpPostRequired)
+		w.Write(GetResponse(ctx, StatusHttpPostRequired))
 		stats.IncErrors()
 		return
 	}
@@ -81,6 +81,7 @@ func EventHandler(w http.ResponseWriter, r *http.Request) {
 		ctx.Log().Metric("rejected", M_Namespace, "xrs", M_Metric, "rejected", M_Unit, "Count", M_Dims, "app="+AppId+"&env="+EnvName+"&instance="+InstanceName, M_Val, 1.0)
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintf(w, `{"error":"%s"}`, err.Error())
+		w.Write(GetResponse(ctx, StatusHttpPostRequired))
 		stats.IncErrors()
 		return
 	}
@@ -88,7 +89,7 @@ func EventHandler(w http.ResponseWriter, r *http.Request) {
 		ctx.Log().Error("status", "400", "event", "rejected", "reason", "blank_message", "remote_address", r.RemoteAddr, "user_agent", r.UserAgent())
 		ctx.Log().Metric("rejected", M_Namespace, "xrs", M_Metric, "rejected", M_Unit, "Count", M_Dims, "app="+AppId+"&env="+EnvName+"&instance="+InstanceName, M_Val, 1.0)
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write(StatusEmptyBody)
+		w.Write(GetResponse(ctx, StatusEmptyBody))
 		stats.IncErrors()
 		return
 	}
@@ -97,7 +98,7 @@ func EventHandler(w http.ResponseWriter, r *http.Request) {
 		ctx.Log().Error("status", "200", "event", "dropping_duplicate", "trace.in.data", string(body), "remote_address", r.RemoteAddr, "user_agent", r.UserAgent())
 		ctx.Log().Metric("dropping_duplicate", M_Namespace, "xrs", M_Metric, "dropping_duplicate", M_Unit, "Count", M_Dims, "app="+AppId+"&env="+EnvName+"&instance="+InstanceName, M_Val, 1.0)
 		w.WriteHeader(http.StatusOK)
-		w.Write(StatusDuplicateEliminated)
+		w.Write(GetResponse(ctx, StatusDuplicateEliminated))
 		stats.IncErrors()
 		return
 	}
@@ -107,7 +108,7 @@ func EventHandler(w http.ResponseWriter, r *http.Request) {
 		ctx.Log().Error("status", "400", "event", "rejected", "reason", "invalid_json", "error", err.Error(), "trace.in.data", string(body), "remote_address", r.RemoteAddr, "user_agent", r.UserAgent())
 		ctx.Log().Metric("rejected", M_Namespace, "xrs", M_Metric, "rejected", M_Unit, "Count", M_Dims, "app="+AppId+"&env="+EnvName+"&instance="+InstanceName, M_Val, 1.0)
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write(StatusInvalidJson)
+		w.Write(GetResponse(ctx, StatusInvalidJson))
 		stats.IncErrors()
 		return
 	}
@@ -128,7 +129,7 @@ func EventHandler(w http.ResponseWriter, r *http.Request) {
 		buf, err := json.MarshalIndent(events, "", "\t")
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Fprintf(w, `{"error":"%s"}`, err.Error())
+			w.Write(GetResponse(ctx, map[string]interface{}{"error": err.Error()}))
 		} else {
 			w.WriteHeader(http.StatusOK)
 			fmt.Fprintf(w, string(buf))
@@ -142,7 +143,7 @@ func EventHandler(w http.ResponseWriter, r *http.Request) {
 				ctx.Log().Info("status", "202", "event", "accepted", "trace.in.data", string(body), "remote_address", r.RemoteAddr, "user_agent", r.UserAgent())
 				ctx.Log().Metric("accepted", M_Namespace, "xrs", M_Metric, "accepted", M_Unit, "Count", M_Dims, "app="+AppId+"&env="+EnvName+"&instance="+InstanceName, M_Val, 1.0)
 				w.WriteHeader(http.StatusAccepted)
-				w.Write(StatusProcessed)
+				w.Write(GetResponse(ctx, StatusProcessed))
 			case <-time.After(time.Millisecond * time.Duration(GetConfig(ctx).MessageQueueTimeout)):
 				// consider spilling over to SQS here
 				ctx.Log().Error("status", "429", "event", "rejected", "reason", "queue_full", "trace.in.data", string(body), "remote_address", r.RemoteAddr, "user_agent", r.UserAgent())
@@ -151,7 +152,7 @@ func EventHandler(w http.ResponseWriter, r *http.Request) {
 				//w.WriteHeader(http.StatusRequestTimeout)
 				// 429
 				w.WriteHeader(HttpStatusTooManyRequests)
-				w.Write(StatusQueueFull)
+				w.Write(GetResponse(ctx, StatusQueueFull))
 			}
 		}
 	}
