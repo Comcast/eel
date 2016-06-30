@@ -692,15 +692,8 @@ func (h *HandlerConfiguration) ProcessEvent(ctx Context, event *JDoc) ([]EventPu
 		return make([]EventPublisher, 0), errors.New("no protocol")
 	}
 	ctx.AddValue(EelHandlerConfig, h)
-	// custom properties
-	if h.CustomProperties != nil {
-		cp := make(map[string]interface{}, 0)
-		for k, v := range h.CustomProperties {
-			cp[k] = event.ParseExpression(ctx, v)
-		}
-		ctx.AddValue(EelCustomProperties, cp)
-	}
 	// filtering
+	// must apply filters BEFORE evaluating custom properties in case custom properties include recursive curl!!!
 	if !h.FilterAfterTransformation {
 		if h.filterEvent(ctx, event) {
 			return make([]EventPublisher, 0), nil
@@ -708,6 +701,14 @@ func (h *HandlerConfiguration) ProcessEvent(ctx Context, event *JDoc) ([]EventPu
 	}
 	if h.applyFilters(ctx, event, false) {
 		return make([]EventPublisher, 0), nil
+	}
+	// custom properties
+	if h.CustomProperties != nil {
+		cp := make(map[string]interface{}, 0)
+		for k, v := range h.CustomProperties {
+			cp[k] = event.ParseExpression(ctx, v)
+		}
+		ctx.AddValue(EelCustomProperties, cp)
 	}
 	// prepare headers
 	headers := make(map[string]string, 0)
