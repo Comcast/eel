@@ -418,26 +418,27 @@ func (hf *HandlerFactory) GetHandlersForEvent(ctx Context, event *JDoc) []*Handl
 	return hls
 }
 
-// GetHandlersByName obtains list of handlers by name (typically 1).
-func (hf *HandlerFactory) GetHandlersByName(ctx Context, name string) []*HandlerConfiguration {
-	hls := make([]*HandlerConfiguration, 0)
+// GetHandlersByName obtains handler by name
+func (hf *HandlerFactory) GetHandlerByName(ctx Context, tenant string, name string) *HandlerConfiguration {
 	for _, m1 := range hf.TopicHandlerMap {
 		for _, m2 := range m1 {
 			for _, handler := range m2 {
-				if handler.Name == name {
-					hls = append(hls, handler)
+				if handler.Name == name && handler.TenantId == tenant {
+					return handler
 				}
 			}
 		}
 	}
 	for tenantId, _ := range hf.CustomHandlerMap {
-		for _, handler := range hf.CustomHandlerMap[tenantId] {
-			if handler.Name == name {
-				hls = append(hls, handler)
+		if tenantId == tenant {
+			for _, handler := range hf.CustomHandlerMap[tenantId] {
+				if handler.Name == name {
+					return handler
+				}
 			}
 		}
 	}
-	return hls
+	return nil
 }
 
 // GetAllHandlers obtains list of all handlers.
@@ -691,15 +692,8 @@ func (h *HandlerConfiguration) ProcessEvent(ctx Context, event *JDoc) ([]EventPu
 		return make([]EventPublisher, 0), errors.New("no protocol")
 	}
 	ctx.AddValue(EelHandlerConfig, h)
-	// custom properties
-	if h.CustomProperties != nil {
-		cp := make(map[string]interface{}, 0)
-		for k, v := range h.CustomProperties {
-			cp[k] = event.ParseExpression(ctx, v)
-		}
-		ctx.AddValue(EelCustomProperties, cp)
-	}
 	// filtering
+	// must apply filters BEFORE evaluating custom properties in case custom properties include recursive curl!!!
 	if !h.FilterAfterTransformation {
 		if h.filterEvent(ctx, event) {
 			return make([]EventPublisher, 0), nil
@@ -707,6 +701,14 @@ func (h *HandlerConfiguration) ProcessEvent(ctx Context, event *JDoc) ([]EventPu
 	}
 	if h.applyFilters(ctx, event, false) {
 		return make([]EventPublisher, 0), nil
+	}
+	// custom properties
+	if h.CustomProperties != nil {
+		cp := make(map[string]interface{}, 0)
+		for k, v := range h.CustomProperties {
+			cp[k] = event.ParseExpression(ctx, v)
+		}
+		ctx.AddValue(EelCustomProperties, cp)
 	}
 	// prepare headers
 	headers := make(map[string]string, 0)
