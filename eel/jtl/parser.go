@@ -215,7 +215,6 @@ func (a *JExprItem) optimizeAllConditionals(ctx Context, doc *JDoc) error {
 // with the proper results to ptimize the AST
 func (a *JExprItem) optimizeConditional(ctx Context, doc *JDoc) (*JExprItem, error) {
 	//TODO: add errors to context
-	//TODO: hack to resurrect json in ifte()
 	//TODO: true unit test
 	if a.typ == astFunction && a.val == "ifte" {
 		// check params
@@ -264,6 +263,20 @@ func (a *JExprItem) optimizeConditional(ctx Context, doc *JDoc) (*JExprItem, err
 				}
 			}
 		}
+		// hack to resurrect json inteface type
+		switch chosenChild.val.(type) {
+		case string:
+			strVal := chosenChild.val.(string)
+			if strings.Contains(strVal, "{") && strings.Contains(strVal, "}") {
+				obj, err := NewJDocFromString(strVal)
+				if err != nil {
+					ctx.Log().Error("event", "eel_parser_error", "cause", "invalid_json", "type", cond.typ, "val", cond.val)
+					return nil, errors.New("non json parameters in call to ifte function")
+				}
+				chosenChild.val = obj.GetOriginalObject()
+			}
+		}
+		// end hack
 		a.mom.kids[childIdx] = chosenChild
 		chosenChild.mom = a.mom
 		chosenChild.print(0, "CHOSENCHILD")
@@ -333,12 +346,15 @@ func (a *JExprItem) optimizeConditional(ctx Context, doc *JDoc) (*JExprItem, err
 					break
 				}
 			}
-			switch candA.val.(type) {
-			case string:
-				valStr := candA.val.(string)
-				if len(valStr) >= 2 && strings.HasPrefix(valStr, "'") && strings.HasSuffix(valStr, "'") {
-					valStr = valStr[1 : len(valStr)-1]
-					candA.val = valStr
+			if candA.typ == astParam {
+				candA.typ = astText
+				switch candA.val.(type) {
+				case string:
+					valStr := candA.val.(string)
+					if len(valStr) >= 2 && strings.HasPrefix(valStr, "'") && strings.HasSuffix(valStr, "'") {
+						valStr = valStr[1 : len(valStr)-1]
+						candA.val = valStr
+					}
 				}
 			}
 			candB := a.kids[i*3+1]
@@ -348,12 +364,15 @@ func (a *JExprItem) optimizeConditional(ctx Context, doc *JDoc) (*JExprItem, err
 					break
 				}
 			}
-			switch candB.val.(type) {
-			case string:
-				valStr := candB.val.(string)
-				if len(valStr) >= 2 && strings.HasPrefix(valStr, "'") && strings.HasSuffix(valStr, "'") {
-					valStr = valStr[1 : len(valStr)-1]
-					candB.val = valStr
+			if candB.typ == astParam {
+				candB.typ = astText
+				switch candB.val.(type) {
+				case string:
+					valStr := candB.val.(string)
+					if len(valStr) >= 2 && strings.HasPrefix(valStr, "'") && strings.HasSuffix(valStr, "'") {
+						valStr = valStr[1 : len(valStr)-1]
+						candB.val = valStr
+					}
 				}
 			}
 			if candA.val == candB.val {

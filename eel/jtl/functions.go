@@ -234,19 +234,6 @@ func fnAlt(ctx Context, doc *JDoc, params []string) interface{} {
 	stats.IncErrors()
 	AddError(ctx, SyntaxError{fmt.Sprintf("alt function now implemented in parser"), "alt", params})
 	return nil
-	/*stats := ctx.Value(EelTotalStats).(*ServiceStats)
-	if params == nil || len(params) < 2 {
-		ctx.Log().Error("event", "execute_function", "function", "alt", "error", "wrong_number_of_parameters", "params", params)
-		stats.IncErrors()
-		AddError(ctx, SyntaxError{fmt.Sprintf("wrong number of parameters in call to alt function"), "alt", params})
-		return nil
-	}
-	for _, p := range params {
-		if sp := extractStringParam(p); sp != "" {
-			return sp
-		}
-	}
-	return ""*/
 }
 
 // fnAnd boolean and function.
@@ -424,40 +411,6 @@ func fnIfte(ctx Context, doc *JDoc, params []string) interface{} {
 	stats.IncErrors()
 	AddError(ctx, SyntaxError{fmt.Sprintf("ifte function now implemented in parser"), "ifte", params})
 	return nil
-	/*stats := ctx.Value(EelTotalStats).(*ServiceStats)
-	if params == nil || len(params) < 2 || len(params) > 3 {
-		ctx.Log().Error("event", "execute_function", "function", "ifte", "error", "wrong_number_of_parameters", "params", params)
-		stats.IncErrors()
-		AddError(ctx, SyntaxError{fmt.Sprintf("wrong number of parameters in call to ifte function"), "ifte", params})
-		return nil
-	}
-	conditionMet, err := strconv.ParseBool(extractStringParam(params[0]))
-	if err != nil {
-		ctx.Log().Error("event", "execute_function", "function", "ifte", "error", "non_boolean_parameter", "params", params)
-		stats.IncErrors()
-		AddError(ctx, SyntaxError{fmt.Sprintf("non boolean parameters in call to contains function"), "ifte", params})
-		return nil
-	}
-	//TODO: preserve parameter type (bool, string, json, int, float), also applies to alt() etc.
-	res := ""
-	if conditionMet {
-		res = extractStringParam(params[1])
-	} else if len(params) == 3 {
-		res = extractStringParam(params[2])
-	}
-	// hack to resurrect json
-	if strings.Contains(res, "{") && strings.Contains(res, "}") {
-		doc, err := NewJDocFromString(res)
-		if err != nil {
-			ctx.Log().Error("event", "execute_function", "function", "ifte", "error", "invalid_json", "params", params)
-			stats.IncErrors()
-			AddError(ctx, SyntaxError{fmt.Sprintf("non json parameters in call to ifte function"), "ifte", params})
-			return nil
-
-		}
-		return doc.GetOriginalObject()
-	}
-	return res*/
 }
 
 // fnCase is a simplification of a nested ifte(equals(),'foo', ifte(equals(...),...)) cascade.
@@ -468,22 +421,6 @@ func fnCase(ctx Context, doc *JDoc, params []string) interface{} {
 	stats.IncErrors()
 	AddError(ctx, SyntaxError{fmt.Sprintf("case function now implemented in parser"), "case", params})
 	return nil
-	/*stats := ctx.Value(EelTotalStats).(*ServiceStats)
-	if params == nil || len(params) < 3 || len(params)%3 > 1 {
-		ctx.Log().Error("event", "execute_function", "function", "case", "error", "wrong_number_of_parameters", "params", params)
-		stats.IncErrors()
-		AddError(ctx, SyntaxError{fmt.Sprintf("wrong number of parameters in call to case function"), "case", params})
-		return nil
-	}
-	for i := 0; i < len(params)/3; i++ {
-		if extractStringParam(params[i*3]) == extractStringParam(params[i*3+1]) {
-			return extractStringParam(params[i*3+2])
-		}
-	}
-	if len(params)%3 == 1 {
-		return extractStringParam(params[len(params)-1])
-	}
-	return ""*/
 }
 
 // fnJs JavaScript function. Kind of useful for everything that does not have a built-in function.
