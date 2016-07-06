@@ -55,8 +55,14 @@ func (p *HttpPublisher) Publish() (string, error) {
 	if p.verb == "" {
 		return "", errors.New("missing verb")
 	}
-	resp, _, err := GetRetrier(p.ctx).RetryEndpoint(p.ctx, p.GetUrl(), p.payload, p.verb, p.headers, nil)
-	return resp, err
+	resp, status, err := GetRetrier(p.ctx).RetryEndpoint(p.ctx, p.GetUrl(), p.payload, p.verb, p.headers, nil)
+	if err != nil {
+		return resp, err
+	}
+	if status < 200 || status >= 300 {
+		return resp, NetworkError{p.endpoint, "endpoint returned error", status}
+	}
+	return resp, nil
 }
 
 func (p *HttpPublisher) GetUrl() string {
