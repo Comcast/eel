@@ -230,6 +230,11 @@ func fnMatch(ctx Context, doc *JDoc, params []string) interface{} {
 // fnAlt alternative function.
 func fnAlt(ctx Context, doc *JDoc, params []string) interface{} {
 	stats := ctx.Value(EelTotalStats).(*ServiceStats)
+	ctx.Log().Error("event", "execute_function", "function", "alt", "error", "now_implemented_in_parser", "params", params)
+	stats.IncErrors()
+	AddError(ctx, SyntaxError{fmt.Sprintf("alt function now implemented in parser"), "alt", params})
+	return nil
+	/*stats := ctx.Value(EelTotalStats).(*ServiceStats)
 	if params == nil || len(params) < 2 {
 		ctx.Log().Error("event", "execute_function", "function", "alt", "error", "wrong_number_of_parameters", "params", params)
 		stats.IncErrors()
@@ -241,7 +246,7 @@ func fnAlt(ctx Context, doc *JDoc, params []string) interface{} {
 			return sp
 		}
 	}
-	return ""
+	return ""*/
 }
 
 // fnAnd boolean and function.
@@ -415,6 +420,11 @@ func fnEquals(ctx Context, doc *JDoc, params []string) interface{} {
 // fnIfte is an if-then-else function. The first parameter must evaluate to a boolean, the third parameter is optional.
 func fnIfte(ctx Context, doc *JDoc, params []string) interface{} {
 	stats := ctx.Value(EelTotalStats).(*ServiceStats)
+	ctx.Log().Error("event", "execute_function", "function", "ifte", "error", "now_implemented_in_parser", "params", params)
+	stats.IncErrors()
+	AddError(ctx, SyntaxError{fmt.Sprintf("ifte function now implemented in parser"), "ifte", params})
+	return nil
+	/*stats := ctx.Value(EelTotalStats).(*ServiceStats)
 	if params == nil || len(params) < 2 || len(params) > 3 {
 		ctx.Log().Error("event", "execute_function", "function", "ifte", "error", "wrong_number_of_parameters", "params", params)
 		stats.IncErrors()
@@ -447,7 +457,7 @@ func fnIfte(ctx Context, doc *JDoc, params []string) interface{} {
 		}
 		return doc.GetOriginalObject()
 	}
-	return res
+	return res*/
 }
 
 // fnCase is a simplification of a nested ifte(equals(),'foo', ifte(equals(...),...)) cascade.

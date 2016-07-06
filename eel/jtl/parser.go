@@ -179,8 +179,8 @@ func (a *JExprItem) getDeepestConditional(cond **JExprItem) *JExprItem {
 	if cond == nil {
 		cond = new(*JExprItem)
 	}
-	//TODO: add support for case() and alt()
-	if a.typ == astFunction && a.val == "ifte" {
+	//TODO: add support for case()
+	if a.typ == astFunction && (a.val == "ifte" || a.val == "ast") {
 		if *cond == nil {
 			*cond = a
 		} else if a.level > (*cond).level {
@@ -216,7 +216,9 @@ func (a *JExprItem) optimizeAllConditionals(ctx Context, doc *JDoc) error {
 // with the proper results to ptimize the AST
 func (a *JExprItem) optimizeConditional(ctx Context, doc *JDoc) (*JExprItem, error) {
 	childIdx := 0
-	//TODO: add support for case() and alt()
+	//TODO: add errors to context
+	//TODO: add support for case()
+	//TODO: hack to resurrect json in ifte()
 	if a.typ == astFunction && a.val == "ifte" {
 		// check params
 		if len(a.kids) != 3 {
@@ -267,6 +269,44 @@ func (a *JExprItem) optimizeConditional(ctx Context, doc *JDoc) (*JExprItem, err
 		a.mom.kids[childIdx] = chosenChild
 		chosenChild.mom = a.mom
 		chosenChild.print(0, "CHOSENCHILD")
+	} else if a.typ == astFunction && a.val == "alt" {
+		// check params
+		if len(a.kids) < 2 {
+			ctx.Log().Error("event", "eel_parser_error", "cause", "wrong_number_of_parameters", "type", a.typ, "val", a.val, "num_params", len(a.kids))
+			return nil, errors.New("alt has wrong number of parameters")
+		}
+		if a.mom == nil {
+			ctx.Log().Error("event", "eel_parser_error", "cause", "conditional_orphan", "type", a.typ, "val", a.val)
+			return nil, errors.New("conditional orphan")
+		}
+
+		for idx, cand := range a.kids {
+			cand.mom = nil
+			for {
+				if !cand.collapseLeaves(ctx, doc, cand, nil) {
+					break
+				}
+			}
+			if cand.val != "''" && cand.val != "" {
+				if cand.typ == astParam {
+					cand.typ = astText
+					switch cand.val.(type) {
+					case string:
+						valStr := cand.val.(string)
+						if len(valStr) >= 2 && strings.HasPrefix(valStr, "'") && strings.HasSuffix(valStr, "'") {
+							valStr = valStr[1 : len(valStr)-1]
+							cand.val = valStr
+						}
+					}
+				}
+				a.mom.kids[idx] = cand
+				cand.mom = a.mom
+				cand.print(0, "CHOSENCHILD")
+				break
+			}
+			ctx.Log().Error("event", "eel_parser_error", "cause", "no_alternative", "type", cand.typ, "val", cand.val)
+			return nil, errors.New("no alternative")
+		}
 	} else {
 		ctx.Log().Error("event", "eel_parser_error", "cause", "unsupported_conditional", "type", a.typ, "val", a.val)
 		return nil, errors.New("unsupported conditional")
