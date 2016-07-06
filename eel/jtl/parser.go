@@ -179,8 +179,7 @@ func (a *JExprItem) getDeepestConditional(cond **JExprItem) *JExprItem {
 	if cond == nil {
 		cond = new(*JExprItem)
 	}
-	//TODO: add support for case()
-	if a.typ == astFunction && (a.val == "ifte" || a.val == "ast") {
+	if a.typ == astFunction && (a.val == "ifte" || a.val == "ast" || a.val == "case") {
 		if *cond == nil {
 			*cond = a
 		} else if a.level > (*cond).level {
@@ -215,10 +214,9 @@ func (a *JExprItem) optimizeAllConditionals(ctx Context, doc *JDoc) error {
 // optimizeConditional works on the lowest conditional in the AST (obtained with getDeepestConditional), evaluates the condition and replaces it
 // with the proper results to ptimize the AST
 func (a *JExprItem) optimizeConditional(ctx Context, doc *JDoc) (*JExprItem, error) {
-	childIdx := 0
 	//TODO: add errors to context
-	//TODO: add support for case()
 	//TODO: hack to resurrect json in ifte()
+	//TODO: true unit test
 	if a.typ == astFunction && a.val == "ifte" {
 		// check params
 		if len(a.kids) != 3 {
@@ -269,8 +267,8 @@ func (a *JExprItem) optimizeConditional(ctx Context, doc *JDoc) (*JExprItem, err
 		a.mom.kids[childIdx] = chosenChild
 		chosenChild.mom = a.mom
 		chosenChild.print(0, "CHOSENCHILD")
+		return a.mom.kids[childIdx], nil
 	} else if a.typ == astFunction && a.val == "alt" {
-		// check params
 		if len(a.kids) < 2 {
 			ctx.Log().Error("event", "eel_parser_error", "cause", "wrong_number_of_parameters", "type", a.typ, "val", a.val, "num_params", len(a.kids))
 			return nil, errors.New("alt has wrong number of parameters")
@@ -279,8 +277,13 @@ func (a *JExprItem) optimizeConditional(ctx Context, doc *JDoc) (*JExprItem, err
 			ctx.Log().Error("event", "eel_parser_error", "cause", "conditional_orphan", "type", a.typ, "val", a.val)
 			return nil, errors.New("conditional orphan")
 		}
-
-		for idx, cand := range a.kids {
+		childIdx := 0
+		for idx, c := range a.mom.kids {
+			if a == c {
+				childIdx = idx
+			}
+		}
+		for _, cand := range a.kids {
 			cand.mom = nil
 			for {
 				if !cand.collapseLeaves(ctx, doc, cand, nil) {
@@ -299,19 +302,102 @@ func (a *JExprItem) optimizeConditional(ctx Context, doc *JDoc) (*JExprItem, err
 						}
 					}
 				}
-				a.mom.kids[idx] = cand
+				a.mom.kids[childIdx] = cand
 				cand.mom = a.mom
 				cand.print(0, "CHOSENCHILD")
-				break
+				return a.mom.kids[childIdx], nil
 			}
 			ctx.Log().Error("event", "eel_parser_error", "cause", "no_alternative", "type", cand.typ, "val", cand.val)
 			return nil, errors.New("no alternative")
+		}
+	} else if a.typ == astFunction && a.val == "case" {
+		if len(a.kids) < 3 || len(a.kids)%3 > 1 {
+			ctx.Log().Error("event", "eel_parser_error", "cause", "wrong_number_of_parameters", "type", a.typ, "val", a.val, "num_params", len(a.kids))
+			return nil, errors.New("case has wrong number of parameters")
+		}
+		if a.mom == nil {
+			ctx.Log().Error("event", "eel_parser_error", "cause", "conditional_orphan", "type", a.typ, "val", a.val)
+			return nil, errors.New("conditional orphan")
+		}
+		childIdx := 0
+		for idx, c := range a.mom.kids {
+			if a == c {
+				childIdx = idx
+			}
+		}
+		for i := 0; i < len(a.kids)/3; i++ {
+			candA := a.kids[i*3]
+			candA.mom = nil
+			for {
+				if !candA.collapseLeaves(ctx, doc, candA, nil) {
+					break
+				}
+			}
+			switch candA.val.(type) {
+			case string:
+				valStr := candA.val.(string)
+				if len(valStr) >= 2 && strings.HasPrefix(valStr, "'") && strings.HasSuffix(valStr, "'") {
+					valStr = valStr[1 : len(valStr)-1]
+					candA.val = valStr
+				}
+			}
+			candB := a.kids[i*3+1]
+			candB.mom = nil
+			for {
+				if !candB.collapseLeaves(ctx, doc, candB, nil) {
+					break
+				}
+			}
+			switch candB.val.(type) {
+			case string:
+				valStr := candB.val.(string)
+				if len(valStr) >= 2 && strings.HasPrefix(valStr, "'") && strings.HasSuffix(valStr, "'") {
+					valStr = valStr[1 : len(valStr)-1]
+					candB.val = valStr
+				}
+			}
+			if candA.val == candB.val {
+				chosenChild := a.kids[i*3+2]
+				if chosenChild.typ == astParam {
+					chosenChild.typ = astText
+					switch chosenChild.val.(type) {
+					case string:
+						valStr := chosenChild.val.(string)
+						if len(valStr) >= 2 && strings.HasPrefix(valStr, "'") && strings.HasSuffix(valStr, "'") {
+							valStr = valStr[1 : len(valStr)-1]
+							chosenChild.val = valStr
+						}
+					}
+				}
+				a.mom.kids[childIdx] = chosenChild
+				chosenChild.mom = a.mom
+				chosenChild.print(0, "CHOSENCHILD")
+				return a.mom.kids[childIdx], nil
+			}
+		}
+		if len(a.kids)%3 == 1 {
+			chosenChild := a.kids[len(a.kids)-1]
+			if chosenChild.typ == astParam {
+				chosenChild.typ = astText
+				switch chosenChild.val.(type) {
+				case string:
+					valStr := chosenChild.val.(string)
+					if len(valStr) >= 2 && strings.HasPrefix(valStr, "'") && strings.HasSuffix(valStr, "'") {
+						valStr = valStr[1 : len(valStr)-1]
+						chosenChild.val = valStr
+					}
+				}
+			}
+			a.mom.kids[childIdx] = chosenChild
+			chosenChild.mom = a.mom
+			chosenChild.print(0, "CHOSENCHILD")
+			return a.mom.kids[childIdx], nil
 		}
 	} else {
 		ctx.Log().Error("event", "eel_parser_error", "cause", "unsupported_conditional", "type", a.typ, "val", a.val)
 		return nil, errors.New("unsupported conditional")
 	}
-	return a.mom.kids[childIdx], nil
+	return nil, nil
 }
 
 // print prints AST for debugging

@@ -464,6 +464,11 @@ func fnIfte(ctx Context, doc *JDoc, params []string) interface{} {
 // Example: case('<path_1>','<comparison_value_1>','<return_value_1>', '<path_2>','<comparison_value_2>','<return_value_2>,...,'<default>')
 func fnCase(ctx Context, doc *JDoc, params []string) interface{} {
 	stats := ctx.Value(EelTotalStats).(*ServiceStats)
+	ctx.Log().Error("event", "execute_function", "function", "case", "error", "now_implemented_in_parser", "params", params)
+	stats.IncErrors()
+	AddError(ctx, SyntaxError{fmt.Sprintf("case function now implemented in parser"), "case", params})
+	return nil
+	/*stats := ctx.Value(EelTotalStats).(*ServiceStats)
 	if params == nil || len(params) < 3 || len(params)%3 > 1 {
 		ctx.Log().Error("event", "execute_function", "function", "case", "error", "wrong_number_of_parameters", "params", params)
 		stats.IncErrors()
@@ -478,7 +483,7 @@ func fnCase(ctx Context, doc *JDoc, params []string) interface{} {
 	if len(params)%3 == 1 {
 		return extractStringParam(params[len(params)-1])
 	}
-	return ""
+	return ""*/
 }
 
 // fnJs JavaScript function. Kind of useful for everything that does not have a built-in function.
