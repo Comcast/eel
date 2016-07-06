@@ -416,6 +416,24 @@ func TestParserIfteTrue(t *testing.T) {
 	}
 }
 
+func TestParserIfteOptimal(t *testing.T) {
+	initTests("../../config-handlers")
+	e1, err := NewJDocFromString(event1)
+	if err != nil {
+		t.Fatal("could not get event1")
+	}
+	test := "{{ifte('{{equals('{{ifte('{{equals('a','a')}}','a','b')}}','a')}}','c','d')}}"
+	jexpr, err := NewJExpr(test)
+	if err != nil {
+		t.Errorf("error: %s\n", err.Error())
+	}
+	result := jexpr.Execute(Gctx, e1)
+	expected := "c"
+	if result.(string) != expected {
+		t.Errorf("wrong parsing result: %v expected: %v\n", result, expected)
+	}
+}
+
 func TestParserContainsTrue(t *testing.T) {
 	initTests("../../config-handlers")
 	e1, err := NewJDocFromString(event1)

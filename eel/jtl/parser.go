@@ -35,6 +35,10 @@ const (
 	astAgg                     // 4 concatenation of sub elements
 )
 
+const (
+	parserDebug = false
+)
+
 // JExprItem represents a node in an abstract syntax tree of a parsed jpath expression. Pointer to root node also used as handle for a parser instance.
 type JExprItem struct {
 	typ      astType
@@ -42,6 +46,7 @@ type JExprItem struct {
 	kids     []*JExprItem
 	exploded bool
 	mom      *JExprItem
+	level    int // level in AST
 }
 
 // JExprD3Node represents a simplified version of a node on the abstract syntax tree for debug and visulaization purposes.
@@ -52,7 +57,7 @@ type JExprD3Node struct {
 }
 
 func newJExprItem(typ astType, val string, mom *JExprItem) *JExprItem {
-	return &JExprItem{typ, val, make([]*JExprItem, 0), false, mom}
+	return &JExprItem{typ, val, make([]*JExprItem, 0), false, mom, 0}
 }
 
 func newJExprParser() *JExprItem {
@@ -97,7 +102,7 @@ func (a *JExprItem) GetD3Json(cur *JExprD3Node) *JExprD3Node {
 	return cur
 }
 
-// parse parses a jpath expression for validation purposes only. Returns an error (if any) or nil.
+// parse parses a single lebel of a jpath expression. Returns an error (if any) or nil.
 func (a *JExprItem) parse(expr string) error {
 	_, c := lex("", expr)
 	var f *JExprItem
@@ -161,8 +166,122 @@ func (a *JExprItem) typeString() string {
 	}
 }
 
+// updateLevels updates the level parameters of all nodes in the AST tree. Call on root node with level 0.
+func (a *JExprItem) updateLevels(level int) {
+	a.level = level
+	for _, k := range a.kids {
+		k.updateLevels(level + 1)
+	}
+}
+
+// getDeepestConditional gets the lowest level conditional (ifte(), case(), alt()) for AST optimization
+func (a *JExprItem) getDeepestConditional(cond **JExprItem) *JExprItem {
+	if cond == nil {
+		cond = new(*JExprItem)
+	}
+	//TODO: add support for case() and alt()
+	if a.typ == astFunction && a.val == "ifte" {
+		if *cond == nil {
+			*cond = a
+		} else if a.level > (*cond).level {
+			*cond = a
+		}
+	}
+	for _, k := range a.kids {
+		k.getDeepestConditional(cond)
+	}
+	return *cond
+}
+
+// optimizeAllConditionals oprtstrd on the entire AST to optimize all conditional sub trees bottom up
+func (a *JExprItem) optimizeAllConditionals(ctx Context, doc *JDoc) error {
+	a.updateLevels(0)
+	for {
+		cond := a.getDeepestConditional(nil)
+		if cond == nil {
+			break
+		}
+		cond.print(0, "CONDITION")
+		_, err := cond.optimizeConditional(ctx, doc)
+		if err != nil {
+			return err
+		}
+		a.updateLevels(0)
+		a.print(0, "OPTIMIZEDTREE")
+	}
+	return nil
+}
+
+// optimizeConditional works on the lowest conditional in the AST (obtained with getDeepestConditional), evaluates the condition and replaces it
+// with the proper results to ptimize the AST
+func (a *JExprItem) optimizeConditional(ctx Context, doc *JDoc) (*JExprItem, error) {
+	childIdx := 0
+	//TODO: add support for case() and alt()
+	if a.typ == astFunction && a.val == "ifte" {
+		// check params
+		if len(a.kids) != 3 {
+			ctx.Log().Error("event", "eel_parser_error", "cause", "wrong_number_of_parameters", "type", a.typ, "val", a.val, "num_params", len(a.kids))
+			return nil, errors.New("ifte has wrong number of parameters")
+		}
+		if a.mom == nil {
+			ctx.Log().Error("event", "eel_parser_error", "cause", "conditional_orphan", "type", a.typ, "val", a.val)
+			return nil, errors.New("conditional orphan")
+		}
+		// find idx
+		childIdx := 0
+		for idx, c := range a.mom.kids {
+			if a == c {
+				childIdx = idx
+			}
+		}
+		// detach condition node
+		cond := a.kids[0]
+		cond.mom = nil
+		// evaluate condition and restructure AST
+		for {
+			if !cond.collapseLeaves(ctx, doc, cond, nil) {
+				break
+			}
+		}
+		// pull up the chosen node and adjust some metadata
+		var chosenChild *JExprItem
+		if cond.val == true || cond.val == "true" || cond.val == "'true'" {
+			chosenChild = a.kids[1]
+		} else if cond.val == false || cond.val == "false" || cond.val == "'false'" {
+			chosenChild = a.kids[2]
+		} else {
+			ctx.Log().Error("event", "eel_parser_error", "cause", "non_boolean_condition", "type", cond.typ, "val", cond.val)
+			return nil, errors.New("non-boolean condition")
+		}
+		if chosenChild.typ == astParam {
+			chosenChild.typ = astText
+			switch chosenChild.val.(type) {
+			case string:
+				valStr := chosenChild.val.(string)
+				if len(valStr) >= 2 && strings.HasPrefix(valStr, "'") && strings.HasSuffix(valStr, "'") {
+					valStr = valStr[1 : len(valStr)-1]
+					chosenChild.val = valStr
+				}
+			}
+		}
+		a.mom.kids[childIdx] = chosenChild
+		chosenChild.mom = a.mom
+		chosenChild.print(0, "CHOSENCHILD")
+	} else {
+		ctx.Log().Error("event", "eel_parser_error", "cause", "unsupported_conditional", "type", a.typ, "val", a.val)
+		return nil, errors.New("unsupported conditional")
+	}
+	return a.mom.kids[childIdx], nil
+}
+
 // print prints AST for debugging
-func (a *JExprItem) print(level int) {
+func (a *JExprItem) print(level int, title string) {
+	if !parserDebug {
+		return
+	}
+	if title != "" && level == 0 {
+		fmt.Println(title)
+	}
 	fmt.Printf("level: %d\ttype: %s\tkids: %d\t val: %v", level, a.typeString(), len(a.kids), a.val)
 	if a.mom != nil {
 		fmt.Printf("\tmom: %s\t%s\n", a.mom.typeString(), a.mom.val)
@@ -170,7 +289,10 @@ func (a *JExprItem) print(level int) {
 		fmt.Printf("\tmom: nil\n")
 	}
 	for _, k := range a.kids {
-		k.print(level + 1)
+		k.print(level+1, title)
+	}
+	if level == 0 {
+		fmt.Println()
 	}
 }
 
@@ -246,7 +368,7 @@ func (a *JExprItem) collapseLeaf(ctx Context, doc *JDoc) bool {
 	switch a.typ {
 	case astPath: // simple path selector
 		if a.mom == nil {
-			//ctx.Log.Debug("event", "ast_collapse_failure", "reason", "mom_is_nil", "val", a.val, "type", a.typeString())
+			ctx.Log().Debug("event", "ast_collapse_failure", "reason", "mom_is_nil", "val", a.val, "type", a.typeString())
 			return false
 		}
 		a.val = doc.EvalPath(ctx, ToFlatString(a.val)) // retain type of selected path
@@ -258,17 +380,17 @@ func (a *JExprItem) collapseLeaf(ctx Context, doc *JDoc) bool {
 		} else if a.mom.typ == astFunction {
 			a.typ = astParam
 		} else {
-			//ctx.Log.Debug("event", "ast_collapse_failure", "reason", "wrong_type", "val", a.val, "type", a.typeString())
+			ctx.Log().Debug("event", "ast_collapse_failure", "reason", "wrong_type", "val", a.val, "type", a.typeString())
 		}
 		return true
 	case astFunction: // parameter-less function
 		if a.mom == nil {
-			//ctx.Log.Debug("event", "ast_collapse_failure", "reason", "mom_is_nil", "val", a.val, "type", a.typeString())
+			ctx.Log().Debug("event", "ast_collapse_failure", "reason", "mom_is_nil", "val", a.val, "type", a.typeString())
 			return false
 		}
 		f := NewFunction(ToFlatString(a.val))
 		if f == nil {
-			//ctx.Log.Debug("event", "ast_collapse_failure", "reason", "unknown_function", "val", a.val, "type", a.typeString())
+			ctx.Log().Debug("event", "ast_collapse_failure", "reason", "unknown_function", "val", a.val, "type", a.typeString())
 			return false
 		}
 		// odd: currently parameter-less functions require a single blank string as parameter
@@ -284,20 +406,20 @@ func (a *JExprItem) collapseLeaf(ctx Context, doc *JDoc) bool {
 		return true
 	case astParam: // function with parameters
 		if a.mom == nil {
-			//ctx.Log.Debug("event", "ast_collapse_failure", "reason", "mom_is_nil", "val", a.val, "type", a.typeString())
+			ctx.Log().Debug("event", "ast_collapse_failure", "reason", "mom_is_nil", "val", a.val, "type", a.typeString())
 			return false
 		}
 		if a.mom.mom == nil {
-			//ctx.Log.Debug("event", "ast_collapse_failure", "reason", "grandma_is_nil", "val", a.val, "type", a.typeString())
+			ctx.Log().Debug("event", "ast_collapse_failure", "reason", "grandma_is_nil", "val", a.val, "type", a.typeString())
 			return false
 		}
 		if a.mom.typ != astFunction {
-			//ctx.Log.Debug("event", "ast_collapse_failure", "reason", "mom_must_be_function", "val", a.val, "type", a.typeString())
+			ctx.Log().Debug("event", "ast_collapse_failure", "reason", "mom_must_be_function", "val", a.val, "type", a.typeString())
 			return false
 		}
 		f := NewFunction(ToFlatString(a.mom.val))
 		if f == nil {
-			//ctx.Log.Debug("event", "ast_collapse_failure", "reason", "unknown_function", "val", a.val, "type", a.typeString())
+			ctx.Log().Debug("event", "ast_collapse_failure", "reason", "unknown_function", "val", a.val, "type", a.typeString())
 			return false
 		}
 		params := make([]string, 0)
@@ -314,16 +436,16 @@ func (a *JExprItem) collapseLeaf(ctx Context, doc *JDoc) bool {
 		} else if a.mom.mom.typ == astAgg {
 			a.mom.typ = astText
 		} else {
-			//ctx.Log.Debug("event", "ast_collapse_failure", "reason", "mom_must_be_function_or_aggregation", "val", a.val, "type", a.typeString())
+			ctx.Log().Debug("event", "ast_collapse_failure", "reason", "mom_must_be_function_or_aggregation", "val", a.val, "type", a.typeString())
 		}
 		return true
 	case astText: // aggregation of text fields
 		if a.mom == nil {
-			//ctx.Log.Debug("event", "ast_collapse_failure", "reason", "mom_is_nil", "val", a.val, "type", a.typeString())
+			ctx.Log().Debug("event", "ast_collapse_failure", "reason", "mom_is_nil", "val", a.val, "type", a.typeString())
 			return false
 		}
 		if a.mom.typ != astAgg {
-			//ctx.Log.Debug("event", "ast_collapse_failure", "reason", "mom_must_be_aggregation", "val", a.val, "type", a.typeString())
+			ctx.Log().Debug("event", "ast_collapse_failure", "reason", "mom_must_be_aggregation", "val", a.val, "type", a.typeString())
 			return false
 		}
 		if len(a.mom.kids) == 1 { // retain type for single value aggregations, except for nil which is converted to ""
@@ -371,14 +493,14 @@ func (a *JExprItem) collapseLeaves(ctx Context, doc *JDoc, ast *JExprItem, trees
 		if trees != nil && cl {
 			*trees = append(*trees, ast.list(0, nil))
 		}
-		//fmt.Printf("collapsed:\n")
-		//ast.print(0)
+		ast.print(0, "COLLAPSEDLEAF")
 	}
 	return collapsed
 }
 
 // CollapseNextLeafDebug is used for step-debugging of a jpath expression.
 func (a *JExprItem) CollapseNextLeafDebug(ctx Context, doc *JDoc) bool {
+	//TODO: add support for conditional optimization
 	for _, k := range a.kids {
 		if k.CollapseNextLeafDebug(ctx, doc) {
 			return true
@@ -400,13 +522,14 @@ func (a *JExprItem) countItems(cnt *int) int {
 
 // Execute executes parsed jpath expression and returns result as interface.
 func (a *JExprItem) Execute(ctx Context, doc *JDoc) interface{} {
-	//fmt.Printf("ast:\n")
-	//a.print(0)
+	a.print(0, "AST")
+	a.optimizeAllConditionals(ctx, doc)
 	for {
 		if !a.collapseLeaves(ctx, doc, a, nil) {
 			break
 		}
 	}
+	a.print(0, "AST")
 	return a.val
 }
 
@@ -414,10 +537,13 @@ func (a *JExprItem) Execute(ctx Context, doc *JDoc) interface{} {
 func (a *JExprItem) ExecuteDebug(ctx Context, doc *JDoc) (interface{}, [][][]string) {
 	trees := make([][][]string, 0)
 	trees = append(trees, a.list(0, nil))
+	a.print(0, "AST")
+	a.optimizeAllConditionals(ctx, doc)
 	for {
 		if !a.collapseLeaves(ctx, doc, a, &trees) {
 			break
 		}
 	}
+	a.print(0, "AST")
 	return a.val, trees
 }
