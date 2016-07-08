@@ -211,11 +211,47 @@ func (a *JExprItem) optimizeAllConditionals(ctx Context, doc *JDoc) error {
 	return nil
 }
 
+func (a *JExprItem) adjustParameter() {
+	if a.typ == astParam {
+		a.typ = astText
+		switch a.val.(type) {
+		case string:
+			valStr := a.val.(string)
+			if len(valStr) >= 2 && strings.HasPrefix(valStr, "'") && strings.HasSuffix(valStr, "'") {
+				valStr = valStr[1 : len(valStr)-1]
+				a.val = valStr
+			}
+		}
+	}
+}
+
+func (a *JExprItem) collapseIntoSingleNode(ctx Context, doc *JDoc) {
+	for {
+		if !a.collapseLeaves(ctx, doc, a, nil) {
+			break
+		}
+	}
+}
+
+func (a *JExprItem) getMotherIdx() int {
+	if a.mom == nil {
+		return -1
+	}
+	for idx, c := range a.mom.kids {
+		if a == c {
+			return idx
+		}
+	}
+	return -1
+}
+
 // optimizeConditional works on the lowest conditional in the AST (obtained with getDeepestConditional), evaluates the condition and replaces it
 // with the proper results to ptimize the AST
 func (a *JExprItem) optimizeConditional(ctx Context, doc *JDoc) (*JExprItem, error) {
 	//TODO: add errors to context
 	//TODO: true unit test
+	//TODO: debug support
+	//TODO: migrate code to type branch
 	if a.typ == astFunction && a.val == "ifte" {
 		// check params
 		if len(a.kids) != 3 {
@@ -227,21 +263,12 @@ func (a *JExprItem) optimizeConditional(ctx Context, doc *JDoc) (*JExprItem, err
 			return nil, errors.New("conditional orphan")
 		}
 		// find idx
-		childIdx := 0
-		for idx, c := range a.mom.kids {
-			if a == c {
-				childIdx = idx
-			}
-		}
+		childIdx := a.getMotherIdx()
 		// detach condition node
 		cond := a.kids[0]
 		cond.mom = nil
 		// evaluate condition and restructure AST
-		for {
-			if !cond.collapseLeaves(ctx, doc, cond, nil) {
-				break
-			}
-		}
+		cond.collapseIntoSingleNode(ctx, doc)
 		// pull up the chosen node and adjust some metadata
 		var chosenChild *JExprItem
 		if cond.val == true || cond.val == "true" || cond.val == "'true'" {
@@ -252,17 +279,7 @@ func (a *JExprItem) optimizeConditional(ctx Context, doc *JDoc) (*JExprItem, err
 			ctx.Log().Error("event", "eel_parser_error", "cause", "non_boolean_condition", "type", cond.typ, "val", cond.val)
 			return nil, errors.New("non-boolean condition")
 		}
-		if chosenChild.typ == astParam {
-			chosenChild.typ = astText
-			switch chosenChild.val.(type) {
-			case string:
-				valStr := chosenChild.val.(string)
-				if len(valStr) >= 2 && strings.HasPrefix(valStr, "'") && strings.HasSuffix(valStr, "'") {
-					valStr = valStr[1 : len(valStr)-1]
-					chosenChild.val = valStr
-				}
-			}
-		}
+		chosenChild.adjustParameter()
 		// hack to resurrect json inteface type
 		switch chosenChild.val.(type) {
 		case string:
@@ -290,31 +307,12 @@ func (a *JExprItem) optimizeConditional(ctx Context, doc *JDoc) (*JExprItem, err
 			ctx.Log().Error("event", "eel_parser_error", "cause", "conditional_orphan", "type", a.typ, "val", a.val)
 			return nil, errors.New("conditional orphan")
 		}
-		childIdx := 0
-		for idx, c := range a.mom.kids {
-			if a == c {
-				childIdx = idx
-			}
-		}
+		childIdx := a.getMotherIdx()
 		for _, cand := range a.kids {
 			cand.mom = nil
-			for {
-				if !cand.collapseLeaves(ctx, doc, cand, nil) {
-					break
-				}
-			}
+			cand.collapseIntoSingleNode(ctx, doc)
 			if cand.val != "''" && cand.val != "" {
-				if cand.typ == astParam {
-					cand.typ = astText
-					switch cand.val.(type) {
-					case string:
-						valStr := cand.val.(string)
-						if len(valStr) >= 2 && strings.HasPrefix(valStr, "'") && strings.HasSuffix(valStr, "'") {
-							valStr = valStr[1 : len(valStr)-1]
-							cand.val = valStr
-						}
-					}
-				}
+				cand.adjustParameter()
 				a.mom.kids[childIdx] = cand
 				cand.mom = a.mom
 				cand.print(0, "CHOSENCHILD")
@@ -332,49 +330,16 @@ func (a *JExprItem) optimizeConditional(ctx Context, doc *JDoc) (*JExprItem, err
 			ctx.Log().Error("event", "eel_parser_error", "cause", "conditional_orphan", "type", a.typ, "val", a.val)
 			return nil, errors.New("conditional orphan")
 		}
-		childIdx := 0
-		for idx, c := range a.mom.kids {
-			if a == c {
-				childIdx = idx
-			}
-		}
+		childIdx := a.getMotherIdx()
 		for i := 0; i < len(a.kids)/3; i++ {
 			candA := a.kids[i*3]
 			candA.mom = nil
-			for {
-				if !candA.collapseLeaves(ctx, doc, candA, nil) {
-					break
-				}
-			}
-			if candA.typ == astParam {
-				candA.typ = astText
-				switch candA.val.(type) {
-				case string:
-					valStr := candA.val.(string)
-					if len(valStr) >= 2 && strings.HasPrefix(valStr, "'") && strings.HasSuffix(valStr, "'") {
-						valStr = valStr[1 : len(valStr)-1]
-						candA.val = valStr
-					}
-				}
-			}
+			candA.collapseIntoSingleNode(ctx, doc)
+			candA.adjustParameter()
 			candB := a.kids[i*3+1]
 			candB.mom = nil
-			for {
-				if !candB.collapseLeaves(ctx, doc, candB, nil) {
-					break
-				}
-			}
-			if candB.typ == astParam {
-				candB.typ = astText
-				switch candB.val.(type) {
-				case string:
-					valStr := candB.val.(string)
-					if len(valStr) >= 2 && strings.HasPrefix(valStr, "'") && strings.HasSuffix(valStr, "'") {
-						valStr = valStr[1 : len(valStr)-1]
-						candB.val = valStr
-					}
-				}
-			}
+			candB.collapseIntoSingleNode(ctx, doc)
+			candB.adjustParameter()
 			if candA.val == candB.val {
 				chosenChild := a.kids[i*3+2]
 				if chosenChild.typ == astParam {
@@ -396,17 +361,7 @@ func (a *JExprItem) optimizeConditional(ctx Context, doc *JDoc) (*JExprItem, err
 		}
 		if len(a.kids)%3 == 1 {
 			chosenChild := a.kids[len(a.kids)-1]
-			if chosenChild.typ == astParam {
-				chosenChild.typ = astText
-				switch chosenChild.val.(type) {
-				case string:
-					valStr := chosenChild.val.(string)
-					if len(valStr) >= 2 && strings.HasPrefix(valStr, "'") && strings.HasSuffix(valStr, "'") {
-						valStr = valStr[1 : len(valStr)-1]
-						chosenChild.val = valStr
-					}
-				}
-			}
+			chosenChild.adjustParameter()
 			a.mom.kids[childIdx] = chosenChild
 			chosenChild.mom = a.mom
 			chosenChild.print(0, "CHOSENCHILD")
