@@ -1,0 +1,35 @@
+{
+  "Version": "1.0",
+  "Name": "TrueConditional",
+  "Info": "Verify that ifte() only evaluates the true OR the false path.",
+  "Active": true,
+  "Transformation": {
+    "{{/}}": "{{ifte('{{equals('{{/foo}}','bar')}}','{{ifte('{{equals('{{/foo}}','bar')}}','{{transform('ta')}}','{{transform('tb')}}')}}','{{ifte('{{equals('{{/foo}}','bar')}}','{{transform('tc')}}','{{transform('td')}}')}}')}}"
+  },
+  "Transformations" : {
+    "ta" : {
+	  "IsTransformationByExample" : false,
+	  "Transformation" : {
+	    "{{/a}}" : "a"	
+	  }
+	},
+    "tb" : {
+	  "IsTransformationByExample" : false,
+	  "Transformation" : {
+	    "{{/b}}" : "b"	
+	  }
+	},
+    "tc" : {
+	  "IsTransformationByExample" : false,
+	  "Transformation" : {
+	    "{{/c}}" : "c"	
+	  }
+	},
+    "td" : {
+	  "IsTransformationByExample" : false,
+	  "Transformation" : {
+	    "{{/d}}" : "d"	
+	  }
+	}
+  }
+}
