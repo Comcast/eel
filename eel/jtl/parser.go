@@ -249,11 +249,10 @@ func (a *JExprItem) getMotherIdx() int {
 // with the proper results to ptimize the AST
 func (a *JExprItem) optimizeConditional(ctx Context, doc *JDoc) (*JExprItem, error) {
 	//TODO: add errors to context
-	//TODO: true unit test
 	//TODO: debug support
 	//TODO: migrate code to type branch
+	//TODO: test performance impact
 	if a.typ == astFunction && a.val == "ifte" {
-		// check params
 		if len(a.kids) != 3 {
 			ctx.Log().Error("event", "eel_parser_error", "cause", "wrong_number_of_parameters", "type", a.typ, "val", a.val, "num_params", len(a.kids))
 			return nil, errors.New("ifte has wrong number of parameters")
@@ -262,7 +261,6 @@ func (a *JExprItem) optimizeConditional(ctx Context, doc *JDoc) (*JExprItem, err
 			ctx.Log().Error("event", "eel_parser_error", "cause", "conditional_orphan", "type", a.typ, "val", a.val)
 			return nil, errors.New("conditional orphan")
 		}
-		// find idx
 		childIdx := a.getMotherIdx()
 		// detach condition node
 		cond := a.kids[0]
@@ -342,17 +340,7 @@ func (a *JExprItem) optimizeConditional(ctx Context, doc *JDoc) (*JExprItem, err
 			candB.adjustParameter()
 			if candA.val == candB.val {
 				chosenChild := a.kids[i*3+2]
-				if chosenChild.typ == astParam {
-					chosenChild.typ = astText
-					switch chosenChild.val.(type) {
-					case string:
-						valStr := chosenChild.val.(string)
-						if len(valStr) >= 2 && strings.HasPrefix(valStr, "'") && strings.HasSuffix(valStr, "'") {
-							valStr = valStr[1 : len(valStr)-1]
-							chosenChild.val = valStr
-						}
-					}
-				}
+				chosenChild.adjustParameter()
 				a.mom.kids[childIdx] = chosenChild
 				chosenChild.mom = a.mom
 				chosenChild.print(0, "CHOSENCHILD")
