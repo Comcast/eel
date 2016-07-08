@@ -1,0 +1,23 @@
+{
+  "Version": "1.0",
+  "Name": "TrueConditionalCase",
+  "Info": "Verify that case() only evaluates ONE path.",
+  "Active": true,
+  "Transformation": {
+    "{{/}}": "{{case('{{/foo}}','bar','{{transform('ta')}}','{{/foo}}','baz','{{transform('tb')}}')}}"
+  },
+  "Transformations" : {
+    "ta" : {
+	  "IsTransformationByExample" : false,
+	  "Transformation" : {
+	    "{{/truebranch}}" : "true"	
+	  }
+	},
+	"tb" : {
+	  "IsTransformationByExample" : false,
+	  "Transformation" : {
+	    "{{/falsebranch}}" : "false"	
+	  }
+	}		
+  }
+}

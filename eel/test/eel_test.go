@@ -512,6 +512,11 @@ func TestTrueConditional(t *testing.T) {
 	transformEvent(t, "data/test54/", nil)
 }
 
+func TestTrueConditionalCase(t *testing.T) {
+	initTests("data/test55/handlers")
+	transformEvent(t, "data/test55/", nil)
+}
+
 func TestTopicHandlerParent(t *testing.T) {
 	initTests("data/test97/handlers")
 	fanoutEvent(t, "data/test97/", 1, false, nil)
