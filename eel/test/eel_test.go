@@ -507,6 +507,11 @@ func TestCrush(t *testing.T) {
 	transformEvent(t, "data/test53/", nil)
 }
 
+func TestTrueConditional(t *testing.T) {
+	initTests("data/test54/handlers")
+	transformEvent(t, "data/test54/", nil)
+}
+
 func TestTopicHandlerParent(t *testing.T) {
 	initTests("data/test97/handlers")
 	fanoutEvent(t, "data/test97/", 1, false, nil)
