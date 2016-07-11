@@ -379,18 +379,10 @@ func fnMatch(ctx Context, doc *JDoc, params []*JParam) interface{} {
 // fnAlt alternative function.
 func fnAlt(ctx Context, doc *JDoc, params []*JParam) interface{} {
 	stats := ctx.Value(EelTotalStats).(*ServiceStats)
-	if params == nil || len(params) < 2 {
-		ctx.Log().Error("event", "execute_function", "function", "alt", "error", "wrong_number_of_parameters", "params", params)
-		stats.IncErrors()
-		AddError(ctx, SyntaxError{fmt.Sprintf("wrong number of parameters in call to alt function"), "alt"})
-		return nil
-	}
-	for _, p := range params {
-		if sp := p.GetVal(); sp != nil && sp != "" {
-			return sp
-		}
-	}
-	return ""
+	ctx.Log().Error("event", "execute_function", "function", "alt", "error", "now_implemented_in_parser", "params", params)
+	stats.IncErrors()
+	AddError(ctx, SyntaxError{fmt.Sprintf("alt function now implemented in parser"), "alt"})
+	return nil
 }
 
 // fnAnd boolean and function.
@@ -561,48 +553,20 @@ func fnEquals(ctx Context, doc *JDoc, params []*JParam) interface{} {
 // fnIfte is an if-then-else function. The first parameter must evaluate to a boolean, the third parameter is optional.
 func fnIfte(ctx Context, doc *JDoc, params []*JParam) interface{} {
 	stats := ctx.Value(EelTotalStats).(*ServiceStats)
-	if params == nil || len(params) < 2 || len(params) > 3 {
-		ctx.Log().Error("event", "execute_function", "function", "ifte", "error", "wrong_number_of_parameters", "params", params)
-		stats.IncErrors()
-		AddError(ctx, SyntaxError{fmt.Sprintf("wrong number of parameters in call to ifte function"), "ifte"})
-		return nil
-	}
-	conditionMet := params[0].GetBoolVal()
-	if params[0].GetType() != TYPE_BOOL {
-		ctx.Log().Error("event", "execute_function", "function", "ifte", "error", "non_boolean_parameter", "params", params)
-		stats.IncErrors()
-		AddError(ctx, SyntaxError{fmt.Sprintf("non boolean parameters in call to ifte function"), "ifte"})
-		return nil
-	}
-	var res interface{}
-	if conditionMet {
-		res = params[1].GetVal()
-	} else if len(params) == 3 {
-		res = params[2].GetVal()
-	}
-	return res
+	ctx.Log().Error("event", "execute_function", "function", "ifte", "error", "now_implemented_in_parser", "params", params)
+	stats.IncErrors()
+	AddError(ctx, SyntaxError{fmt.Sprintf("ifte function now implemented in parser"), "ifte"})
+	return nil
 }
 
 // fnCase is a simplification of a nested ifte(equals(),'foo', ifte(equals(...),...)) cascade.
 // Example: case('<path_1>','<comparison_value_1>','<return_value_1>', '<path_2>','<comparison_value_2>','<return_value_2>,...,'<default>')
 func fnCase(ctx Context, doc *JDoc, params []*JParam) interface{} {
 	stats := ctx.Value(EelTotalStats).(*ServiceStats)
-	if params == nil || len(params) < 3 || len(params)%3 > 1 {
-		ctx.Log().Error("event", "execute_function", "function", "case", "error", "wrong_number_of_parameters", "params", params)
-		stats.IncErrors()
-		AddError(ctx, SyntaxError{fmt.Sprintf("wrong number of parameters in call to case function"), "case"})
-		return nil
-	}
-	for i := 0; i < len(params)/3; i++ {
-		//TODO: consider evaluating maps and arrays here
-		if params[i*3].GetVal() == params[i*3+1].GetVal() {
-			return params[i*3+2].GetVal()
-		}
-	}
-	if len(params)%3 == 1 {
-		return params[len(params)-1].GetVal()
-	}
-	return ""
+	ctx.Log().Error("event", "execute_function", "function", "case", "error", "now_implemented_in_parser", "params", params)
+	stats.IncErrors()
+	AddError(ctx, SyntaxError{fmt.Sprintf("case function now implemented in parser"), "case"})
+	return nil
 }
 
 // fnJs JavaScript function. Kind of useful for everything that does not have a built-in function.
