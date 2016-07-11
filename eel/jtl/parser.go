@@ -249,8 +249,6 @@ func (a *JExprItem) getMotherIdx() int {
 // with the proper results to ptimize the AST
 func (a *JExprItem) optimizeConditional(ctx Context, doc *JDoc) (*JExprItem, error) {
 	//TODO: debug support
-	//TODO: migrate code to type branch
-	//TODO: test performance impact
 	stats := ctx.Value(EelTotalStats).(*ServiceStats)
 	if a.typ == astFunction && a.val == "ifte" {
 		if len(a.kids) != 3 {
