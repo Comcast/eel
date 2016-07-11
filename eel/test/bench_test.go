@@ -74,7 +74,7 @@ func benchmarkSingleEvent(b *testing.B, folder string, headers map[string]string
 		if err != nil {
 			b.Fatalf("error posting elements event: %s\n", err.Error())
 		}
-		if resp.Status != "200 OK" {
+		if resp.StatusCode != 200 && resp.StatusCode != 202 {
 			b.Fatalf("eel returned unhappy status: %s\n", resp.Status)
 		}
 		_, err = ioutil.ReadAll(resp.Body)
