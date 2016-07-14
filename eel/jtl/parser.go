@@ -179,7 +179,7 @@ func (a *JExprItem) getDeepestConditional(cond **JExprItem) *JExprItem {
 	if cond == nil {
 		cond = new(*JExprItem)
 	}
-	if a.typ == astFunction && (a.val == "ifte" || a.val == "ast" || a.val == "case") {
+	if a.typ == astFunction && (a.val == "ifte" || a.val == "alt" || a.val == "case") {
 		if *cond == nil {
 			*cond = a
 		} else if a.level > (*cond).level {
