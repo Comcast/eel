@@ -324,11 +324,15 @@ func (a *JExprItem) optimizeConditional(ctx Context, doc *JDoc) (*JExprItem, err
 				cand.print(0, "CHOSENCHILD")
 				return a.mom.kids[childIdx], nil
 			}
-			ctx.Log().Error("event", "eel_parser_error", "cause", "no_alternative", "type", cand.typ, "val", cand.val)
-			stats.IncErrors()
-			AddError(ctx, RuntimeError{fmt.Sprintf("no alternative"), "alt", nil})
-			return nil, errors.New("no alternative")
 		}
+		// otherwise enter blank default node
+		chosenChild := new(JExprItem)
+		chosenChild.mom = a.mom
+		chosenChild.typ = astText
+		chosenChild.val = ""
+		a.mom.kids[childIdx] = chosenChild
+		chosenChild.print(0, "CHOSENCHILD")
+		return a.mom.kids[childIdx], nil
 	} else if a.typ == astFunction && a.val == "case" {
 		if len(a.kids) < 3 || len(a.kids)%3 > 1 {
 			ctx.Log().Error("event", "eel_parser_error", "cause", "wrong_number_of_parameters", "type", a.typ, "val", a.val, "num_params", len(a.kids))
@@ -369,6 +373,14 @@ func (a *JExprItem) optimizeConditional(ctx Context, doc *JDoc) (*JExprItem, err
 			chosenChild.print(0, "CHOSENCHILD")
 			return a.mom.kids[childIdx], nil
 		}
+		// otherwise enter blank default node
+		chosenChild := new(JExprItem)
+		chosenChild.mom = a.mom
+		chosenChild.typ = astText
+		chosenChild.val = ""
+		a.mom.kids[childIdx] = chosenChild
+		chosenChild.print(0, "CHOSENCHILD")
+		return a.mom.kids[childIdx], nil
 	} else {
 		ctx.Log().Error("event", "eel_parser_error", "cause", "unsupported_conditional", "type", a.typ, "val", a.val)
 		stats.IncErrors()
