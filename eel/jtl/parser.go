@@ -196,7 +196,7 @@ func (a *JExprItem) getDeepestConditional(cond **JExprItem) *JExprItem {
 	if cond == nil {
 		cond = new(*JExprItem)
 	}
-	if a.typ == astFunction && (a.val == "ifte" || a.val == "ast" || a.val == "case") {
+	if a.typ == astFunction && (a.val == "ifte" || a.val == "alt" || a.val == "case") {
 		if *cond == nil {
 			*cond = a
 		} else if a.level > (*cond).level {
@@ -325,11 +325,15 @@ func (a *JExprItem) optimizeConditional(ctx Context, doc *JDoc) (*JExprItem, err
 				cand.print(0, "CHOSENCHILD")
 				return a.mom.kids[childIdx], nil
 			}
-			ctx.Log().Error("event", "eel_parser_error", "cause", "no_alternative", "type", cand.typ, "val", cand.val)
-			stats.IncErrors()
-			AddError(ctx, RuntimeError{fmt.Sprintf("no alternative"), "alt"})
-			return nil, errors.New("no alternative")
 		}
+		// otherwise enter blank default node
+		chosenChild := new(JExprItem)
+		chosenChild.mom = a.mom
+		chosenChild.typ = astText
+		chosenChild.val = ""
+		a.mom.kids[childIdx] = chosenChild
+		chosenChild.print(0, "CHOSENCHILD")
+		return a.mom.kids[childIdx], nil
 	} else if a.typ == astFunction && a.val == "case" {
 		if len(a.kids) < 3 || len(a.kids)%3 > 1 {
 			ctx.Log().Error("event", "eel_parser_error", "cause", "wrong_number_of_parameters", "type", a.typ, "val", a.val, "num_params", len(a.kids))
@@ -370,6 +374,14 @@ func (a *JExprItem) optimizeConditional(ctx Context, doc *JDoc) (*JExprItem, err
 			chosenChild.print(0, "CHOSENCHILD")
 			return a.mom.kids[childIdx], nil
 		}
+		// otherwise enter blank default node
+		chosenChild := new(JExprItem)
+		chosenChild.mom = a.mom
+		chosenChild.typ = astText
+		chosenChild.val = ""
+		a.mom.kids[childIdx] = chosenChild
+		chosenChild.print(0, "CHOSENCHILD")
+		return a.mom.kids[childIdx], nil
 	} else {
 		ctx.Log().Error("event", "eel_parser_error", "cause", "unsupported_conditional", "type", a.typ, "val", a.val)
 		stats.IncErrors()
@@ -476,7 +488,7 @@ func (a *JExprItem) collapseLeaf(ctx Context, doc *JDoc) bool {
 	switch a.typ {
 	case astPath: // simple path selector
 		if a.mom == nil {
-			ctx.Log().Debug("event", "ast_collapse_failure", "reason", "mom_is_nil", "val", a.val, "type", a.typeString())
+			//ctx.Log().Debug("event", "ast_collapse_failure", "reason", "mom_is_nil", "val", a.val, "type", a.typeString())
 			return false
 		}
 		a.val = doc.EvalPath(ctx, ToFlatString(a.val)) // retain type of selected path
@@ -493,17 +505,17 @@ func (a *JExprItem) collapseLeaf(ctx Context, doc *JDoc) bool {
 				a.typ = astParam
 			}
 		} else {
-			ctx.Log().Debug("event", "ast_collapse_failure", "reason", "wrong_type", "val", a.val, "type", a.typeString())
+			//ctx.Log().Debug("event", "ast_collapse_failure", "reason", "wrong_type", "val", a.val, "type", a.typeString())
 		}
 		return true
 	case astFunction: // parameter-less function
 		if a.mom == nil {
-			ctx.Log().Debug("event", "ast_collapse_failure", "reason", "mom_is_nil", "val", a.val, "type", a.typeString())
+			//ctx.Log().Debug("event", "ast_collapse_failure", "reason", "mom_is_nil", "val", a.val, "type", a.typeString())
 			return false
 		}
 		f := NewFunction(ToFlatString(a.val))
 		if f == nil {
-			ctx.Log().Debug("event", "ast_collapse_failure", "reason", "unknown_function", "val", a.val, "type", a.typeString())
+			//ctx.Log().Debug("event", "ast_collapse_failure", "reason", "unknown_function", "val", a.val, "type", a.typeString())
 			return false
 		}
 		// odd: currently parameter-less functions require a single blank string as parameter
@@ -525,20 +537,20 @@ func (a *JExprItem) collapseLeaf(ctx Context, doc *JDoc) bool {
 		return true
 	case astParam, astStringParam: // function with parameters
 		if a.mom == nil {
-			ctx.Log().Debug("event", "ast_collapse_failure", "reason", "mom_is_nil", "val", a.val, "type", a.typeString())
+			//ctx.Log().Debug("event", "ast_collapse_failure", "reason", "mom_is_nil", "val", a.val, "type", a.typeString())
 			return false
 		}
 		if a.mom.mom == nil {
-			ctx.Log().Debug("event", "ast_collapse_failure", "reason", "grandma_is_nil", "val", a.val, "type", a.typeString())
+			//ctx.Log().Debug("event", "ast_collapse_failure", "reason", "grandma_is_nil", "val", a.val, "type", a.typeString())
 			return false
 		}
 		if a.mom.typ != astFunction {
-			ctx.Log().Debug("event", "ast_collapse_failure", "reason", "mom_must_be_function", "val", a.val, "type", a.typeString())
+			//ctx.Log().Debug("event", "ast_collapse_failure", "reason", "mom_must_be_function", "val", a.val, "type", a.typeString())
 			return false
 		}
 		f := NewFunction(ToFlatString(a.mom.val))
 		if f == nil {
-			ctx.Log().Debug("event", "ast_collapse_failure", "reason", "unknown_function", "val", a.val, "type", a.typeString())
+			//ctx.Log().Debug("event", "ast_collapse_failure", "reason", "unknown_function", "val", a.val, "type", a.typeString())
 			return false
 		}
 		params := make([]*JParam, 0)
@@ -570,16 +582,16 @@ func (a *JExprItem) collapseLeaf(ctx Context, doc *JDoc) bool {
 		} else if a.mom.mom.typ == astAgg {
 			a.mom.typ = astText
 		} else {
-			ctx.Log().Debug("event", "ast_collapse_failure", "reason", "mom_must_be_function_or_aggregation", "val", a.val, "type", a.typeString())
+			//ctx.Log().Debug("event", "ast_collapse_failure", "reason", "mom_must_be_function_or_aggregation", "val", a.val, "type", a.typeString())
 		}
 		return true
 	case astText: // aggregation of text fields
 		if a.mom == nil {
-			ctx.Log().Debug("event", "ast_collapse_failure", "reason", "mom_is_nil", "val", a.val, "type", a.typeString())
+			//ctx.Log().Debug("event", "ast_collapse_failure", "reason", "mom_is_nil", "val", a.val, "type", a.typeString())
 			return false
 		}
 		if a.mom.typ != astAgg {
-			ctx.Log().Debug("event", "ast_collapse_failure", "reason", "mom_must_be_aggregation", "val", a.val, "type", a.typeString())
+			//ctx.Log().Debug("event", "ast_collapse_failure", "reason", "mom_must_be_aggregation", "val", a.val, "type", a.typeString())
 			return false
 		}
 		if len(a.mom.kids) == 1 { // retain type for single value aggregations, except for nil which is converted to ""
