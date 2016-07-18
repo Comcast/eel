@@ -78,26 +78,38 @@ func (c *DefaultContext) Log() Logger {
 }
 
 func (c *DefaultContext) AddValue(key interface{}, value interface{}) {
+	c.Lock()
 	c.vals[key.(string)] = value
+	c.Unlock()
 }
 
 func (c *DefaultContext) AddLogValue(key interface{}, value interface{}) {
+	c.Lock()
 	c.lvals[key.(string)] = value
+	c.Unlock()
 }
 
 func (c *DefaultContext) AddConfigValue(key interface{}, value interface{}) {
+	c.Lock()
 	c.cvals[key.(string)] = value
+	c.Unlock()
 }
 
 func (c *DefaultContext) Value(key interface{}) interface{} {
+	c.RLock()
+	defer c.RUnlock()
 	return c.vals[key.(string)]
 }
 
 func (c *DefaultContext) LogValue(key interface{}) interface{} {
+	c.RLock()
+	defer c.RUnlock()
 	return c.lvals[key.(string)]
 }
 
 func (c *DefaultContext) ConfigValue(key interface{}) interface{} {
+	c.RLock()
+	defer c.RUnlock()
 	return c.cvals[key.(string)]
 }
 
