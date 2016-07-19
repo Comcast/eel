@@ -299,6 +299,37 @@ func TestEventHandler(t *testing.T) {
 	}
 }
 
+func TestEventHandlerMulti(t *testing.T) {
+	initTests("../../config-handlers")
+	ts := httptest.NewServer(http.HandlerFunc(EventHandler))
+	defer ts.Close()
+	client := &http.Client{}
+	for i := 0; i < 10; i++ {
+		go func() {
+			r, _ := http.NewRequest("POST", ts.URL, bytes.NewBufferString(testEvent))
+			r.Header.Add("Content-Type", "application/json")
+			r.Header.Add("Content-Length", strconv.Itoa(len(testEvent)))
+			resp, err := client.Do(r)
+			if err != nil {
+				t.Fatalf("error posting notification: %s\n", err.Error())
+			}
+			if resp.StatusCode != 202 {
+				t.Fatalf("eel returned unhappy status: %s\n", resp.Status)
+			}
+			event, err := ioutil.ReadAll(resp.Body)
+			defer resp.Body.Close()
+			if err != nil {
+				t.Fatalf("couldn't read eel debug response: %s\n", err.Error())
+			}
+			eventStr := string(event)
+			expected := `"status":"processed"`
+			if !strings.Contains(eventStr, expected) {
+				t.Fatalf("wrong response from eel: expected:\n %s received:\n %s\n", expected, eventStr)
+			}
+		}()
+	}
+}
+
 func TestEventHandlerInvalidJSON(t *testing.T) {
 	initTests("../../config-handlers")
 	ts := httptest.NewServer(http.HandlerFunc(EventHandler))
@@ -323,6 +354,37 @@ func TestEventHandlerInvalidJSON(t *testing.T) {
 	}
 	if !strings.Contains(string(response), expectedResponse) {
 		t.Fatalf("wrong response from eel: expected:\n %s received:\n %s\n", expectedResponse, response)
+	}
+}
+
+func TestEventHandlerInvalidJSONMulti(t *testing.T) {
+	initTests("../../config-handlers")
+	ts := httptest.NewServer(http.HandlerFunc(EventHandler))
+	defer ts.Close()
+	event := `foo bar`
+	expectedResponse := `"error":"invalid json"`
+	client := &http.Client{}
+	for i := 0; i < 10; i++ {
+		go func() {
+			r, _ := http.NewRequest("POST", ts.URL, bytes.NewBufferString(event))
+			r.Header.Add("Content-Type", "application/json")
+			r.Header.Add("Content-Length", strconv.Itoa(len(event)))
+			resp, err := client.Do(r)
+			if err != nil {
+				t.Fatalf("error posting notification: %s\n", err.Error())
+			}
+			if resp.Status != "400 Bad Request" {
+				t.Fatalf("eel did not return 400 Bad Request: %s\n", resp.Status)
+			}
+			response, err := ioutil.ReadAll(resp.Body)
+			defer resp.Body.Close()
+			if err != nil {
+				t.Fatalf("couldn't read eel debug response: %s\n", err.Error())
+			}
+			if !strings.Contains(string(response), expectedResponse) {
+				t.Fatalf("wrong response from eel: expected:\n %s received:\n %s\n", expectedResponse, response)
+			}
+		}()
 	}
 }
 
