@@ -138,7 +138,7 @@ func (l *DefaultLogger) Error(args ...interface{}) {
 
 func (l *DefaultLogger) Metric(statKey interface{}, args ...interface{}) {
 	//if l.info || l.debug {
-	//l.dfw.log(L_MetricLevel, l.ctx.Id(), l.ctx.lvals, args...)
+	//	l.dfw.log(L_MetricLevel, l.ctx.Id(), l.ctx.lvals, args...)
 	//}
 }
 
