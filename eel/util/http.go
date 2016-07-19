@@ -41,9 +41,12 @@ var (
 	HttpStatusTooManyRequests = 429
 )
 
-func GetResponse(ctx Context, kv map[string]interface{}) []byte {
-	if kv == nil {
-		kv = make(map[string]interface{}, 0)
+func GetResponse(ctx Context, errTmpl map[string]interface{}) []byte {
+	kv := make(map[string]interface{}, 0)
+	if errTmpl != nil {
+		for k, v := range errTmpl {
+			kv[k] = v
+		}
 	}
 	kv["tx.traceId"] = ctx.Value("tx.traceId")
 	buf, err := json.Marshal(kv)
