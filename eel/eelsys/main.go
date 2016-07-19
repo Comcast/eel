@@ -127,12 +127,29 @@ func initLogging() {
 	Gctx.AddValue(Eel5MinStats, new(ServiceStats))
 	Gctx.AddValue(Eel1hrStats, new(ServiceStats))
 	Gctx.AddValue(Eel24hrStats, new(ServiceStats))
+
+	getWorkQueueFillLevel := func() int {
+		wd := GetWorkDispatcher(Gctx)
+		if wd != nil {
+			return len(wd.WorkQueue)
+		}
+		return -1
+	}
+
+	getNumWorkersIdle := func() int {
+		wd := GetWorkDispatcher(Gctx)
+		if wd != nil {
+			return len(wd.WorkerQueue)
+		}
+		return -1
+	}
+
 	if config.LogStats {
 		go Gctx.Log().RuntimeLogLoop(time.Duration(60)*time.Second, -1)
-		go stats.StatsLoop(Gctx, 300*time.Second, -1, Eel5MinStats)
-		go stats.StatsLoop(Gctx, 60*time.Second, -1, Eel1MinStats)
-		go stats.StatsLoop(Gctx, 60*time.Minute, -1, Eel1hrStats)
-		go stats.StatsLoop(Gctx, 24*time.Hour, -1, Eel24hrStats)
+		go stats.StatsLoop(Gctx, 300*time.Second, -1, Eel5MinStats, getWorkQueueFillLevel, getNumWorkersIdle)
+		go stats.StatsLoop(Gctx, 60*time.Second, -1, Eel1MinStats, getWorkQueueFillLevel, getNumWorkersIdle)
+		go stats.StatsLoop(Gctx, 60*time.Minute, -1, Eel1hrStats, getWorkQueueFillLevel, getNumWorkersIdle)
+		go stats.StatsLoop(Gctx, 24*time.Hour, -1, Eel24hrStats, getWorkQueueFillLevel, getNumWorkersIdle)
 	}
 }
 
