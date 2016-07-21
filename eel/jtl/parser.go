@@ -356,7 +356,7 @@ func (a *JExprItem) optimizeConditional(ctx Context, doc *JDoc) (*JExprItem, err
 			candB.mom = nil
 			candB.collapseIntoSingleNode(ctx, doc)
 			candB.adjustParameter()
-			ctx.Log().Debug("event", "eel_parser", "val_a", candA.val, "val_b", candB.val)
+			//ctx.Log().Debug("event", "eel_parser", "val_a", candA.val, "val_b", candB.val)
 			if candA.val == candB.val ||
 				(candA.val == true && candB.val == "true") ||
 				(candA.val == false && candB.val == "false") ||
