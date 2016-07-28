@@ -51,6 +51,7 @@ type NewPublisher func(ctx Context) EventPublisher
 
 func init() {
 	publisherMap["http"] = NewHttpPublisher
+	publisherMap["null"] = NewNullPublisher
 }
 
 // RegisterEventPublisher registers an external event publisher implementation for a new protocol

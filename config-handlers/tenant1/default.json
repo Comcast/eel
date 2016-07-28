@@ -12,7 +12,8 @@
     "IsTransformationByExample": false,
     "Path": "",
     "Verb": "POST",
-    "Endpoint": "http://localhost:8088",
+    "Endpoint": "http://localhost/",
+	"Protocol": "http",
     "HttpHeaders": {
       "X-B3-TraceId": "{{traceid()}}",
       "X-Tenant-Id": "{{tenant()}}"
