@@ -622,9 +622,9 @@ func (hf *HandlerFactory) GetHandlerConfigurationFromJson(ctx Context, filepath 
 		handler.Verb = "POST"
 	}
 	// default endpoint is localhost
-	if handler.Endpoint == "" {
+	/*if handler.Endpoint == "" {
 		handler.Endpoint = "http://localhost/"
-	}
+	}*/
 	return &handler, warnings
 }
 
@@ -775,9 +775,9 @@ func (h *HandlerConfiguration) ProcessEvent(ctx Context, event *JDoc) ([]EventPu
 			}
 		}
 	}
-	if len(endpoints) == 0 {
+	/*if len(endpoints) == 0 {
 		return make([]EventPublisher, 0), errors.New("no endpoints")
-	}
+	}*/
 	// prepare payload
 	payload := ""
 	var tfd *JDoc
