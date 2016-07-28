@@ -519,6 +519,20 @@ func fnCurl(ctx Context, doc *JDoc, params []string) interface{} {
 		}
 	}
 	headers := make(map[string]string, 0)
+
+	traceHeaderKey := GetConfig(ctx).HttpTransactionHeader
+	if traceHeaderKey != "" && ctx.Value(traceHeaderKey) != nil {
+		if _, ok := ctx.Value(traceHeaderKey).(string); ok {
+			headers[traceHeaderKey] = ctx.Value(traceHeaderKey).(string)
+		}
+	}
+	tenantHeaderKey := GetConfig(ctx).HttpTenantHeader
+	if tenantHeaderKey != "" && ctx.Value(tenantHeaderKey) != nil {
+		if _, ok := ctx.Value(tenantHeaderKey).(string); ok {
+			headers[tenantHeaderKey] = ctx.Value(tenantHeaderKey).(string)
+		}
+	}
+
 	if hmap != nil {
 		for k, v := range hmap {
 			if s, ok := v.(string); ok {
