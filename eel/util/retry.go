@@ -19,6 +19,7 @@ package util
 // Retrier is the interface for retrying failed http requests.
 type Retrier interface {
 	RetryEndpoint(Context, string, string, string, map[string]string, map[string]string) (string, int, error)
+	Retry(Context, string, string, string, map[string]string, map[string]string, func(Context, string, string, string, map[string]string, map[string]string) (string, int, error)) (string, int, error)
 }
 
 var defaultRetrier Retrier
