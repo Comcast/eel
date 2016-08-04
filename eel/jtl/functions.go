@@ -173,14 +173,14 @@ func NewFunction(fn string) *JFunction {
 func fnRegex(ctx Context, doc *JDoc, params []string) interface{} {
 	stats := ctx.Value(EelTotalStats).(*ServiceStats)
 	if params == nil || len(params) > 3 {
-		ctx.Log().Error("event", "execute_function", "function", "regex", "error", "wrong_number_of_parameters", "params", params)
+		ctx.Log().Error("action", "execute_function", "op", "regex", "error", "wrong_number_of_parameters", "params", params)
 		stats.IncErrors()
 		AddError(ctx, SyntaxError{fmt.Sprintf("wrong number of parameters in call to regex function"), "regex", params})
 		return nil
 	}
 	reg, err := regexp.Compile(extractStringParam(params[1]))
 	if err != nil {
-		ctx.Log().Error("event", "execute_function", "function", "regex", "error", "invalid_regex", "params", params, "message", err.Error())
+		ctx.Log().Error("action", "execute_function", "op", "regex", "error", "invalid_regex", "params", params, "message", err.Error())
 		stats.IncErrors()
 		AddError(ctx, RuntimeError{fmt.Sprintf("invalid regex in call to regex function: %s", err.Error()), "regex", params})
 		return nil
@@ -190,7 +190,7 @@ func fnRegex(ctx Context, doc *JDoc, params []string) interface{} {
 	if len(params) == 3 {
 		all, err = strconv.ParseBool(extractStringParam(params[2]))
 		if err != nil {
-			ctx.Log().Error("event", "execute_function", "function", "regex", "error", "non_boolean_parameter", "params", params)
+			ctx.Log().Error("action", "execute_function", "op", "regex", "error", "non_boolean_parameter", "params", params)
 			stats.IncErrors()
 			AddError(ctx, SyntaxError{fmt.Sprintf("non boolean parameters in call to regex function"), "regex", params})
 			return nil
