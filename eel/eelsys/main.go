@@ -55,11 +55,11 @@ func useCores(ctx Context) {
 	cores := os.Getenv("GOMAXPROCS")
 	if cores == "" {
 		n := runtime.NumCPU()
-		ctx.Log().Info("event", "use_cores", "cores", n)
+		ctx.Log().Info("action", "use_cores", "cores", n)
 		runtime.GOMAXPROCS(n)
 		cores = strconv.Itoa(n)
 	} else {
-		ctx.Log().Info("event", "use_cores_from_env", "cores", cores)
+		ctx.Log().Info("action", "use_cores_from_env", "cores", cores)
 	}
 }
 
@@ -146,7 +146,7 @@ func main() {
 		GetConfig(Gctx).Version = Version
 		InitHttpTransport(Gctx)
 		ctx := Gctx.SubContext()
-		ctx.Log().Info("event", "starting", "version", Version)
+		ctx.Log().Info("action", "starting", "version", Version)
 		useCores(ctx)
 		dc := NewLocalInMemoryDupChecker(GetConfig(ctx).DuplicateTimeout, 10000)
 		Gctx.AddValue(EelDuplicateChecker, dc)
