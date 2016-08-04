@@ -163,7 +163,7 @@ func NewFunction(fn string) *JFunction {
 		// returns true if path exists in document
 		return &JFunction{fnExists, 1, 2}
 	default:
-		//gctx.Log.Error("event", "execute_function", "function", fn, "error", "not_implemented")
+		//gctx.Log.Error("action", "execute_function", "function", fn, "error", "not_implemented")
 		//stats.IncErrors()
 		return nil
 	}
