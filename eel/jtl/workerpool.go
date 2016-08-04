@@ -70,7 +70,7 @@ func (w *Worker) Start() {
 			select {
 			case work := <-w.work:
 				stats := work.Ctx.Value(EelTotalStats).(*ServiceStats)
-				//w.ctx.Log.Info("event", "received_work", "id", strconv.Itoa(w.id))
+				//w.ctx.Log.Info("action", "received_work", "id", strconv.Itoa(w.id))
 				msg, err := NewJDocFromString(work.Message)
 				if err != nil {
 					work.Ctx.Log().Error("status", "400", "event", "rejected", "reason", "invalid_json", "error", err.Error(), "content", work.Message)

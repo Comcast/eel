@@ -71,7 +71,7 @@ func InitHttpTransport(ctx Context) {
 			GetConfig(ctx).CloseIdleConnectionsStarted = true
 			for {
 				time.Sleep(time.Duration(GetConfig(ctx).CloseIdleConnectionIntervalSec) * time.Second)
-				ctx.Log().Info("event", "closing_idle_connections")
+				ctx.Log().Info("action", "closing_idle_connections")
 				tr.CloseIdleConnections()
 			}
 		}()
@@ -88,7 +88,7 @@ func HitEndpoint(ctx Context, url string, payload string, verb string, headers m
 	stats.IncBytesOut(len(payload))
 	req, err := http.NewRequest(verb, url, bytes.NewBuffer([]byte(payload)))
 	if err != nil {
-		ctx.Log().Error("event", "error_new_request", "url", url, "verb", verb, "error", err.Error())
+		ctx.Log().Error("action", "error_new_request", "url", url, "verb", verb, "error", err.Error())
 		stats.IncErrors()
 		return "", 0, err
 	}
@@ -127,7 +127,7 @@ func HitEndpoint(ctx Context, url string, payload string, verb string, headers m
 	// send request
 	resp, err := GetHttpClient(ctx).Do(req)
 	if err != nil {
-		ctx.Log().Error("event", "error_reaching_service", "trace.out.url", url, "trace.out.verb", verb, "trace.out.headers", headers, "error", err.Error())
+		ctx.Log().Error("action", "error_reaching_service", "trace.out.url", url, "trace.out.verb", verb, "trace.out.headers", headers, "error", err.Error())
 		stats.IncErrors()
 		if ctx.LogValue("destination") != nil {
 			ctx.Log().Metric("drops", M_Namespace, "xrs", M_Metric, "drops", M_Unit, "Count", M_Dims, "app="+AppId+"&env="+EnvName+"&instance="+InstanceName+"&destination="+ctx.LogValue("destination").(string), M_Val, 1.0)
@@ -145,13 +145,13 @@ func HitEndpoint(ctx Context, url string, payload string, verb string, headers m
 		var readErr error
 		body, readErr = ioutil.ReadAll(resp.Body)
 		if readErr != nil {
-			ctx.Log().Error("event", "error_reaching_service", "reason", "error_reading_response", "trace.out.url", url, "trace.out.verb", verb, "trace.out.headers", headers, "status", strconv.Itoa(resp.StatusCode), "error", readErr.Error())
+			ctx.Log().Error("action", "error_reaching_service", "reason", "error_reading_response", "trace.out.url", url, "trace.out.verb", verb, "trace.out.headers", headers, "status", strconv.Itoa(resp.StatusCode), "error", readErr.Error())
 			stats.IncErrors()
 			return "", resp.StatusCode, readErr
 		}
 		closeErr := resp.Body.Close()
 		if closeErr != nil {
-			ctx.Log().Error("event", "error_reaching_service", "reason", "error_closing_response", "trace.out.url", url, "trace.out.verb", verb, "trace.out.headers", headers, "status", strconv.Itoa(resp.StatusCode), "error", closeErr.Error())
+			ctx.Log().Error("action", "error_reaching_service", "reason", "error_closing_response", "trace.out.url", url, "trace.out.verb", verb, "trace.out.headers", headers, "status", strconv.Itoa(resp.StatusCode), "error", closeErr.Error())
 			stats.IncErrors()
 		}
 		if body == nil {
@@ -160,9 +160,9 @@ func HitEndpoint(ctx Context, url string, payload string, verb string, headers m
 	}
 	// only log short responses from outgoing http requests
 	if len(body) <= 512 {
-		ctx.Log().Info("event", "reached_service", "trace.out.url", url, "trace.out.verb", verb, "trace.out.headers", headers, "status", strconv.Itoa(resp.StatusCode), "length", len(body), "response", string(body))
+		ctx.Log().Info("action", "reached_service", "trace.out.url", url, "trace.out.verb", verb, "trace.out.headers", headers, "status", strconv.Itoa(resp.StatusCode), "length", len(body), "response", string(body))
 	} else {
-		ctx.Log().Info("event", "reached_service", "trace.out.url", url, "trace.out.verb", verb, "trace.out.headers", headers, "status", strconv.Itoa(resp.StatusCode), "length", len(body))
+		ctx.Log().Info("action", "reached_service", "trace.out.url", url, "trace.out.verb", verb, "trace.out.headers", headers, "status", strconv.Itoa(resp.StatusCode), "length", len(body))
 	}
 	if ctx.LogValue("destination") != nil {
 		ctx.Log().Metric("hits", M_Namespace, "xrs", M_Metric, "hits", M_Unit, "Count", M_Dims, "app="+AppId+"&env="+EnvName+"&instance="+InstanceName+"&destination="+ctx.LogValue("destination").(string), M_Val, 1.0)
