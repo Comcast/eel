@@ -246,7 +246,7 @@ func (a *JExprItem) collapseLeaf(ctx Context, doc *JDoc) bool {
 	switch a.typ {
 	case astPath: // simple path selector
 		if a.mom == nil {
-			//ctx.Log.Debug("event", "ast_collapse_failure", "reason", "mom_is_nil", "val", a.val, "type", a.typeString())
+			//ctx.Log.Debug("action", "ast_collapse_failure", "reason", "mom_is_nil", "val", a.val, "type", a.typeString())
 			return false
 		}
 		a.val = doc.EvalPath(ctx, ToFlatString(a.val)) // retain type of selected path
@@ -258,17 +258,17 @@ func (a *JExprItem) collapseLeaf(ctx Context, doc *JDoc) bool {
 		} else if a.mom.typ == astFunction {
 			a.typ = astParam
 		} else {
-			//ctx.Log.Debug("event", "ast_collapse_failure", "reason", "wrong_type", "val", a.val, "type", a.typeString())
+			//ctx.Log.Debug("action", "ast_collapse_failure", "reason", "wrong_type", "val", a.val, "type", a.typeString())
 		}
 		return true
 	case astFunction: // parameter-less function
 		if a.mom == nil {
-			//ctx.Log.Debug("event", "ast_collapse_failure", "reason", "mom_is_nil", "val", a.val, "type", a.typeString())
+			//ctx.Log.Debug("action", "ast_collapse_failure", "reason", "mom_is_nil", "val", a.val, "type", a.typeString())
 			return false
 		}
 		f := NewFunction(ToFlatString(a.val))
 		if f == nil {
-			//ctx.Log.Debug("event", "ast_collapse_failure", "reason", "unknown_function", "val", a.val, "type", a.typeString())
+			//ctx.Log.Debug("action", "ast_collapse_failure", "reason", "unknown_function", "val", a.val, "type", a.typeString())
 			return false
 		}
 		// odd: currently parameter-less functions require a single blank string as parameter
@@ -284,20 +284,20 @@ func (a *JExprItem) collapseLeaf(ctx Context, doc *JDoc) bool {
 		return true
 	case astParam: // function with parameters
 		if a.mom == nil {
-			//ctx.Log.Debug("event", "ast_collapse_failure", "reason", "mom_is_nil", "val", a.val, "type", a.typeString())
+			//ctx.Log.Debug("action", "ast_collapse_failure", "reason", "mom_is_nil", "val", a.val, "type", a.typeString())
 			return false
 		}
 		if a.mom.mom == nil {
-			//ctx.Log.Debug("event", "ast_collapse_failure", "reason", "grandma_is_nil", "val", a.val, "type", a.typeString())
+			//ctx.Log.Debug("action", "ast_collapse_failure", "reason", "grandma_is_nil", "val", a.val, "type", a.typeString())
 			return false
 		}
 		if a.mom.typ != astFunction {
-			//ctx.Log.Debug("event", "ast_collapse_failure", "reason", "mom_must_be_function", "val", a.val, "type", a.typeString())
+			//ctx.Log.Debug("action", "ast_collapse_failure", "reason", "mom_must_be_function", "val", a.val, "type", a.typeString())
 			return false
 		}
 		f := NewFunction(ToFlatString(a.mom.val))
 		if f == nil {
-			//ctx.Log.Debug("event", "ast_collapse_failure", "reason", "unknown_function", "val", a.val, "type", a.typeString())
+			//ctx.Log.Debug("action", "ast_collapse_failure", "reason", "unknown_function", "val", a.val, "type", a.typeString())
 			return false
 		}
 		params := make([]string, 0)
@@ -314,16 +314,16 @@ func (a *JExprItem) collapseLeaf(ctx Context, doc *JDoc) bool {
 		} else if a.mom.mom.typ == astAgg {
 			a.mom.typ = astText
 		} else {
-			//ctx.Log.Debug("event", "ast_collapse_failure", "reason", "mom_must_be_function_or_aggregation", "val", a.val, "type", a.typeString())
+			//ctx.Log.Debug("action", "ast_collapse_failure", "reason", "mom_must_be_function_or_aggregation", "val", a.val, "type", a.typeString())
 		}
 		return true
 	case astText: // aggregation of text fields
 		if a.mom == nil {
-			//ctx.Log.Debug("event", "ast_collapse_failure", "reason", "mom_is_nil", "val", a.val, "type", a.typeString())
+			//ctx.Log.Debug("action", "ast_collapse_failure", "reason", "mom_is_nil", "val", a.val, "type", a.typeString())
 			return false
 		}
 		if a.mom.typ != astAgg {
-			//ctx.Log.Debug("event", "ast_collapse_failure", "reason", "mom_must_be_aggregation", "val", a.val, "type", a.typeString())
+			//ctx.Log.Debug("action", "ast_collapse_failure", "reason", "mom_must_be_aggregation", "val", a.val, "type", a.typeString())
 			return false
 		}
 		if len(a.mom.kids) == 1 { // retain type for single value aggregations, except for nil which is converted to ""
