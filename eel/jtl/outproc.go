@@ -28,7 +28,7 @@ func handleEvent(ctx Context, stats *ServiceStats, event *JDoc, raw string, debu
 	ctx.AddLogValue("destination", "unknown")
 	handlers := GetHandlerFactory(ctx).GetHandlersForEvent(ctx, event)
 	if len(handlers) == 0 {
-		ctx.Log().Info("event", "no_matching_handlers", "trace.in.data", raw)
+		ctx.Log().Info("event", "no_matching_handlers")
 	}
 	initialCtx := ctx
 	ctx = ctx.SubContext()
@@ -68,7 +68,7 @@ func handleEvent(ctx Context, stats *ServiceStats, event *JDoc, raw string, debu
 			ctx.AddLogValue("topic", handler.Topic)
 			ctx.AddLogValue("tenant", handler.TenantId)
 			ctx.AddLogValue("handler", handler.Name)
-			ctx.AddLogValue("trace.in.data", raw)
+			//ctx.AddLogValue("trace.in.data", raw)
 			ctx.AddLogValue("trace.out.data", publisher.GetPayload())
 			ctx.AddLogValue("trace.out.protocol", publisher.GetProtocol())
 			ctx.AddLogValue("trace.out.path", publisher.GetPath())
