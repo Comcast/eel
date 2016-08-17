@@ -55,11 +55,11 @@ func useCores(ctx Context) {
 	cores := os.Getenv("GOMAXPROCS")
 	if cores == "" {
 		n := runtime.NumCPU()
-		ctx.Log().Info("event", "use_cores", "cores", n)
+		ctx.Log().Info("action", "use_cores", "cores", n)
 		runtime.GOMAXPROCS(n)
 		cores = strconv.Itoa(n)
 	} else {
-		ctx.Log().Info("event", "use_cores_from_env", "cores", cores)
+		ctx.Log().Info("action", "use_cores_from_env", "cores", cores)
 	}
 }
 
@@ -71,7 +71,7 @@ func startProxyServices(ctx Context) {
 	}
 	eventProxyPath := GetConfig(ctx).EventProxyPath
 	eventProcPath := GetConfig(ctx).EventProcPath
-	ctx.Log().Info("event", "registering_event_proxy", "path", "http://localhost:"+strconv.Itoa(eventProxyPort)+eventProxyPath)
+	ctx.Log().Info("action", "registering_event_proxy", "path", "http://localhost:"+strconv.Itoa(eventProxyPort)+eventProxyPath)
 	http.HandleFunc(eventProxyPath, EventHandler)
 	http.HandleFunc(eventProcPath, EventHandler)
 	http.HandleFunc("/health/shallow", NilHandler)
@@ -88,10 +88,10 @@ func startProxyServices(ctx Context) {
 	http.HandleFunc("/test/asttree/", ParserDebugVizHandler)
 	http.HandleFunc("/event/dummy", DummyEventHandler)
 	http.Handle("/img/", http.StripPrefix("/img/", http.FileServer(http.Dir(filepath.Join(BasePath, "mascot")))))
-	ctx.Log().Info("event", "listening_for_events", "port", eventProxyPort, "proxy_path", eventProxyPath, "proc_path", eventProcPath)
+	ctx.Log().Info("action", "listening_for_events", "port", eventProxyPort, "proxy_path", eventProxyPath, "proc_path", eventProcPath)
 	err := http.ListenAndServe(":"+strconv.Itoa(eventProxyPort), nil)
 	if err != nil {
-		ctx.Log().Error("event", "http_error", "error", err.Error())
+		ctx.Log().Error("action", "http_error", "error", err.Error())
 	}
 }
 
@@ -163,7 +163,7 @@ func main() {
 		GetConfig(Gctx).Version = Version
 		InitHttpTransport(Gctx)
 		ctx := Gctx.SubContext()
-		ctx.Log().Info("event", "starting", "version", Version)
+		ctx.Log().Info("action", "starting", "version", Version)
 		useCores(ctx)
 		dc := NewLocalInMemoryDupChecker(GetConfig(ctx).DuplicateTimeout, 10000)
 		Gctx.AddValue(EelDuplicateChecker, dc)

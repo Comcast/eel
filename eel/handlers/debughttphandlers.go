@@ -77,7 +77,7 @@ func DummyEventHandler(w http.ResponseWriter, r *http.Request) {
 	ctx.AddLogValue("delta", delta/1e6)
 	w.Header().Set("Content-Type", "application/json")
 	if r.ContentLength > GetConfig(ctx).MaxMessageSize {
-		ctx.Log().Error("dummy", true, "status", "413", "event", "rejected", "reason", "message_too_large", "msg.length", r.ContentLength, "msg.max.length", GetConfig(ctx).MaxMessageSize, "remote_address", r.RemoteAddr, "user_agent", r.UserAgent())
+		ctx.Log().Error("dummy", true, "status", "413", "action", "rejected", "reason", "message_too_large", "msg.length", r.ContentLength, "msg.max.length", GetConfig(ctx).MaxMessageSize, "remote_address", r.RemoteAddr, "user_agent", r.UserAgent())
 		http.Error(w, string(GetResponse(ctx, StatusRequestTooLarge)), http.StatusRequestEntityTooLarge)
 		return
 	}
@@ -85,32 +85,32 @@ func DummyEventHandler(w http.ResponseWriter, r *http.Request) {
 	r.Body = http.MaxBytesReader(w, r.Body, GetConfig(ctx).MaxMessageSize)
 	defer r.Body.Close()
 	if r.Method != "POST" {
-		ctx.Log().Error("dummy", true, "status", "400", "event", "rejected", "reason", "http_post_required", "method", r.Method, "remote_address", r.RemoteAddr, "user_agent", r.UserAgent())
+		ctx.Log().Error("dummy", true, "status", "400", "action", "rejected", "reason", "http_post_required", "method", r.Method, "remote_address", r.RemoteAddr, "user_agent", r.UserAgent())
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write(GetResponse(ctx, StatusHttpPostRequired))
 		return
 	}
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		ctx.Log().Error("dummy", true, "status", "500", "event", "rejected", "reason", "error_reading_message", "error", err.Error(), "remote_address", r.RemoteAddr, "user_agent", r.UserAgent())
+		ctx.Log().Error("dummy", true, "status", "500", "action", "rejected", "reason", "error_reading_message", "error", err.Error(), "remote_address", r.RemoteAddr, "user_agent", r.UserAgent())
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write(GetResponse(ctx, map[string]interface{}{"error": err.Error()}))
 		return
 	}
 	if body == nil || len(body) == 0 {
-		ctx.Log().Error("dummy", true, "status", "400", "event", "rejected", "reason", "blank_message", "remote_address", r.RemoteAddr, "user_agent", r.UserAgent())
+		ctx.Log().Error("dummy", true, "status", "400", "action", "rejected", "reason", "blank_message", "remote_address", r.RemoteAddr, "user_agent", r.UserAgent())
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write(GetResponse(ctx, StatusEmptyBody))
 		return
 	}
 	_, err = NewJDocFromString(string(body))
 	if err != nil {
-		ctx.Log().Error("dummy", true, "status", "400", "event", "rejected", "reason", "invalid_json", "error", err.Error(), "content", string(body), "remote_address", r.RemoteAddr, "user_agent", r.UserAgent())
+		ctx.Log().Error("dummy", true, "status", "400", "action", "rejected", "reason", "invalid_json", "error", err.Error(), "content", string(body), "remote_address", r.RemoteAddr, "user_agent", r.UserAgent())
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write(GetResponse(ctx, StatusInvalidJson))
 		return
 	}
-	ctx.Log().Info("dummy", true, "status", "200", "event", "accepted", "content", string(body), "remote_address", r.RemoteAddr, "user_agent", r.UserAgent())
+	ctx.Log().Info("dummy", true, "status", "200", "action", "accepted", "content", string(body), "remote_address", r.RemoteAddr, "user_agent", r.UserAgent())
 	w.WriteHeader(http.StatusOK)
 	w.Write(GetResponse(ctx, StatusProcessedDummy))
 }
@@ -118,7 +118,7 @@ func DummyEventHandler(w http.ResponseWriter, r *http.Request) {
 // FortyTwoHandler http handler providing 42 as a service.
 func FortyTwoHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := Gctx.SubContext()
-	ctx.Log().Info("event", "42aas")
+	ctx.Log().Info("action", "42aas")
 	//body, _ := ioutil.ReadAll(r.Body)
 	//fmt.Printf("body: %s\n", body)
 	w.WriteHeader(http.StatusOK)
@@ -128,7 +128,7 @@ func FortyTwoHandler(w http.ResponseWriter, r *http.Request) {
 // FortyTwoHandler http handler providing 42 as a service (in JSON encoding).
 func FortyTwoJsonHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := Gctx.SubContext()
-	ctx.Log().Info("event", "42aasjson")
+	ctx.Log().Info("action", "42aasjson")
 	//body, _ := ioutil.ReadAll(r.Body)
 	//fmt.Printf("body: %s\n", body)
 	w.WriteHeader(http.StatusOK)
@@ -148,7 +148,7 @@ func PostHandler(w http.ResponseWriter, r *http.Request) {
 		Gctx.AddValue("debug_post_body_array", make([][]byte, 0))
 	}
 	Gctx.AddValue("debug_post_body_array", append(Gctx.Value("debug_post_body_array").([][]byte), body))
-	ctx.Log().Info("event", "storing_post_body", "body", string(body), "len", len(Gctx.Value("debug_post_body_array").([][]byte)))
+	ctx.Log().Info("action", "storing_post_body", "body", string(body), "len", len(Gctx.Value("debug_post_body_array").([][]byte)))
 	w.WriteHeader(http.StatusOK)
 	fmt.Fprintf(w, `{ "status" : "success" }`)
 }
@@ -157,7 +157,7 @@ func PostHandler(w http.ResponseWriter, r *http.Request) {
 func ProcessExpressionHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := Gctx.SubContext()
 	if !strings.HasPrefix(r.URL.Path, "/test/process/") {
-		ctx.Log().Error("status", "500", "event", "invalid_path")
+		ctx.Log().Error("status", "500", "action", "invalid_path")
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintf(w, `{"error":"invalid path"}`)
 		fmt.Fprintf(w, "\n")
@@ -165,7 +165,7 @@ func ProcessExpressionHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	expression := r.URL.Path[len("/test/process/"):]
 	if expression == "" {
-		ctx.Log().Error("status", "500", "event", "blank_expression")
+		ctx.Log().Error("status", "500", "action", "blank_expression")
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintf(w, `{"error":"blank expression"}`)
 		fmt.Fprintf(w, "\n")
@@ -173,14 +173,14 @@ func ProcessExpressionHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		ctx.Log().Error("status", "500", "event", "error_reading_message", "error", err.Error())
+		ctx.Log().Error("status", "500", "action", "error_reading_message", "error", err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintf(w, `{"error":"%s"}`, err.Error())
 		fmt.Fprintf(w, "\n")
 		return
 	}
 	if body == nil || len(body) == 0 {
-		ctx.Log().Error("status", "400", "event", "blank_message")
+		ctx.Log().Error("status", "400", "action", "blank_message")
 		w.WriteHeader(http.StatusBadRequest)
 		fmt.Fprintf(w, `{"error":"empty body"}`)
 		fmt.Fprintf(w, "\n")
@@ -188,14 +188,14 @@ func ProcessExpressionHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	msg, err := NewJDocFromString(string(body))
 	if err != nil {
-		ctx.Log().Error("status", "400", "event", "invalid_json", "error", err.Error(), "content", string(body))
+		ctx.Log().Error("status", "400", "action", "invalid_json", "error", err.Error(), "content", string(body))
 		w.WriteHeader(http.StatusBadRequest)
 		fmt.Fprintf(w, `{"error":"invalid json"}`)
 		fmt.Fprintf(w, "\n")
 		return
 	}
 	result := ToFlatString(msg.ParseExpression(ctx, expression))
-	ctx.Log().Info("event", "process", "expression", expression, "result", result)
+	ctx.Log().Info("action", "process", "expression", expression, "result", result)
 	w.WriteHeader(http.StatusOK)
 	if err != nil {
 		fmt.Fprintf(w, `{"error":"%s"}`, err.Error())
@@ -211,14 +211,14 @@ func GetASTJsonHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := Gctx.SubContext()
 	doc, err := NewJDocFromFile(filepath.Join(BasePath, "events/asttest.json"))
 	if err != nil {
-		ctx.Log().Error("status", "500", "event", "error_loading_asttest_doc", "error", err.Error())
+		ctx.Log().Error("status", "500", "action", "error_loading_asttest_doc", "error", err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintf(w, `{"error":"%s"}`, err.Error())
 		fmt.Fprintf(w, "\n")
 		return
 	}
 	if !strings.HasPrefix(r.URL.Path, "/test/astjson/") {
-		ctx.Log().Error("status", "500", "event", "invalid_path")
+		ctx.Log().Error("status", "500", "action", "invalid_path")
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintf(w, `{"error":"invalid path"}`)
 		fmt.Fprintf(w, "\n")
@@ -226,14 +226,14 @@ func GetASTJsonHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	data := r.URL.Path[len("/test/astjson/"):]
 	if data == "" {
-		ctx.Log().Error("status", "500", "event", "blank_expression")
+		ctx.Log().Error("status", "500", "action", "blank_expression")
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintf(w, `{"error":"blank expression"}`)
 		fmt.Fprintf(w, "\n")
 		return
 	}
 	if strings.Index(data, "/") <= 0 {
-		ctx.Log().Error("status", "500", "event", "blank_iteration_step")
+		ctx.Log().Error("status", "500", "action", "blank_iteration_step")
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintf(w, `{"error":"blank iteration step"}`)
 		fmt.Fprintf(w, "\n")
@@ -241,7 +241,7 @@ func GetASTJsonHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	iter, err := strconv.Atoi(data[0:strings.Index(data, "/")])
 	if err != nil {
-		ctx.Log().Error("status", "500", "event", "error_parsing_iteration", "error", err.Error())
+		ctx.Log().Error("status", "500", "action", "error_parsing_iteration", "error", err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintf(w, `{"error":"%s"}`, err.Error())
 		fmt.Fprintf(w, "\n")
@@ -250,7 +250,7 @@ func GetASTJsonHandler(w http.ResponseWriter, r *http.Request) {
 	expression := data[strings.Index(data, "/")+1:]
 	jexpr, err := NewJExpr(expression)
 	if err != nil {
-		ctx.Log().Error("status", "500", "event", "error_parsing_expression", "error", err.Error())
+		ctx.Log().Error("status", "500", "action", "error_parsing_expression", "error", err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintf(w, `{"error":"%s"}`, err.Error())
 		fmt.Fprintf(w, "\n")
@@ -261,13 +261,13 @@ func GetASTJsonHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	buf, err := json.MarshalIndent(jexpr.GetD3Json(nil), "", "\t")
 	if err != nil {
-		ctx.Log().Error("status", "500", "event", "error_rendering_json", "error", err.Error())
+		ctx.Log().Error("status", "500", "action", "error_rendering_json", "error", err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintf(w, `{"error":"%s"}`, err.Error())
 		fmt.Fprintf(w, "\n")
 		return
 	}
-	ctx.Log().Info("event", "astjson", "expression", expression, "iter", iter)
+	ctx.Log().Info("action", "astjson", "expression", expression, "iter", iter)
 	w.WriteHeader(http.StatusOK)
 	if err != nil {
 		fmt.Fprintf(w, `{"error":"%s"}`, err.Error())
@@ -280,7 +280,7 @@ func GetASTJsonHandler(w http.ResponseWriter, r *http.Request) {
 func ParserDebugVizHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := Gctx.SubContext()
 	if !strings.HasPrefix(r.URL.Path, "/test/asttree/") {
-		ctx.Log().Error("status", "500", "event", "invalid_path")
+		ctx.Log().Error("status", "500", "action", "invalid_path")
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintf(w, `{"error":"invalid path"}`)
 		fmt.Fprintf(w, "\n")
@@ -288,7 +288,7 @@ func ParserDebugVizHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	expression := r.URL.Path[len("/test/asttree/"):]
 	if expression == "" {
-		ctx.Log().Error("status", "500", "event", "blank_expression")
+		ctx.Log().Error("status", "500", "action", "blank_expression")
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintf(w, `{"error":"blank expression"}`)
 		fmt.Fprintf(w, "\n")
@@ -353,7 +353,7 @@ func ParserDebugHandler(w http.ResponseWriter, r *http.Request) {
 		mIn, err := NewJDocFromString(message)
 		if err != nil {
 			ta.ErrorMessage = "error parsing message: " + err.Error()
-			ctx.Log().Error("event", "test_handler_error", "error", err.Error())
+			ctx.Log().Error("action", "test_handler_error", "error", err.Error())
 			t.Execute(w, ta)
 			return
 		} else {
@@ -362,7 +362,7 @@ func ParserDebugHandler(w http.ResponseWriter, r *http.Request) {
 		jexpr, err := NewJExpr(expression)
 		if err != nil {
 			ta.ErrorMessage = "error parsing expression: " + err.Error()
-			ctx.Log().Error("event", "test_handler_error", "error", err.Error())
+			ctx.Log().Error("action", "test_handler_error", "error", err.Error())
 			t.Execute(w, ta)
 			return
 		}
@@ -377,7 +377,7 @@ func ParserDebugHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	err := t.Execute(w, ta)
 	if err != nil {
-		ctx.Log().Error("event", "template_error", "error", err.Error())
+		ctx.Log().Error("action", "template_error", "error", err.Error())
 	}
 }
 
@@ -476,13 +476,13 @@ func TopicTestHandler(w http.ResponseWriter, r *http.Request) {
 		mIn, err := NewJDocFromString(message)
 		if err != nil {
 			tht.ErrorMessage = "error parsing message: " + err.Error()
-			ctx.Log().Error("event", "test_handler_error", "error", err.Error())
+			ctx.Log().Error("action", "test_handler_error", "error", err.Error())
 		}
 		publishers, err := topicHandler.ProcessEvent(ctx, mIn)
 		out := ""
 		if err != nil {
 			tht.ErrorMessage = "error processing message: " + err.Error()
-			ctx.Log().Error("event", "test_handler_error", "error", err.Error())
+			ctx.Log().Error("action", "test_handler_error", "error", err.Error())
 		} else if publishers != nil && len(publishers) > 0 {
 			tht.Response = publishers[0].GetPayload()
 			tht.Path = publishers[0].GetPath()
@@ -493,11 +493,11 @@ func TopicTestHandler(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 		}
-		ctx.Log().Info("event", "test_transform", "in", message, "out", out, "topic_handler", topicHandler)
+		ctx.Log().Info("action", "test_transform", "in", message, "out", out, "topic_handler", topicHandler)
 	}
 	err = t.Execute(w, tht)
 	if err != nil {
-		ctx.Log().Error("event", "template_error", "error", err.Error())
+		ctx.Log().Error("action", "template_error", "error", err.Error())
 	}
 }
 
@@ -674,7 +674,7 @@ func HandlersTestHandler(w http.ResponseWriter, r *http.Request) {
 		mIn, err := NewJDocFromString(message)
 		if err != nil {
 			tht.ErrorMessage = "error parsing message: " + err.Error()
-			ctx.Log().Error("event", "test_handler_error", "error", err.Error())
+			ctx.Log().Error("action", "test_handler_error", "error", err.Error())
 		} else {
 			tht.Message = mIn.StringPretty()
 		}
@@ -682,7 +682,7 @@ func HandlersTestHandler(w http.ResponseWriter, r *http.Request) {
 		out := ""
 		if err != nil {
 			tht.ErrorMessage = "error processing message: " + err.Error()
-			ctx.Log().Error("event", "test_handler_error", "error", err.Error())
+			ctx.Log().Error("action", "test_handler_error", "error", err.Error())
 		} else if publishers != nil && len(publishers) > 0 {
 			tht.Response = publishers[0].GetPayload()
 			tht.Path = publishers[0].GetPath()
@@ -697,7 +697,7 @@ func HandlersTestHandler(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 		}
-		ctx.Log().Info("event", "test_transform", "in", message, "out", out, "topic_handler", topicHandler)
+		ctx.Log().Info("action", "test_transform", "in", message, "out", out, "topic_handler", topicHandler)
 	}
 	if len(savechanges) > 0 {
 		fail := false
@@ -754,6 +754,6 @@ func HandlersTestHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	err = t.Execute(w, tht)
 	if err != nil {
-		ctx.Log().Error("event", "template_error", "error", err.Error())
+		ctx.Log().Error("action", "template_error", "error", err.Error())
 	}
 }

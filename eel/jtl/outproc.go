@@ -28,7 +28,7 @@ func handleEvent(ctx Context, stats *ServiceStats, event *JDoc, raw string, debu
 	ctx.AddLogValue("destination", "unknown")
 	handlers := GetHandlerFactory(ctx).GetHandlersForEvent(ctx, event)
 	if len(handlers) == 0 {
-		ctx.Log().Info("event", "no_matching_handlers")
+		ctx.Log().Info("action", "no_matching_handlers")
 	}
 	initialCtx := ctx
 	ctx = ctx.SubContext()
@@ -36,20 +36,20 @@ func handleEvent(ctx Context, stats *ServiceStats, event *JDoc, raw string, debu
 		//TODO: validate JSON schema
 		publishers, err := handler.ProcessEvent(initialCtx.SubContext(), event)
 		if err != nil {
-			ctx.Log().Error("event", "bad_transformation", "handler", handler.Name, "tenant", handler.TenantId, "trace.in.data", raw, "error", err.Error())
+			ctx.Log().Error("action", "bad_transformation", "handler", handler.Name, "tenant", handler.TenantId, "trace.in.data", raw, "error", err.Error())
 			ctx.Log().Metric("bad_transformation", M_Namespace, "xrs", M_Metric, "bad_transformation", M_Unit, "Count", M_Dims, "app="+AppId+"&env="+EnvName+"&instance="+InstanceName+"&destination="+ctx.LogValue("destination").(string), M_Val, 1.0)
 			stats.IncErrors()
 			continue
 		}
 		if len(publishers) == 0 {
 			// no publisher, likely due to filtering
-			ctx.Log().Info("event", "filtered_event", "tenant", handler.TenantId, "handler", handler.Name)
+			ctx.Log().Info("action", "filtered_event", "tenant", handler.TenantId, "handler", handler.Name)
 			continue
 		}
 		for _, publisher := range publishers {
 			dc := ctx.Value(EelDuplicateChecker).(DuplicateChecker)
 			if dc.GetTtl() > 0 && dc.IsDuplicate(ctx, []byte(publisher.GetUrl()+"\n"+publisher.GetPayload())) {
-				ctx.Log().Error("status", "200", "event", "dropping_duplicate", "handler", handler.Name, "tenant", handler.TenantId, "trace.in.data", raw)
+				ctx.Log().Error("status", "200", "action", "dropping_duplicate", "handler", handler.Name, "tenant", handler.TenantId, "trace.in.data", raw)
 				ctx.Log().Metric("dropping_duplicate", M_Namespace, "xrs", M_Metric, "dropping_duplicate", M_Unit, "Count", M_Dims, "app="+AppId+"&env="+EnvName+"&instance="+InstanceName+"&destination="+ctx.LogValue("destination").(string), M_Val, 1.0)
 				continue
 			}
@@ -86,11 +86,11 @@ func handleEvent(ctx Context, stats *ServiceStats, event *JDoc, raw string, debu
 				ctx.AddLogValue("trace.out.endpoint", publisher.GetEndpoint())
 				ctx.AddLogValue("trace.out.url", publisher.GetUrl())
 				if err != nil {
-					ctx.Log().Error("event", "publish_failed", "error", err.Error())
+					ctx.Log().Error("action", "publish_failed", "error", err.Error())
 					ctx.Log().Metric("publish_failed", M_Namespace, "xrs", M_Metric, "publish_failed", M_Unit, "Count", M_Dims, "app="+AppId+"&env="+EnvName+"&instance="+InstanceName+"&destination="+ctx.LogValue("destination").(string), M_Val, 1.0)
 					stats.IncErrors()
 				} else {
-					ctx.Log().Info("event", "published_event")
+					ctx.Log().Info("action", "published_event")
 					ctx.Log().Metric("published_event", M_Namespace, "xrs", M_Metric, "published_event", M_Unit, "Count", M_Dims, "app="+AppId+"&env="+EnvName+"&instance="+InstanceName+"&destination="+ctx.LogValue("destination").(string), M_Val, 1.0)
 					stats.IncOutCount()
 				}
@@ -131,11 +131,11 @@ func handleEvent(ctx Context, stats *ServiceStats, event *JDoc, raw string, debu
 					c.AddLogValue("trace.out.endpoint", p.GetEndpoint())
 					c.AddLogValue("trace.out.url", p.GetUrl())
 					if err != nil {
-						c.Log().Error("event", "publish_failed", "error", err.Error())
+						c.Log().Error("action", "publish_failed", "error", err.Error())
 						c.Log().Metric("publish_failed", M_Namespace, "xrs", M_Metric, "publish_failed", M_Unit, "Count", M_Dims, "app="+AppId+"&env="+EnvName+"&instance="+InstanceName+"&destination="+ctx.LogValue("destination").(string), M_Val, 1.0)
 						stats.IncErrors()
 					} else {
-						c.Log().Info("event", "published_event")
+						c.Log().Info("action", "published_event")
 						c.Log().Metric("published_event", M_Namespace, "xrs", M_Metric, "published_event", M_Unit, "Count", M_Dims, "app="+AppId+"&env="+EnvName+"&instance="+InstanceName+"&destination="+ctx.LogValue("destination").(string), M_Val, 1.0)
 						stats.IncOutCount()
 					}

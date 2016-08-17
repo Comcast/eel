@@ -252,13 +252,13 @@ func (a *JExprItem) optimizeConditional(ctx Context, doc *JDoc) (*JExprItem, err
 	stats := ctx.Value(EelTotalStats).(*ServiceStats)
 	if a.typ == astFunction && a.val == "ifte" {
 		if len(a.kids) != 3 {
-			ctx.Log().Error("event", "eel_parser_error", "cause", "wrong_number_of_parameters", "type", a.typ, "val", a.val, "num_params", len(a.kids))
+			ctx.Log().Error("action", "eel_parser_error", "cause", "wrong_number_of_parameters", "type", a.typ, "val", a.val, "num_params", len(a.kids))
 			stats.IncErrors()
 			AddError(ctx, RuntimeError{fmt.Sprintf("iwrong number of parameters"), "ifte", nil})
 			return nil, errors.New("ifte has wrong number of parameters")
 		}
 		if a.mom == nil {
-			ctx.Log().Error("event", "eel_parser_error", "cause", "conditional_orphan", "type", a.typ, "val", a.val)
+			ctx.Log().Error("action", "eel_parser_error", "cause", "conditional_orphan", "type", a.typ, "val", a.val)
 			stats.IncErrors()
 			AddError(ctx, RuntimeError{fmt.Sprintf("conditional orphan"), "ifte", nil})
 			return nil, errors.New("conditional orphan")
@@ -276,7 +276,7 @@ func (a *JExprItem) optimizeConditional(ctx Context, doc *JDoc) (*JExprItem, err
 		} else if cond.val == false || cond.val == "false" || cond.val == "'false'" {
 			chosenChild = a.kids[2]
 		} else {
-			ctx.Log().Error("event", "eel_parser_error", "cause", "non_boolean_condition", "type", cond.typ, "val", cond.val)
+			ctx.Log().Error("action", "eel_parser_error", "cause", "non_boolean_condition", "type", cond.typ, "val", cond.val)
 			stats.IncErrors()
 			AddError(ctx, RuntimeError{fmt.Sprintf("non-boolean condition"), "ifte", nil})
 			return nil, errors.New("non-boolean condition")
@@ -289,7 +289,7 @@ func (a *JExprItem) optimizeConditional(ctx Context, doc *JDoc) (*JExprItem, err
 			if strings.Contains(strVal, "{") && strings.Contains(strVal, "}") {
 				obj, err := NewJDocFromString(strVal)
 				if err != nil {
-					ctx.Log().Error("event", "eel_parser_error", "cause", "invalid_json", "type", cond.typ, "val", cond.val)
+					ctx.Log().Error("action", "eel_parser_error", "cause", "invalid_json", "type", cond.typ, "val", cond.val)
 					stats.IncErrors()
 					AddError(ctx, RuntimeError{fmt.Sprintf("non json parameter"), "ifte", nil})
 					return nil, errors.New("non json parameters in call to ifte function")
@@ -304,13 +304,13 @@ func (a *JExprItem) optimizeConditional(ctx Context, doc *JDoc) (*JExprItem, err
 		return a.mom.kids[childIdx], nil
 	} else if a.typ == astFunction && a.val == "alt" {
 		if len(a.kids) < 2 {
-			ctx.Log().Error("event", "eel_parser_error", "cause", "wrong_number_of_parameters", "type", a.typ, "val", a.val, "num_params", len(a.kids))
+			ctx.Log().Error("action", "eel_parser_error", "cause", "wrong_number_of_parameters", "type", a.typ, "val", a.val, "num_params", len(a.kids))
 			stats.IncErrors()
 			AddError(ctx, RuntimeError{fmt.Sprintf("wrong number of parameters"), "alt", nil})
 			return nil, errors.New("alt has wrong number of parameters")
 		}
 		if a.mom == nil {
-			ctx.Log().Error("event", "eel_parser_error", "cause", "conditional_orphan", "type", a.typ, "val", a.val)
+			ctx.Log().Error("action", "eel_parser_error", "cause", "conditional_orphan", "type", a.typ, "val", a.val)
 			return nil, errors.New("conditional orphan")
 		}
 		childIdx := a.getMotherIdx()
@@ -335,13 +335,13 @@ func (a *JExprItem) optimizeConditional(ctx Context, doc *JDoc) (*JExprItem, err
 		return a.mom.kids[childIdx], nil
 	} else if a.typ == astFunction && a.val == "case" {
 		if len(a.kids) < 3 || len(a.kids)%3 > 1 {
-			ctx.Log().Error("event", "eel_parser_error", "cause", "wrong_number_of_parameters", "type", a.typ, "val", a.val, "num_params", len(a.kids))
+			ctx.Log().Error("action", "eel_parser_error", "cause", "wrong_number_of_parameters", "type", a.typ, "val", a.val, "num_params", len(a.kids))
 			stats.IncErrors()
 			AddError(ctx, RuntimeError{fmt.Sprintf("wrong number of parameters"), "case", nil})
 			return nil, errors.New("case has wrong number of parameters")
 		}
 		if a.mom == nil {
-			ctx.Log().Error("event", "eel_parser_error", "cause", "conditional_orphan", "type", a.typ, "val", a.val)
+			ctx.Log().Error("action", "eel_parser_error", "cause", "conditional_orphan", "type", a.typ, "val", a.val)
 			stats.IncErrors()
 			AddError(ctx, RuntimeError{fmt.Sprintf("conditional orphan"), "case", nil})
 			return nil, errors.New("conditional orphan")
@@ -356,7 +356,7 @@ func (a *JExprItem) optimizeConditional(ctx Context, doc *JDoc) (*JExprItem, err
 			candB.mom = nil
 			candB.collapseIntoSingleNode(ctx, doc)
 			candB.adjustParameter()
-			//ctx.Log().Debug("event", "eel_parser", "val_a", candA.val, "val_b", candB.val)
+			//ctx.Log().Debug("action", "eel_parser", "val_a", candA.val, "val_b", candB.val)
 			if candA.val == candB.val ||
 				(candA.val == true && candB.val == "true") ||
 				(candA.val == false && candB.val == "false") ||
@@ -387,7 +387,7 @@ func (a *JExprItem) optimizeConditional(ctx Context, doc *JDoc) (*JExprItem, err
 		chosenChild.print(0, "CHOSENCHILD")
 		return a.mom.kids[childIdx], nil
 	} else {
-		ctx.Log().Error("event", "eel_parser_error", "cause", "unsupported_conditional", "type", a.typ, "val", a.val)
+		ctx.Log().Error("action", "eel_parser_error", "cause", "unsupported_conditional", "type", a.typ, "val", a.val)
 		stats.IncErrors()
 		AddError(ctx, RuntimeError{fmt.Sprintf("unsupported conditional"), "", nil})
 		return nil, errors.New("unsupported conditional")
@@ -489,7 +489,7 @@ func (a *JExprItem) collapseLeaf(ctx Context, doc *JDoc) bool {
 	switch a.typ {
 	case astPath: // simple path selector
 		if a.mom == nil {
-			//ctx.Log().Debug("event", "ast_collapse_failure", "reason", "mom_is_nil", "val", a.val, "type", a.typeString())
+			//ctx.Log().Debug("action", "ast_collapse_failure", "reason", "mom_is_nil", "val", a.val, "type", a.typeString())
 			return false
 		}
 		a.val = doc.EvalPath(ctx, ToFlatString(a.val)) // retain type of selected path
@@ -501,17 +501,17 @@ func (a *JExprItem) collapseLeaf(ctx Context, doc *JDoc) bool {
 		} else if a.mom.typ == astFunction {
 			a.typ = astParam
 		} else {
-			//ctx.Log().Debug("event", "ast_collapse_failure", "reason", "wrong_type", "val", a.val, "type", a.typeString())
+			//ctx.Log().Debug("action", "ast_collapse_failure", "reason", "wrong_type", "val", a.val, "type", a.typeString())
 		}
 		return true
 	case astFunction: // parameter-less function
 		if a.mom == nil {
-			//ctx.Log().Debug("event", "ast_collapse_failure", "reason", "mom_is_nil", "val", a.val, "type", a.typeString())
+			//ctx.Log().Debug("action", "ast_collapse_failure", "reason", "mom_is_nil", "val", a.val, "type", a.typeString())
 			return false
 		}
 		f := NewFunction(ToFlatString(a.val))
 		if f == nil {
-			//ctx.Log().Debug("event", "ast_collapse_failure", "reason", "unknown_function", "val", a.val, "type", a.typeString())
+			//ctx.Log().Debug("action", "ast_collapse_failure", "reason", "unknown_function", "val", a.val, "type", a.typeString())
 			return false
 		}
 		// odd: currently parameter-less functions require a single blank string as parameter
@@ -527,20 +527,20 @@ func (a *JExprItem) collapseLeaf(ctx Context, doc *JDoc) bool {
 		return true
 	case astParam: // function with parameters
 		if a.mom == nil {
-			//ctx.Log().Debug("event", "ast_collapse_failure", "reason", "mom_is_nil", "val", a.val, "type", a.typeString())
+			//ctx.Log().Debug("action", "ast_collapse_failure", "reason", "mom_is_nil", "val", a.val, "type", a.typeString())
 			return false
 		}
 		if a.mom.mom == nil {
-			//ctx.Log().Debug("event", "ast_collapse_failure", "reason", "grandma_is_nil", "val", a.val, "type", a.typeString())
+			//ctx.Log().Debug("action", "ast_collapse_failure", "reason", "grandma_is_nil", "val", a.val, "type", a.typeString())
 			return false
 		}
 		if a.mom.typ != astFunction {
-			//ctx.Log().Debug("event", "ast_collapse_failure", "reason", "mom_must_be_function", "val", a.val, "type", a.typeString())
+			//ctx.Log().Debug("action", "ast_collapse_failure", "reason", "mom_must_be_function", "val", a.val, "type", a.typeString())
 			return false
 		}
 		f := NewFunction(ToFlatString(a.mom.val))
 		if f == nil {
-			//ctx.Log().Debug("event", "ast_collapse_failure", "reason", "unknown_function", "val", a.val, "type", a.typeString())
+			//ctx.Log().Debug("action", "ast_collapse_failure", "reason", "unknown_function", "val", a.val, "type", a.typeString())
 			return false
 		}
 		params := make([]string, 0)
@@ -557,16 +557,16 @@ func (a *JExprItem) collapseLeaf(ctx Context, doc *JDoc) bool {
 		} else if a.mom.mom.typ == astAgg {
 			a.mom.typ = astText
 		} else {
-			//ctx.Log().Debug("event", "ast_collapse_failure", "reason", "mom_must_be_function_or_aggregation", "val", a.val, "type", a.typeString())
+			//ctx.Log().Debug("action", "ast_collapse_failure", "reason", "mom_must_be_function_or_aggregation", "val", a.val, "type", a.typeString())
 		}
 		return true
 	case astText: // aggregation of text fields
 		if a.mom == nil {
-			//ctx.Log().Debug("event", "ast_collapse_failure", "reason", "mom_is_nil", "val", a.val, "type", a.typeString())
+			//ctx.Log().Debug("action", "ast_collapse_failure", "reason", "mom_is_nil", "val", a.val, "type", a.typeString())
 			return false
 		}
 		if a.mom.typ != astAgg {
-			//ctx.Log().Debug("event", "ast_collapse_failure", "reason", "mom_must_be_aggregation", "val", a.val, "type", a.typeString())
+			//ctx.Log().Debug("action", "ast_collapse_failure", "reason", "mom_must_be_aggregation", "val", a.val, "type", a.typeString())
 			return false
 		}
 		if len(a.mom.kids) == 1 { // retain type for single value aggregations, except for nil which is converted to ""
