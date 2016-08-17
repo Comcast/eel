@@ -15,6 +15,7 @@
 	"Verb": "POST",
 	"Endpoint": "",
 	"HttpHeaders": {
-		"X-B3-TraceId": "{{time()}}"
+		"X-B3-TraceId": "{{time()}}",
+		"Xrs-Tenant-Id": "{{tenant()}}"
 	}
 }

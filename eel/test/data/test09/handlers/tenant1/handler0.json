@@ -18,6 +18,6 @@
 	"Endpoint": "http://localhost:8080",
 	"HttpHeaders": {
 		"X-B3-TraceId": "{{traceid()}}",
-		"X-Tenant-Id": "{{tenant()}}"
+		"Xrs-Tenant-Id": "{{tenant()}}"
 	}
 }

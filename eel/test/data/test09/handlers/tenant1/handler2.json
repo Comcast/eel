@@ -17,6 +17,6 @@
 	"Endpoint": "http://targetservice",
 	"HttpHeaders": {
 		"X-B3-TraceId": "{{traceid()}}",
-		"X-Tenant-Id": "{{tenant()}}"
+		"Xrs-Tenant-Id": "{{tenant()}}"
 	}
 }
