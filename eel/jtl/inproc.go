@@ -46,14 +46,17 @@ func EventHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Header.Get(traceHeaderKey) != "" {
 		ctx.AddLogValue("tx.traceId", r.Header.Get(traceHeaderKey))
 		ctx.AddValue("tx.traceId", r.Header.Get(traceHeaderKey))
+		ctx.AddValue(traceHeaderKey, r.Header.Get(traceHeaderKey))
 	} else {
 		ctx.AddLogValue("tx.traceId", ctx.Id())
 		ctx.AddValue("tx.traceId", ctx.Id())
+		ctx.AddValue(traceHeaderKey, ctx.Id())
 	}
 	// adopt tenant id if present
 	tenantHeaderKey := GetConfig(ctx).HttpTenantHeader
 	if r.Header.Get(tenantHeaderKey) != "" {
 		ctx.AddValue(EelTenantId, r.Header.Get(tenantHeaderKey))
+		ctx.AddValue(tenantHeaderKey, r.Header.Get(tenantHeaderKey))
 	}
 	w.Header().Set("Content-Type", "application/json")
 	if r.ContentLength > GetConfig(ctx).MaxMessageSize {
