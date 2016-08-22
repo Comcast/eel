@@ -13,6 +13,7 @@
     "Path": "",
     "Verb": "POST",
     "Endpoint": "http://localhost:8088",
+	"Protocol": "http",
     "HttpHeaders": {
       "X-B3-TraceId": "{{traceid()}}",
       "X-Tenant-Id": "{{tenant()}}"

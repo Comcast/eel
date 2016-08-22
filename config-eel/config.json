@@ -19,7 +19,7 @@
     "MaxIdleConnsPerHost": 100,
     "DuplicateTimeout": 0,
     "HttpTransactionHeader": "X-B3-TraceId",
-    "HttpTenantHeader": "X-TenantId",
+    "HttpTenantHeader": "Xrs-Tenant-Id",
     "CustomProperties": {
         "key" : "value"
     },

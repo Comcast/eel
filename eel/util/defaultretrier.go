@@ -24,14 +24,19 @@ type DefaultRetrier struct {
 }
 
 // RetryEndpoint same as HitEndpoint but with local trivial implementation exponential backoff.
-func (*DefaultRetrier) RetryEndpoint(ctx Context, url string, payload string, verb string, headers map[string]string, auth map[string]string) (string, int, error) {
+func (d *DefaultRetrier) RetryEndpoint(ctx Context, url string, payload string, verb string, headers map[string]string, auth map[string]string) (string, int, error) {
+	return d.Retry(ctx, url, payload, verb, headers, auth, HitEndpoint)
+}
+
+// Retry implements retry logic with injected request function.
+func (*DefaultRetrier) Retry(ctx Context, url string, payload string, verb string, headers map[string]string, auth map[string]string, f func(ctx Context, url string, payload string, verb string, headers map[string]string, auth map[string]string) (string, int, error)) (string, int, error) {
 	attempt := 1
 	backoffMs := GetConfig(ctx).InitialBackoff * time.Millisecond
 	initialDelayMs := GetConfig(ctx).InitialDelay * time.Millisecond
 	padMs := GetConfig(ctx).Pad * time.Millisecond
 start:
 	ctx.AddLogValue("attempt", attempt)
-	resp, status, err := HitEndpoint(ctx, url, payload, verb, headers, auth)
+	resp, status, err := f(ctx, url, payload, verb, headers, auth)
 	if err != nil || status < 200 || status > 299 {
 		if attempt < GetConfig(ctx).MaxAttempts {
 			if attempt == 1 {

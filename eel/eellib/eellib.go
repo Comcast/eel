@@ -37,7 +37,7 @@ func EELInit(ctx Context) {
 	eelSettings.ResponseHeaderTimeout = 3000
 	eelSettings.MaxMessageSize = 512000
 	eelSettings.HttpTransactionHeader = "X-B3-TraceId"
-	eelSettings.HttpTenantHeader = "X-TenantId"
+	eelSettings.HttpTenantHeader = "Xrs-Tenant-Id"
 	eelSettings.AppName = "eellib"
 	eelSettings.Name = "eellib"
 	eelSettings.Version = "1.0"

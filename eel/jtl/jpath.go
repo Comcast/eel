@@ -366,7 +366,7 @@ func (j *JDoc) ApplyTransformationByExample(ctx Context, tf *JDoc) *JDoc {
 	}
 	res, err := NewJDocFromString(tf.String()) // clone
 	if err != nil {
-		ctx.Log().Error("event", "clone_error", "error", err.Error())
+		ctx.Log().Error("action", "clone_error", "error", err.Error())
 		return nil
 	}
 	res.orig = j.traverseEval(ctx, res.orig)
@@ -393,13 +393,13 @@ func (j *JDoc) ApplyTransformation(ctx Context, transformation *JDoc) *JDoc {
 	switch transformation.orig.(type) {
 	case map[string]interface{}:
 	default:
-		ctx.Log().Error("event", "transformation_not_a_map", "transformation", transformation.orig)
+		ctx.Log().Error("action", "transformation_not_a_map", "transformation", transformation.orig)
 		return t
 	}
 	for tk, tv := range transformation.orig.(map[string]interface{}) {
 		m := t.orig
 		if !strings.HasPrefix(tk, JPathPrefix+"/") || !strings.HasSuffix(tk, JPathSuffix) {
-			ctx.Log().Info("event", "bad_path_warning", "path", tk, "transformation", transformation.orig)
+			ctx.Log().Info("action", "bad_path_warning", "path", tk, "transformation", transformation.orig)
 			continue
 		}
 		tkPath := strings.Replace(tk, JPathPrefix, "", -1)
@@ -519,7 +519,7 @@ func (j *JDoc) merge(a interface{}, b interface{}) interface{} {
 	case map[string]interface{}:
 		switch b.(type) {
 		case map[string]interface{}:
-			//Gctx.Log().Info("event", "merging_maps", "a", a, "b", b)
+			//Gctx.Log().Info("action", "merging_maps", "a", a, "b", b)
 			bc := make(map[string]interface{}, 0)
 			for k, v := range b.(map[string]interface{}) {
 				bc[k] = v
@@ -528,49 +528,49 @@ func (j *JDoc) merge(a interface{}, b interface{}) interface{} {
 				vb := bc[k]
 				bc[k] = j.merge(va, vb)
 			}
-			//Gctx.Log().Info("event", "merging_maps_done", "m", b)
+			//Gctx.Log().Info("action", "merging_maps_done", "m", b)
 			return bc
 		case []interface{}:
-			Gctx.Log().Info("event", "cannot_merge_map_with_array")
+			Gctx.Log().Info("action", "cannot_merge_map_with_array")
 			return b
 		default:
-			Gctx.Log().Info("event", "cannot_merge_map_with_simple_types")
+			Gctx.Log().Info("action", "cannot_merge_map_with_simple_types")
 			return b
 		}
 	case []interface{}:
 		switch b.(type) {
 		case map[string]interface{}:
-			Gctx.Log().Info("event", "cannot_merge_map_with_array")
+			Gctx.Log().Info("action", "cannot_merge_map_with_array")
 			return b
 		case []interface{}:
-			//Gctx.Log().Info("event", "merging_arrays", "a", a, "b", b)
+			//Gctx.Log().Info("action", "merging_arrays", "a", a, "b", b)
 			res := make([]interface{}, 0)
 			res = append(res, a.([]interface{})...)
 			res = append(res, b.([]interface{})...)
 			return res
 		default:
-			Gctx.Log().Info("event", "cannot_merge_array_with_simple_type")
+			Gctx.Log().Info("action", "cannot_merge_array_with_simple_type")
 			return b
 			//return append(a.([]interface{}), b)
 		}
 	default:
 		switch b.(type) {
 		case map[string]interface{}:
-			Gctx.Log().Info("event", "cannot_merge_simple_type_with_map")
+			Gctx.Log().Info("action", "cannot_merge_simple_type_with_map")
 			return b
 		case []interface{}:
-			Gctx.Log().Info("event", "cannot_merge_array_with_simple_type")
+			Gctx.Log().Info("action", "cannot_merge_array_with_simple_type")
 			return b
 			//return append(b.([]interface{}), a)
 		default:
 			//l := make([]interface{}, 2)
 			//l[0] = a
 			//l[1] = b
-			Gctx.Log().Info("event", "cannot_merge_simple_types")
+			Gctx.Log().Info("action", "cannot_merge_simple_types")
 			return b
 		}
 	}
-	Gctx.Log().Info("event", "incompatible_data_types", "a", a, "b", b)
+	Gctx.Log().Info("action", "incompatible_data_types", "a", a, "b", b)
 	return b
 }
 
@@ -700,7 +700,7 @@ func (j *JDoc) getChildElement(ctx Context, curr interface{}, segment string, pa
 					// array element by key selector
 					kv := strings.Split(idxStr, "=")
 					if len(kv) != 2 {
-						ctx.Log().Error("event", "key_selector_error", "path", path)
+						ctx.Log().Error("action", "key_selector_error", "path", path)
 						return nil
 					}
 					k := strings.TrimSpace(kv[0])
@@ -717,11 +717,11 @@ func (j *JDoc) getChildElement(ctx Context, curr interface{}, segment string, pa
 					// array element by index
 					idx, err := strconv.Atoi(idxStr)
 					if err != nil {
-						ctx.Log().Error("event", "int_conversion_error", "path", path)
+						ctx.Log().Error("action", "int_conversion_error", "path", path)
 						return nil
 					}
 					if idx >= len(curr.(map[string]interface{})[key].([]interface{})) {
-						ctx.Log().Error("event", "array_length_error", "path", path)
+						ctx.Log().Error("action", "array_length_error", "path", path)
 						return nil
 					}
 					return curr.(map[string]interface{})[key].([]interface{})[idx]
@@ -733,7 +733,7 @@ func (j *JDoc) getChildElement(ctx Context, curr interface{}, segment string, pa
 				// array element by key selector
 				kv := strings.Split(idxStr, "=")
 				if len(kv) != 2 {
-					ctx.Log().Error("event", "key_selector_error", "path", path)
+					ctx.Log().Error("action", "key_selector_error", "path", path)
 					return nil
 				}
 				k := strings.TrimSpace(kv[0])
@@ -750,18 +750,18 @@ func (j *JDoc) getChildElement(ctx Context, curr interface{}, segment string, pa
 				// array element by index
 				idx, err := strconv.Atoi(idxStr)
 				if err != nil {
-					ctx.Log().Error("event", "int_conversion_error", "path", path)
+					ctx.Log().Error("action", "int_conversion_error", "path", path)
 					return nil
 				}
 				if idx >= len(curr.([]interface{})) {
-					ctx.Log().Error("event", "array_length_error", "path", path)
+					ctx.Log().Error("action", "array_length_error", "path", path)
 					return nil
 				}
 				return curr.([]interface{})[idx]
 			}
 		}
 	}
-	//ctx.Log.Error("event", "flat_type_error", "path", path)
+	//ctx.Log.Error("action", "flat_type_error", "path", path)
 	return nil
 }
 

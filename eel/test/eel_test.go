@@ -334,7 +334,7 @@ func TestContains(t *testing.T) {
 
 func TestMultiTenency2(t *testing.T) {
 	initTests("data/test18/handlers")
-	fanoutEvent(t, "data/test18/", 1, false, map[string]string{"X-TenantId": "tenant1"})
+	fanoutEvent(t, "data/test18/", 1, false, map[string]string{"Xrs-Tenant-Id": "tenant1"})
 }
 
 func TestMessageGeneration2(t *testing.T) {

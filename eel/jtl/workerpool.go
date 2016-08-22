@@ -70,17 +70,17 @@ func (w *Worker) Start() {
 			select {
 			case work := <-w.work:
 				stats := work.Ctx.Value(EelTotalStats).(*ServiceStats)
-				//w.ctx.Log.Info("event", "received_work", "id", strconv.Itoa(w.id))
+				//w.ctx.Log.Info("action", "received_work", "id", strconv.Itoa(w.id))
 				msg, err := NewJDocFromString(work.Message)
 				if err != nil {
-					work.Ctx.Log().Error("status", "400", "event", "rejected", "reason", "invalid_json", "error", err.Error(), "content", work.Message)
+					work.Ctx.Log().Error("status", "400", "action", "rejected", "reason", "invalid_json", "error", err.Error(), "content", work.Message)
 					stats.IncErrors()
 				} else {
 					handleEvent(work.Ctx, stats, msg, work.Message, false, false)
 				}
-				//w.ctx.Log.Info("event", "handled_work", "id", strconv.Itoa(w.id))
+				//w.ctx.Log.Info("action", "handled_work", "id", strconv.Itoa(w.id))
 			case <-w.quitChan:
-				Gctx.Log().Info("event", "stopping_worker", "id", strconv.Itoa(w.id))
+				Gctx.Log().Info("action", "stopping_worker", "id", strconv.Itoa(w.id))
 				return
 			}
 		}
@@ -106,7 +106,7 @@ func NewWorkDispatcher(nworkers int, queueDepth int) *WorkDispatcher {
 
 // Start starts the event loop of a new work dispatcher
 func (disp *WorkDispatcher) Start(ctx Context) {
-	ctx.Log().Info("event", "starting_workers", "count", len(disp.workers))
+	ctx.Log().Info("action", "starting_workers", "count", len(disp.workers))
 	for i := 0; i < len(disp.workers); i++ {
 		disp.workers[i] = NewWorker(i, disp.WorkerQueue)
 		disp.workers[i].Start()
@@ -115,10 +115,10 @@ func (disp *WorkDispatcher) Start(ctx Context) {
 		for {
 			select {
 			case work := <-disp.WorkQueue:
-				//ctx.Log.Info("event", "received_work_request")
+				//ctx.Log.Info("action", "received_work_request")
 				//go func() {
 				worker := <-disp.WorkerQueue
-				//ctx.Log.Info("event", "dispatched_work_request")
+				//ctx.Log.Info("action", "dispatched_work_request")
 				worker <- work
 				//}()
 			case <-disp.quitChan:
@@ -131,7 +131,7 @@ func (disp *WorkDispatcher) Start(ctx Context) {
 // Stop stops the worker pool
 func (disp *WorkDispatcher) Stop(ctx Context) {
 	if disp.workers != nil && disp.quitChan != nil {
-		ctx.Log().Info("event", "stopping_workers", "count", len(disp.workers))
+		ctx.Log().Info("action", "stopping_workers", "count", len(disp.workers))
 		for _, w := range disp.workers {
 			w.Stop()
 		}
