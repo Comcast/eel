@@ -662,15 +662,19 @@ func (h *HandlerConfiguration) applyFilters(ctx Context, event *JDoc, after bool
 				if f.IsFilterByExample {
 					matches, _ := event.MatchesPattern(f.f)
 					if !f.IsFilterInverted && matches {
+						ctx.Log().Info("action", "filtered_event", "tenant", h.TenantId, "handler", h.Name, "reason", f.Reason)
 						return true
 					} else if f.IsFilterInverted && !matches {
+						ctx.Log().Info("action", "filtered_event", "tenant", h.TenantId, "handler", h.Name, "reason", f.Reason)
 						return true
 					}
 				} else {
 					matches, _ := h.matchesChoiceOfValues(ctx, event, f.Filter)
 					if !f.IsFilterInverted && matches {
+						ctx.Log().Info("action", "filtered_event", "tenant", h.TenantId, "handler", h.Name, "reason", f.Reason)
 						return true
 					} else if f.IsFilterInverted && !matches {
+						ctx.Log().Info("action", "filtered_event", "tenant", h.TenantId, "handler", h.Name, "reason", f.Reason)
 						return true
 					}
 				}
