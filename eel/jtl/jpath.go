@@ -43,6 +43,8 @@ type (
 		IsFilterByExample         bool                   // choose syntax style by path or by example for event filtering
 		IsFilterInverted          bool                   // true: filter if event matches pattern, false: filter if event does not match pattern
 		FilterAfterTransformation bool                   // true: apply filters after transformation, false (default): apply filter before transformation on raw event
+		Reason                    string                 // friendly reason string for logging
+		LogEvent                  bool                   // if true, log payload when filtering
 		f                         *JDoc
 	}
 )

@@ -41,11 +41,6 @@ func handleEvent(ctx Context, stats *ServiceStats, event *JDoc, raw string, debu
 			stats.IncErrors()
 			continue
 		}
-		if len(publishers) == 0 {
-			// no publisher, likely due to filtering
-			ctx.Log().Info("action", "filtered_event", "tenant", handler.TenantId, "handler", handler.Name)
-			continue
-		}
 		for _, publisher := range publishers {
 			dc := ctx.Value(EelDuplicateChecker).(DuplicateChecker)
 			if dc.GetTtl() > 0 && dc.IsDuplicate(ctx, []byte(publisher.GetUrl()+"\n"+publisher.GetPayload())) {

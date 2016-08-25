@@ -654,6 +654,14 @@ func (h *HandlerConfiguration) filterEvent(ctx Context, event *JDoc) bool {
 	return false
 }
 
+func (h *HandlerConfiguration) logFilter(ctx Context, event *JDoc, f *Filter) {
+	if f.LogEvent {
+		ctx.Log().Info("action", "filtered_event", "tenant", h.TenantId, "handler", h.Name, "reason", f.Reason, "payload", event.GetOriginalObject())
+	} else {
+		ctx.Log().Info("action", "filtered_event", "tenant", h.TenantId, "handler", h.Name, "reason", f.Reason)
+	}
+}
+
 // new version allowing a set of filters presented as array
 func (h *HandlerConfiguration) applyFilters(ctx Context, event *JDoc, after bool) bool {
 	if h.Filters != nil {
@@ -662,15 +670,19 @@ func (h *HandlerConfiguration) applyFilters(ctx Context, event *JDoc, after bool
 				if f.IsFilterByExample {
 					matches, _ := event.MatchesPattern(f.f)
 					if !f.IsFilterInverted && matches {
+						h.logFilter(ctx, event, f)
 						return true
 					} else if f.IsFilterInverted && !matches {
+						h.logFilter(ctx, event, f)
 						return true
 					}
 				} else {
 					matches, _ := h.matchesChoiceOfValues(ctx, event, f.Filter)
 					if !f.IsFilterInverted && matches {
+						h.logFilter(ctx, event, f)
 						return true
 					} else if f.IsFilterInverted && !matches {
+						h.logFilter(ctx, event, f)
 						return true
 					}
 				}
