@@ -655,9 +655,17 @@ func (h *HandlerConfiguration) filterEvent(ctx Context, event *JDoc) bool {
 }
 
 func (h *HandlerConfiguration) logFilter(ctx Context, event *JDoc, f *Filter) {
+	ctx = ctx.SubContext()
+	if f.LogParams != nil {
+		for k, v := range f.LogParams {
+			ev := event.ParseExpression(ctx, v)
+			ctx.AddLogValue(k, ev)
+		}
+	}
 	if f.LogEvent {
-		ctx.Log().Info("action", "filtered_event", "tenant", h.TenantId, "handler", h.Name, "reason", f.Reason, "payload", event.GetOriginalObject())
-	} else {
+		ctx.AddLogValue("payload", event.GetOriginalObject())
+	}
+	if f.LogEvent {
 		ctx.Log().Info("action", "filtered_event", "tenant", h.TenantId, "handler", h.Name, "reason", f.Reason)
 	}
 }
