@@ -662,10 +662,7 @@ func (h *HandlerConfiguration) logFilter(ctx Context, event *JDoc, f *Filter) {
 			ctx.AddLogValue(k, ev)
 		}
 	}
-	if f.LogEvent {
-		ctx.AddLogValue("payload", event.GetOriginalObject())
-	}
-	ctx.Log().Info("action", "filtered_event", "tenant", h.TenantId, "handler", h.Name, "reason", f.Reason)
+	ctx.Log().Info("action", "filtered_event", "tenant", h.TenantId, "handler", h.Name)
 }
 
 // new version allowing a set of filters presented as array
