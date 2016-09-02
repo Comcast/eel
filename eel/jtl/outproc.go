@@ -36,7 +36,7 @@ func handleEvent(ctx Context, stats *ServiceStats, event *JDoc, raw string, debu
 		//TODO: validate JSON schema
 		publishers, err := handler.ProcessEvent(initialCtx.SubContext(), event)
 		if err != nil {
-			ctx.Log().Error("action", "bad_transformation", "handler", handler.Name, "tenant", handler.TenantId, "trace.in.data", raw, "error", err.Error())
+			ctx.Log().Error("action", "bad_transformation", "handler", handler.Name, "tenant", handler.TenantId, "trace.in.data", event.GetOriginalObject(), "error", err.Error())
 			ctx.Log().Metric("bad_transformation", M_Namespace, "xrs", M_Metric, "bad_transformation", M_Unit, "Count", M_Dims, "app="+AppId+"&env="+EnvName+"&instance="+InstanceName+"&destination="+ctx.LogValue("destination").(string), M_Val, 1.0)
 			stats.IncErrors()
 			continue
@@ -44,7 +44,7 @@ func handleEvent(ctx Context, stats *ServiceStats, event *JDoc, raw string, debu
 		for _, publisher := range publishers {
 			dc := ctx.Value(EelDuplicateChecker).(DuplicateChecker)
 			if dc.GetTtl() > 0 && dc.IsDuplicate(ctx, []byte(publisher.GetUrl()+"\n"+publisher.GetPayload())) {
-				ctx.Log().Error("status", "200", "action", "dropping_duplicate", "handler", handler.Name, "tenant", handler.TenantId, "trace.in.data", raw)
+				ctx.Log().Error("status", "200", "action", "dropping_duplicate", "handler", handler.Name, "tenant", handler.TenantId, "trace.in.data", event.GetOriginalObject())
 				ctx.Log().Metric("dropping_duplicate", M_Namespace, "xrs", M_Metric, "dropping_duplicate", M_Unit, "Count", M_Dims, "app="+AppId+"&env="+EnvName+"&instance="+InstanceName+"&destination="+ctx.LogValue("destination").(string), M_Val, 1.0)
 				continue
 			}
@@ -63,7 +63,7 @@ func handleEvent(ctx Context, stats *ServiceStats, event *JDoc, raw string, debu
 			ctx.AddLogValue("topic", handler.Topic)
 			ctx.AddLogValue("tenant", handler.TenantId)
 			ctx.AddLogValue("handler", handler.Name)
-			//ctx.AddLogValue("trace.in.data", raw)
+			ctx.AddLogValue("trace.in.data", event.GetOriginalObject())
 			ctx.AddLogValue("trace.out.data", publisher.GetPayload())
 			ctx.AddLogValue("trace.out.protocol", publisher.GetProtocol())
 			ctx.AddLogValue("trace.out.path", publisher.GetPath())
