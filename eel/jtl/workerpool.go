@@ -73,7 +73,7 @@ func (w *Worker) Start() {
 				//w.ctx.Log.Info("action", "received_work", "id", strconv.Itoa(w.id))
 				msg, err := NewJDocFromString(work.Message)
 				if err != nil {
-					work.Ctx.Log().Error("status", "400", "action", "rejected", "reason", "invalid_json", "error", err.Error(), "content", work.Message)
+					work.Ctx.Log().Error("status", "400", "action", "rejected", "error_type", "rejected", "cause", "invalid_json", "error", err.Error(), "content", work.Message)
 					stats.IncErrors()
 				} else {
 					handleEvent(work.Ctx, stats, msg, work.Message, false, false)

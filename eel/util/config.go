@@ -142,21 +142,21 @@ func GetConfigFromFile(ctx Context) *EelSettings {
 	if err != nil {
 		// csv-context-go may not be ready yet for logging
 		fmt.Printf("{ \"error\" : \"%s\" }", err.Error())
-		ctx.Log().Error("action", "get_config", "error", err.Error())
+		ctx.Log().Error("error_type", "get_config", "cause", "open_config", "error", err.Error())
 		os.Exit(1)
 	}
 	defer configFile.Close()
 	configData, err := ioutil.ReadAll(configFile)
 	if err != nil {
 		fmt.Printf("{ \"error\" : \"%s\" }", err.Error())
-		ctx.Log().Error("action", "get_config", "error", err.Error())
+		ctx.Log().Error("error_type", "get_config", "cause", "read_config", "error", err.Error())
 		os.Exit(1)
 	}
 	var config EelSettings
 	err = json.Unmarshal(configData, &config)
 	if err != nil {
 		fmt.Printf("{ \"error\" : \"%s\" }", err.Error())
-		ctx.Log().Error("action", "get_config", "error", err.Error())
+		ctx.Log().Error("error_type", "get_config", "cause", "parse_config", "error", err.Error())
 		os.Exit(1)
 	}
 	return &config

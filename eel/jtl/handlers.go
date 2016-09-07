@@ -499,7 +499,7 @@ func (hf *HandlerFactory) getAllConfigurationFiles(ctx Context, configFolder str
 		return nil
 	})
 	if err != nil {
-		ctx.Log().Error("action", "error_exploring_topic_handler_config_files", "folder", configFolder)
+		ctx.Log().Error("error_type", "load_handler", "cause", "error_exploring_topic_handler_config_files", "folder", configFolder)
 	}
 	return fileList
 }
@@ -512,20 +512,20 @@ func (hf *HandlerFactory) GetHandlerConfigurationFromFile(ctx Context, filepath 
 		defer file.Close()
 	}
 	if err != nil {
-		ctx.Log().Error("action", "error_loading_config_file", "file", filepath)
+		ctx.Log().Error("error_type", "load_handler", "cause", "error_loading_config_file", "file", filepath)
 		warnings = append(warnings, errors.New("error opening config file "+filepath))
 		return nil, warnings
 	}
 	config, err := ioutil.ReadAll(file)
 	if err != nil {
-		ctx.Log().Error("action", "error_reading_config", "file", filepath)
+		ctx.Log().Error("error_type", "load_handler", "cause", "error_reading_config", "file", filepath)
 		warnings = append(warnings, errors.New("error reading config file "+filepath))
 		return nil, warnings
 	}
 	var handler HandlerConfiguration
 	err = json.Unmarshal(config, &handler)
 	if err != nil {
-		ctx.Log().Error("action", "error_parsing_config", "file", filepath)
+		ctx.Log().Error("error_type", "load_handler", "cause", "error_parsing_config", "file", filepath)
 		warnings = append(warnings, ParseError{"invalid json in config file " + filepath})
 		return nil, warnings
 	}
@@ -547,26 +547,26 @@ func (hf *HandlerFactory) GetHandlerConfigurationFromJson(ctx Context, filepath 
 		//warnings = append(warnings, ParseError{"missing tenant id in config file " + filepath})
 	}
 	if filepath != "" && !strings.Contains(filepath, "/"+handler.TenantId+"/") {
-		ctx.Log().Error("action", "handler_has_bad_location", "file", filepath, "name", handler.Name, "tenant", handler.TenantId)
+		ctx.Log().Error("error_type", "load_handler", "cause", "handler_has_bad_location", "file", filepath, "name", handler.Name, "tenant", handler.TenantId)
 		warnings = append(warnings, ParseError{"bad location of config file " + filepath})
 	}
 	if handler.Name == "" {
-		ctx.Log().Error("action", "blank_name", "file", filepath, "name", handler.Name, "tenant", handler.TenantId)
+		ctx.Log().Error("error_type", "load_handler", "cause", "blank_name", "file", filepath, "name", handler.Name, "tenant", handler.TenantId)
 		warnings = append(warnings, ParseError{"blank name in config file " + filepath})
 	}
 	if handler.Version == "" {
-		ctx.Log().Error("action", "missing_version", "file", filepath, "name", handler.Name, "tenant", handler.TenantId)
+		ctx.Log().Error("error_type", "load_handler", "cause", "missing_version", "file", filepath, "name", handler.Name, "tenant", handler.TenantId)
 		warnings = append(warnings, ParseError{"missing version config file " + filepath})
 	}
 	if handler.Transformation != nil {
 		handler.t, err = NewJDocFromInterface(handler.Transformation)
 		if err != nil {
-			ctx.Log().Error("action", "invalid_transformation", "file", filepath, "name", handler.Name, "tenant", handler.TenantId, "error", err.Error())
+			ctx.Log().Error("error_type", "load_handler", "cause", "invalid_transformation", "file", filepath, "name", handler.Name, "tenant", handler.TenantId, "error", err.Error())
 			warnings = append(warnings, ParseError{"non json transformation in config file " + filepath})
 		}
 		valid, reason := handler.IsValidTransformation(ctx, handler.t, handler.IsTransformationByExample)
 		if !valid {
-			ctx.Log().Error("action", "invalid_transformation", "file", filepath, "reason", reason, "name", handler.Name, "tenant", handler.TenantId)
+			ctx.Log().Error("error_type", "load_handler", "cause", "invalid_transformation", "file", filepath, "reason", reason, "name", handler.Name, "tenant", handler.TenantId)
 			warnings = append(warnings, ParseError{"invalid transformation in config file " + filepath + ": " + reason})
 		}
 	}
@@ -574,13 +574,13 @@ func (hf *HandlerFactory) GetHandlerConfigurationFromJson(ctx Context, filepath 
 		for k, v := range handler.Transformations {
 			tf, err := NewJDocFromInterface(v.Transformation)
 			if err != nil {
-				ctx.Log().Error("action", "invalid_transformation", "file", filepath, "name", handler.Name, "tenant", handler.TenantId, "transformation_name", k, "error", err.Error())
+				ctx.Log().Error("error_type", "load_handler", "cause", "invalid_transformation", "file", filepath, "name", handler.Name, "tenant", handler.TenantId, "transformation_name", k, "error", err.Error())
 				warnings = append(warnings, ParseError{"non json transformation " + k + " in config file " + filepath})
 			}
 			v.SetTransformation(tf)
 			valid, reason := handler.IsValidTransformation(ctx, v.GetTransformation(), v.IsTransformationByExample)
 			if !valid {
-				ctx.Log().Error("action", "invalid_transformation", "file", filepath, "reason", reason, "name", handler.Name, "tenant", handler.TenantId)
+				ctx.Log().Error("error_type", "load_handler", "cause", "invalid_transformation", "file", filepath, "reason", reason, "name", handler.Name, "tenant", handler.TenantId)
 				warnings = append(warnings, ParseError{"invalid transformation " + k + " in config file " + filepath + ": " + reason})
 			}
 		}
@@ -588,19 +588,19 @@ func (hf *HandlerFactory) GetHandlerConfigurationFromJson(ctx Context, filepath 
 	if handler.Match != nil {
 		handler.m, err = NewJDocFromMap(handler.Match)
 		if err != nil {
-			ctx.Log().Error("action", "invalid_match", "file", filepath, "name", handler.Name, "tenant", handler.TenantId)
+			ctx.Log().Error("error_type", "load_handler", "cause", "invalid_match", "file", filepath, "name", handler.Name, "tenant", handler.TenantId)
 			warnings = append(warnings, ParseError{"non json match in config file " + filepath})
 		}
 		valid, invalidPath := handler.IsValidTransformation(ctx, handler.m, handler.IsMatchByExample)
 		if !valid {
-			ctx.Log().Error("action", "invalid_match", "file", filepath, "path", invalidPath, "name", handler.Name, "tenant", handler.TenantId)
+			ctx.Log().Error("error_type", "load_handler", "cause", "invalid_match", "file", filepath, "path", invalidPath, "name", handler.Name, "tenant", handler.TenantId)
 			warnings = append(warnings, ParseError{"invalid match in config file " + filepath})
 		}
 	}
 	if handler.Filter != nil {
 		handler.f, err = NewJDocFromMap(handler.Filter)
 		if err != nil {
-			ctx.Log().Error("action", "invalid_filter", "file", filepath, "name", handler.Name, "tenant", handler.TenantId)
+			ctx.Log().Error("error_type", "load_handler", "cause", "invalid_filter", "file", filepath, "name", handler.Name, "tenant", handler.TenantId)
 			warnings = append(warnings, ParseError{"non json filter in config file " + filepath})
 		}
 	}
@@ -608,7 +608,7 @@ func (hf *HandlerFactory) GetHandlerConfigurationFromJson(ctx Context, filepath 
 		for _, f := range handler.Filters {
 			f.f, err = NewJDocFromMap(f.Filter)
 			if err != nil {
-				ctx.Log().Error("action", "invalid_filter", "file", filepath, "name", handler.Name, "tenant", handler.TenantId, "filer", f.Filter)
+				ctx.Log().Error("error_type", "load_handler", "cause", "invalid_filter", "file", filepath, "name", handler.Name, "tenant", handler.TenantId, "filer", f.Filter)
 				warnings = append(warnings, ParseError{"non json filter in config file " + filepath})
 			}
 		}
@@ -803,7 +803,7 @@ func (h *HandlerConfiguration) ProcessEvent(ctx Context, event *JDoc) ([]EventPu
 			tfd = event.ApplyTransformation(ctx, h.t)
 		}
 		if tfd == nil {
-			ctx.Log().Error("action", "bad_transformation", "action", event.String(), "transformation", h.t.String(), "handler", h.Name)
+			ctx.Log().Error("error_type", "process_event", "cause", "bad_transformation", "event", event.String(), "transformation", h.t.String(), "handler", h.Name)
 			return make([]EventPublisher, 0), errors.New("bad transformation")
 		}
 		payload = tfd.StringPretty()
@@ -823,7 +823,7 @@ func (h *HandlerConfiguration) ProcessEvent(ctx Context, event *JDoc) ([]EventPu
 		for _, rp := range relativePaths {
 			publisher := NewEventPublisher(ctx.SubContext(), h.Protocol)
 			if publisher == nil {
-				ctx.Log().Error("action", "unsupported_protocol", "protocol", h.Protocol, "action", event.String(), "handler", h.Name)
+				ctx.Log().Error("error_type", "process_event", "cause", "unsupported_protocol", "protocol", h.Protocol, "event", event.String(), "handler", h.Name)
 				continue
 			}
 			publisher.SetEndpoint(ep)

@@ -60,7 +60,7 @@ func EventHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Content-Type", "application/json")
 	if r.ContentLength > GetConfig(ctx).MaxMessageSize {
-		ctx.Log().Error("status", "413", "action", "rejected", "reason", "message_too_large", "msg.length", r.ContentLength, "msg.max.length", GetConfig(ctx).MaxMessageSize)
+		ctx.Log().Error("status", "413", "action", "rejected", "error_type", "rejected", "cause", "message_too_large", "msg.length", r.ContentLength)
 		ctx.Log().Metric("rejected", M_Namespace, "xrs", M_Metric, "rejected", M_Unit, "Count", M_Dims, "app="+AppId+"&env="+EnvName+"&instance="+InstanceName, M_Val, 1.0)
 		w.WriteHeader(http.StatusRequestEntityTooLarge)
 		w.Write(GetResponse(ctx, StatusRequestTooLarge))
@@ -71,7 +71,7 @@ func EventHandler(w http.ResponseWriter, r *http.Request) {
 	r.Body = http.MaxBytesReader(w, r.Body, GetConfig(ctx).MaxMessageSize)
 	defer r.Body.Close()
 	if r.Method != "POST" {
-		ctx.Log().Error("status", "400", "action", "rejected", "reason", "http_post_required", "method", r.Method)
+		ctx.Log().Error("status", "400", "action", "rejected", "error_type", "rejected", "cause", "http_post_required", "method", r.Method)
 		ctx.Log().Metric("rejected", M_Namespace, "xrs", M_Metric, "rejected", M_Unit, "Count", M_Dims, "app="+AppId+"&env="+EnvName+"&instance="+InstanceName, M_Val, 1.0)
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write(GetResponse(ctx, StatusHttpPostRequired))
@@ -80,7 +80,7 @@ func EventHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		ctx.Log().Error("status", "500", "action", "rejected", "reason", "error_reading_message", "error", err.Error())
+		ctx.Log().Error("status", "500", "action", "rejected", "error_type", "rejected", "cause", "error_reading_message", "error", err.Error())
 		ctx.Log().Metric("rejected", M_Namespace, "xrs", M_Metric, "rejected", M_Unit, "Count", M_Dims, "app="+AppId+"&env="+EnvName+"&instance="+InstanceName, M_Val, 1.0)
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintf(w, `{"error":"%s"}`, err.Error())
@@ -89,7 +89,7 @@ func EventHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if body == nil || len(body) == 0 {
-		ctx.Log().Error("status", "400", "action", "rejected", "reason", "blank_message")
+		ctx.Log().Error("status", "400", "action", "rejected", "error_type", "rejected", "cause", "blank_message")
 		ctx.Log().Metric("rejected", M_Namespace, "xrs", M_Metric, "rejected", M_Unit, "Count", M_Dims, "app="+AppId+"&env="+EnvName+"&instance="+InstanceName, M_Val, 1.0)
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write(GetResponse(ctx, StatusEmptyBody))
@@ -98,7 +98,7 @@ func EventHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	dc := ctx.Value(EelDuplicateChecker).(DuplicateChecker)
 	if dc.GetTtl() > 0 && dc.IsDuplicate(ctx, body) {
-		ctx.Log().Error("status", "200", "action", "dropping_duplicate", "trace.in.data", string(body))
+		ctx.Log().Error("status", "200", "action", "dropping_duplicate", "error_type", "duplicate", "cause", "duplicate", "trace.in.data", string(body))
 		ctx.Log().Metric("dropping_duplicate", M_Namespace, "xrs", M_Metric, "dropping_duplicate", M_Unit, "Count", M_Dims, "app="+AppId+"&env="+EnvName+"&instance="+InstanceName, M_Val, 1.0)
 		w.WriteHeader(http.StatusOK)
 		w.Write(GetResponse(ctx, StatusDuplicateEliminated))
@@ -108,7 +108,7 @@ func EventHandler(w http.ResponseWriter, r *http.Request) {
 	// json validation maybe only in debug mode?
 	msg, err := NewJDocFromString(string(body))
 	if err != nil {
-		ctx.Log().Error("status", "400", "action", "rejected", "reason", "invalid_json", "error", err.Error(), "trace.in.data", string(body))
+		ctx.Log().Error("status", "400", "action", "rejected", "error_type", "rejected", "cause", "invalid_json", "error", err.Error(), "trace.in.data", string(body))
 		ctx.Log().Metric("rejected", M_Namespace, "xrs", M_Metric, "rejected", M_Unit, "Count", M_Dims, "app="+AppId+"&env="+EnvName+"&instance="+InstanceName, M_Val, 1.0)
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write(GetResponse(ctx, StatusInvalidJson))
@@ -149,7 +149,7 @@ func EventHandler(w http.ResponseWriter, r *http.Request) {
 				w.Write(GetResponse(ctx, StatusProcessed))
 			case <-time.After(time.Millisecond * time.Duration(GetConfig(ctx).MessageQueueTimeout)):
 				// consider spilling over to SQS here
-				ctx.Log().Error("status", "429", "action", "rejected", "reason", "queue_full")
+				ctx.Log().Error("status", "429", "action", "rejected", "error_type", "work_queue", "cause", "queue_full")
 				ctx.Log().Metric("rejected", M_Namespace, "xrs", M_Metric, "rejected", M_Unit, "Count", M_Dims, "app="+AppId+"&env="+EnvName+"&instance="+InstanceName, M_Val, 1.0)
 				// 408
 				//w.WriteHeader(http.StatusRequestTimeout)
