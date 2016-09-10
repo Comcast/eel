@@ -91,7 +91,7 @@ func startProxyServices(ctx Context) {
 	ctx.Log().Info("action", "listening_for_events", "port", eventProxyPort, "proxy_path", eventProxyPath, "proc_path", eventProcPath)
 	err := http.ListenAndServe(":"+strconv.Itoa(eventProxyPort), nil)
 	if err != nil {
-		ctx.Log().Error("action", "http_error", "error", err.Error())
+		ctx.Log().Error("error_type", "eel_service", "error", err.Error())
 	}
 }
 

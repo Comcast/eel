@@ -440,12 +440,13 @@ All event filtering parameters are optional.
 
 Filters are optional. You can have zero, one or more filters.
 `Filters` describes a list of patterns that must be matched by the incoming event. If the event does not match all of the patterns,
-EEL will discard the event and not forward it. Filters lets you choose between by-path syntax and
+EEL will discard the event and not forward it. A filter lets you choose between by-path syntax and
 by-example syntax using the `IsFilterByExample` parameter. If the parameter `IsFilterInverted` is
 set to `true`, events will be filtered if they do NOT match the pattern described by `Filter`.
 If the parameter `FilterAfterTransformation` is set to `true`, the filter will be applied to the
 outgoing event (after the transformation), otherwise it will be applied to the incoming event
-(before the transformation).
+(before the transformation). Additionally you can configure to log arbitrary key-value-pairs when the
+filter triggers using the optional `LogParams` parameter.
 
 _*Example 1:*_ Let everything come through.
 
@@ -526,6 +527,22 @@ _*Example 5:*_ Only process events where `message` is `found_problem`.
 		"FilterAfterTransformation" : false
 	}
 ]
+```
+
+_*Example 6:*_ Filder events older than 5 minutes and log some interesting data.
+
+```
+"Filters" : [
+{
+    "Filter" : {
+      "{{true()}}":"{{js('(new Date()).getTime()-{{/content/timestamp}}>300000')}}"
+    },
+	"LogParams" : {
+		"delta" : "{{js('((new Date()).getTime()-{{/content/timestamp}})/1000')}}",
+		"payload" : "{{/}}",
+		"reason" : "event_too_old"
+	}
+}
 ```
 
 ## Handler Resolution and Multi-Tenancy Support
