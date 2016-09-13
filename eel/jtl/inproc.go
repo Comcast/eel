@@ -60,7 +60,7 @@ func EventHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Content-Type", "application/json")
 	if r.ContentLength > GetConfig(ctx).MaxMessageSize {
-		ctx.Log().Error("status", "413", "action", "rejected", "error_type", "rejected", "cause", "message_too_large", "msg.length", r.ContentLength)
+		ctx.Log().Error("status", "413", "action", "rejected", "error_type", "rejected", "cause", "message_too_large", "msg.length", r.ContentLength, "error", "message too large")
 		ctx.Log().Metric("rejected", M_Namespace, "xrs", M_Metric, "rejected", M_Unit, "Count", M_Dims, "app="+AppId+"&env="+EnvName+"&instance="+InstanceName, M_Val, 1.0)
 		w.WriteHeader(http.StatusRequestEntityTooLarge)
 		w.Write(GetResponse(ctx, StatusRequestTooLarge))
@@ -71,7 +71,7 @@ func EventHandler(w http.ResponseWriter, r *http.Request) {
 	r.Body = http.MaxBytesReader(w, r.Body, GetConfig(ctx).MaxMessageSize)
 	defer r.Body.Close()
 	if r.Method != "POST" {
-		ctx.Log().Error("status", "400", "action", "rejected", "error_type", "rejected", "cause", "http_post_required", "method", r.Method)
+		ctx.Log().Error("status", "400", "action", "rejected", "error_type", "rejected", "cause", "http_post_required", "method", r.Method, "error", "post required")
 		ctx.Log().Metric("rejected", M_Namespace, "xrs", M_Metric, "rejected", M_Unit, "Count", M_Dims, "app="+AppId+"&env="+EnvName+"&instance="+InstanceName, M_Val, 1.0)
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write(GetResponse(ctx, StatusHttpPostRequired))
@@ -89,7 +89,7 @@ func EventHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if body == nil || len(body) == 0 {
-		ctx.Log().Error("status", "400", "action", "rejected", "error_type", "rejected", "cause", "blank_message")
+		ctx.Log().Error("status", "400", "action", "rejected", "error_type", "rejected", "cause", "blank_message", "error", "blank message")
 		ctx.Log().Metric("rejected", M_Namespace, "xrs", M_Metric, "rejected", M_Unit, "Count", M_Dims, "app="+AppId+"&env="+EnvName+"&instance="+InstanceName, M_Val, 1.0)
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write(GetResponse(ctx, StatusEmptyBody))
@@ -98,7 +98,7 @@ func EventHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	dc := ctx.Value(EelDuplicateChecker).(DuplicateChecker)
 	if dc.GetTtl() > 0 && dc.IsDuplicate(ctx, body) {
-		ctx.Log().Error("status", "200", "action", "dropping_duplicate", "error_type", "duplicate", "cause", "duplicate", "trace.in.data", string(body))
+		ctx.Log().Info("status", "200", "action", "dropping_duplicate", "trace.in.data", string(body))
 		ctx.Log().Metric("dropping_duplicate", M_Namespace, "xrs", M_Metric, "dropping_duplicate", M_Unit, "Count", M_Dims, "app="+AppId+"&env="+EnvName+"&instance="+InstanceName, M_Val, 1.0)
 		w.WriteHeader(http.StatusOK)
 		w.Write(GetResponse(ctx, StatusDuplicateEliminated))

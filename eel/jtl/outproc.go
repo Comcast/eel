@@ -44,7 +44,7 @@ func handleEvent(ctx Context, stats *ServiceStats, event *JDoc, raw string, debu
 		for _, publisher := range publishers {
 			dc := ctx.Value(EelDuplicateChecker).(DuplicateChecker)
 			if dc.GetTtl() > 0 && dc.IsDuplicate(ctx, []byte(publisher.GetUrl()+"\n"+publisher.GetPayload())) {
-				ctx.Log().Error("status", "200", "action", "dropping_duplicate", "error_type", "duplicate", "cause", "duplicate", "handler", handler.Name, "tenant", handler.TenantId, "trace.in.data", event.GetOriginalObject())
+				ctx.Log().Info("action", "dropping_duplicate", "handler", handler.Name, "tenant", handler.TenantId, "trace.in.data", event.GetOriginalObject())
 				ctx.Log().Metric("dropping_duplicate", M_Namespace, "xrs", M_Metric, "dropping_duplicate", M_Unit, "Count", M_Dims, "app="+AppId+"&env="+EnvName+"&instance="+InstanceName+"&destination="+ctx.LogValue("destination").(string), M_Val, 1.0)
 				continue
 			}
@@ -81,7 +81,7 @@ func handleEvent(ctx Context, stats *ServiceStats, event *JDoc, raw string, debu
 				ctx.AddLogValue("trace.out.endpoint", publisher.GetEndpoint())
 				ctx.AddLogValue("trace.out.url", publisher.GetUrl())
 				if err != nil {
-					ctx.Log().Error("error_type", "published_event", "error", err.Error())
+					ctx.Log().Error("error_type", "publish_event", "error", err.Error(), "cause", "publish_event")
 					ctx.Log().Metric("publish_failed", M_Namespace, "xrs", M_Metric, "publish_failed", M_Unit, "Count", M_Dims, "app="+AppId+"&env="+EnvName+"&instance="+InstanceName+"&destination="+ctx.LogValue("destination").(string), M_Val, 1.0)
 					stats.IncErrors()
 				} else {
@@ -126,7 +126,7 @@ func handleEvent(ctx Context, stats *ServiceStats, event *JDoc, raw string, debu
 					c.AddLogValue("trace.out.endpoint", p.GetEndpoint())
 					c.AddLogValue("trace.out.url", p.GetUrl())
 					if err != nil {
-						c.Log().Error("error_type", "published_event", "error", err.Error())
+						c.Log().Error("error_type", "publish_event", "error", err.Error(), "cause", "publish_event")
 						c.Log().Metric("publish_failed", M_Namespace, "xrs", M_Metric, "publish_failed", M_Unit, "Count", M_Dims, "app="+AppId+"&env="+EnvName+"&instance="+InstanceName+"&destination="+ctx.LogValue("destination").(string), M_Val, 1.0)
 						stats.IncErrors()
 					} else {

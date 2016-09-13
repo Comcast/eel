@@ -130,7 +130,7 @@ func HitEndpoint(ctx Context, url string, payload string, verb string, headers m
 	// send request
 	resp, err := GetHttpClient(ctx).Do(req)
 	if err != nil {
-		ctx.Log().Error("error_type", "reaching_service", "trace.out.url", url, "trace.out.verb", verb, "trace.out.headers", headers, "error", err.Error())
+		ctx.Log().Error("error_type", "reaching_service", "cause", "get_http_client", "trace.out.url", url, "trace.out.verb", verb, "trace.out.headers", headers, "error", err.Error())
 		stats.IncErrors()
 		if ctx.LogValue("destination") != nil {
 			ctx.Log().Metric("drops", M_Namespace, "xrs", M_Metric, "drops", M_Unit, "Count", M_Dims, "app="+AppId+"&env="+EnvName+"&instance="+InstanceName+"&destination="+ctx.LogValue("destination").(string), M_Val, 1.0)
