@@ -51,6 +51,7 @@ type EelSettings struct {
 	ResponseHeaderTimeout          time.Duration
 	MaxIdleConnsPerHost            int
 	CustomProperties               map[string]interface{}
+	Misc                           map[string]interface{}
 	WorkerPoolSize                 int
 	MessageQueueTimeout            int
 	MessageQueueDepth              int
