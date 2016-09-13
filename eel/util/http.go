@@ -125,7 +125,7 @@ func HitEndpoint(ctx Context, url string, payload string, verb string, headers m
 	if startTime > 0 {
 		duration = time.Now().UnixNano() - startTime
 	}
-	ctx.AddLogValue("stat.eel.time", duration)
+	ctx.AddLogValue("stat.eel.time", duration/1e6)
 	stats.IncTimeInternal(duration)
 	// send request
 	resp, err := GetHttpClient(ctx).Do(req)
@@ -140,7 +140,7 @@ func HitEndpoint(ctx Context, url string, payload string, verb string, headers m
 	if startTime > 0 {
 		duration = (time.Now().UnixNano() - startTime) - duration
 	}
-	ctx.AddLogValue("stat.external.time", duration)
+	ctx.AddLogValue("stat.external.time", duration/1e6)
 	stats.IncTimeExternal(duration)
 	// read response
 	var body []byte
