@@ -116,6 +116,12 @@ func EventHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	stats.IncBytesIn(len(body))
+	if GetConfig(ctx).LogParams != nil {
+		for k, v := range GetConfig(ctx).LogParams {
+			ev := msg.ParseExpression(ctx, v)
+			ctx.AddLogValue(k, ev)
+		}
+	}
 	if debug || sync {
 		ctx.Log().Info("status", "200", "action", "accepted")
 		ctx.Log().Metric("accepted", M_Namespace, "xrs", M_Metric, "accepted", M_Unit, "Count", M_Dims, "app="+AppId+"&env="+EnvName+"&instance="+InstanceName, M_Val, 1.0)

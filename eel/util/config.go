@@ -52,6 +52,7 @@ type EelSettings struct {
 	MaxIdleConnsPerHost            int
 	CustomProperties               map[string]interface{}
 	Misc                           map[string]interface{}
+	LogParams                      map[string]string
 	WorkerPoolSize                 int
 	MessageQueueTimeout            int
 	MessageQueueDepth              int
