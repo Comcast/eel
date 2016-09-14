@@ -117,16 +117,7 @@ func HitEndpoint(ctx Context, url string, payload string, verb string, headers m
 			req.SetBasicAuth(auth["username"], auth["password"])
 		}
 	}
-	duration := int64(0)
-	startTime := int64(0)
-	if ctx.Value("start_ts") != nil {
-		startTime = (ctx.Value("start_ts")).(int64)
-	}
-	if startTime > 0 {
-		duration = time.Now().UnixNano() - startTime
-	}
-	ctx.AddLogValue("stat.eel.time", duration/1e6)
-	stats.IncTimeInternal(duration)
+	//AddLatencyLog(ctx, stats, "stat.eel.time")
 	// send request
 	resp, err := GetHttpClient(ctx).Do(req)
 	if err != nil {
@@ -137,11 +128,7 @@ func HitEndpoint(ctx Context, url string, payload string, verb string, headers m
 		}
 		return "", 0, err
 	}
-	if startTime > 0 {
-		duration = (time.Now().UnixNano() - startTime) - duration
-	}
-	ctx.AddLogValue("stat.external.time", duration/1e6)
-	stats.IncTimeExternal(duration)
+	//AddLatencyLog(ctx, stats, "stat.external.time")
 	// read response
 	var body []byte
 	if resp != nil && resp.Body != nil {
@@ -162,11 +149,11 @@ func HitEndpoint(ctx Context, url string, payload string, verb string, headers m
 		}
 	}
 	// only log short responses from outgoing http requests
-	if len(body) <= 512 {
+	/*if len(body) <= 512 {
 		ctx.Log().Info("action", "reached_service", "trace.out.url", url, "trace.out.verb", verb, "trace.out.headers", headers, "status", strconv.Itoa(resp.StatusCode), "length", len(body), "response", string(body))
 	} else {
 		ctx.Log().Info("action", "reached_service", "trace.out.url", url, "trace.out.verb", verb, "trace.out.headers", headers, "status", strconv.Itoa(resp.StatusCode), "length", len(body))
-	}
+	}*/
 	if ctx.LogValue("destination") != nil {
 		ctx.Log().Metric("hits", M_Namespace, "xrs", M_Metric, "hits", M_Unit, "Count", M_Dims, "app="+AppId+"&env="+EnvName+"&instance="+InstanceName+"&destination="+ctx.LogValue("destination").(string), M_Val, 1.0)
 	}

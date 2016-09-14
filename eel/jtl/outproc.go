@@ -63,8 +63,8 @@ func handleEvent(ctx Context, stats *ServiceStats, event *JDoc, raw string, debu
 			ctx.AddLogValue("topic", handler.Topic)
 			ctx.AddLogValue("tenant", handler.TenantId)
 			ctx.AddLogValue("handler", handler.Name)
-			ctx.AddLogValue("trace.in.data", event.GetOriginalObject())
-			ctx.AddLogValue("trace.out.data", publisher.GetPayload())
+			//ctx.AddLogValue("trace.in.data", event.GetOriginalObject())
+			//ctx.AddLogValue("trace.out.data", publisher.GetPayload())
 			ctx.AddLogValue("trace.out.protocol", publisher.GetProtocol())
 			ctx.AddLogValue("trace.out.path", publisher.GetPath())
 			ctx.AddLogValue("trace.out.headers", publisher.GetHeaders())
@@ -78,6 +78,7 @@ func handleEvent(ctx Context, stats *ServiceStats, event *JDoc, raw string, debu
 			} else if debug {
 				// sequential execution to collect debug info
 				_, err := publisher.Publish()
+				AddLatencyLog(ctx, stats, "stat.eel.time")
 				ctx.AddLogValue("trace.out.endpoint", publisher.GetEndpoint())
 				ctx.AddLogValue("trace.out.url", publisher.GetUrl())
 				if err != nil {
@@ -117,12 +118,12 @@ func handleEvent(ctx Context, stats *ServiceStats, event *JDoc, raw string, debu
 					de["tx.errors"] = errs
 				}
 				debuginfo = append(debuginfo, de)
-
 			} else {
 				//c := ctx
 				//p := publisher
 				go func(c Context, p EventPublisher) {
 					_, err := p.Publish()
+					AddLatencyLog(ctx, stats, "stat.eel.time")
 					c.AddLogValue("trace.out.endpoint", p.GetEndpoint())
 					c.AddLogValue("trace.out.url", p.GetUrl())
 					if err != nil {

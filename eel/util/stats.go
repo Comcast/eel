@@ -31,6 +31,20 @@ type ServiceStats struct {
 	TotalBytesOut     uint64
 }
 
+func AddLatencyLog(ctx Context, stats *ServiceStats, key string) {
+	duration := int64(0)
+	startTime := int64(0)
+	if ctx.Value("start_ts") != nil {
+		startTime = (ctx.Value("start_ts")).(int64)
+	}
+	if startTime > 0 {
+		duration = time.Now().UnixNano() - startTime
+	}
+	ctx.AddLogValue("key", duration/1e6)
+	stats.IncTimeInternal(duration)
+
+}
+
 func (stats *ServiceStats) Clone() *ServiceStats {
 	clone := ServiceStats{}
 	clone.InCount = atomic.LoadUint64(&stats.InCount)

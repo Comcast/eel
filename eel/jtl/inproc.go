@@ -143,6 +143,7 @@ func EventHandler(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
 			fmt.Fprintf(w, string(buf))
 		}
+		AddLatencyLog(ctx, stats, "stat.eel.time")
 	} else {
 		if ctx.Value(EelDispatcher) != nil {
 			dp := GetWorkDispatcher(ctx)
