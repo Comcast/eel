@@ -66,10 +66,10 @@ func handleEvent(ctx Context, stats *ServiceStats, event *JDoc, raw string, debu
 			//ctx.AddLogValue("trace.in.data", event.GetOriginalObject())
 			//ctx.AddLogValue("trace.out.data", publisher.GetPayload())
 			ctx.AddLogValue("trace.out.protocol", publisher.GetProtocol())
-			ctx.AddLogValue("trace.out.path", publisher.GetPath())
+			//ctx.AddLogValue("trace.out.path", publisher.GetPath())
 			ctx.AddLogValue("trace.out.headers", publisher.GetHeaders())
 			ctx.AddLogValue("trace.out.protocol", publisher.GetProtocol())
-			ctx.AddLogValue("trace.out.endpoint", publisher.GetEndpoint())
+			//ctx.AddLogValue("trace.out.endpoint", publisher.GetEndpoint())
 			ctx.AddLogValue("trace.out.verb", publisher.GetVerb())
 			ctx.AddLogValue("trace.out.url", publisher.GetUrl())
 			if sync {
@@ -123,8 +123,8 @@ func handleEvent(ctx Context, stats *ServiceStats, event *JDoc, raw string, debu
 				//p := publisher
 				go func(c Context, p EventPublisher) {
 					_, err := p.Publish()
-					AddLatencyLog(ctx, stats, "stat.eel.time")
-					c.AddLogValue("trace.out.endpoint", p.GetEndpoint())
+					AddLatencyLog(c, stats, "stat.eel.time")
+					//c.AddLogValue("trace.out.endpoint", p.GetEndpoint())
 					c.AddLogValue("trace.out.url", p.GetUrl())
 					if err != nil {
 						c.Log().Error("error_type", "publish_event", "error", err.Error(), "cause", "publish_event")
