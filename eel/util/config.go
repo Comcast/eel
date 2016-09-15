@@ -53,6 +53,7 @@ type EelSettings struct {
 	CustomProperties               map[string]interface{}
 	Misc                           map[string]interface{}
 	LogParams                      map[string]string
+	DebugLogParams                 *EelDebugLogParams
 	WorkerPoolSize                 int
 	MessageQueueTimeout            int
 	MessageQueueDepth              int
@@ -67,6 +68,15 @@ type EelSettings struct {
 	UseRetryQueue                  bool
 	Version                        string
 	HandlerConfigPath              string
+}
+
+// EelDebugLogParams struct is an optional debug white list and log param config in eel settings
+type EelDebugLogParams struct {
+	RefreshSec     int
+	WhiteListTable string
+	IdWhiteList    map[string]string
+	IdPath         string
+	LogParams      map[string]string
 }
 
 const (
@@ -118,6 +128,14 @@ var (
 func GetConfig(ctx Context) *EelSettings {
 	if ctx.ConfigValue(EelConfig) != nil {
 		return ctx.ConfigValue(EelConfig).(*EelSettings)
+	}
+	return nil
+}
+
+// GetDebugLogParams is a helper function to obtain the global debug white list and log information.
+func GetDebugLogParams(ctx Context) *EelDebugLogParams {
+	if ctx.ConfigValue(EelConfig) != nil {
+		return ctx.ConfigValue(EelConfig).(*EelSettings).DebugLogParams
 	}
 	return nil
 }
