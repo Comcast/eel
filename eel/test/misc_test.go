@@ -21,6 +21,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	. "github.com/Comcast/eel/eel/handlers"
 	. "github.com/Comcast/eel/eel/jtl"
@@ -830,6 +831,42 @@ func TestParserCalc2(t *testing.T) {
 	}
 	result := jexpr.Execute(Gctx, e1)
 	expected := true
+	if result != expected {
+		t.Errorf("wrong parsing result: %v expected: %v\n", result, expected)
+	}
+}
+
+func TestParserCalc3(t *testing.T) {
+	initTests("../../config-handlers")
+	e1, err := NewJDocFromString(iot)
+	if err != nil {
+		t.Fatal("could not get event1")
+	}
+	test := `{{calc('now()')}}`
+	jexpr, err := NewJExpr(test)
+	if err != nil {
+		t.Errorf("error: %s\n", err.Error())
+	}
+	result := jexpr.Execute(Gctx, e1)
+	expected := time.Now().UnixNano() / 1e6
+	if result != expected {
+		t.Errorf("wrong parsing result: %v expected: %v\n", result, expected)
+	}
+}
+
+func TestParserCalc4(t *testing.T) {
+	initTests("../../config-handlers")
+	e1, err := NewJDocFromString(iot)
+	if err != nil {
+		t.Fatal("could not get event1")
+	}
+	test := `{{calc('0')}}`
+	jexpr, err := NewJExpr(test)
+	if err != nil {
+		t.Errorf("error: %s\n", err.Error())
+	}
+	result := jexpr.Execute(Gctx, e1)
+	expected := 0.0
 	if result != expected {
 		t.Errorf("wrong parsing result: %v expected: %v\n", result, expected)
 	}

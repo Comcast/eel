@@ -221,7 +221,12 @@ func fnCalc(ctx Context, doc *JDoc, params []string) interface{} {
 		AddError(ctx, SyntaxError{fmt.Sprintf("wrong number of parameters in call to calc function"), "calc", params})
 		return nil
 	}
-	expr, err := govaluate.NewEvaluableExpression(extractStringParam(params[0]))
+	functions := map[string]govaluate.ExpressionFunction{
+		"now": func(args ...interface{}) (interface{}, error) {
+			return time.Now().UnixNano() / 1e6, nil
+		},
+	}
+	expr, err := govaluate.NewEvaluableExpressionWithFunctions(extractStringParam(params[0]), functions)
 	if err != nil {
 		ctx.Log().Error("error_type", "func_calc", "op", "calc", "cause", "invalid_expression", "params", params, "error", err.Error())
 		stats.IncErrors()
