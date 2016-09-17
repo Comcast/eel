@@ -26,6 +26,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Knetic/govaluate"
 	"github.com/robertkrimen/otto"
 
 	. "github.com/Comcast/eel/eel/util"
@@ -162,6 +163,9 @@ func NewFunction(fn string) *JFunction {
 	case "exists":
 		// returns true if path exists in document
 		return &JFunction{fnExists, 1, 2}
+	case "calc":
+		// evalutaes simple arithmetic expressions in native go and returns result
+		return &JFunction{fnCalc, 1, 1}
 	default:
 		//gctx.Log.Error("error_type", "func_", "op", fn, "cause", "not_implemented")
 		//stats.IncErrors()
@@ -206,6 +210,32 @@ func fnRegex(ctx Context, doc *JDoc, params []string) interface{} {
 	} else {
 		return reg.FindString(extractStringParam(params[0]))
 	}
+}
+
+// fnCalc regular expression function returns true if regex matches.
+func fnCalc(ctx Context, doc *JDoc, params []string) interface{} {
+	stats := ctx.Value(EelTotalStats).(*ServiceStats)
+	if params == nil || len(params) != 1 {
+		ctx.Log().Error("error_type", "func_calc", "op", "calc", "cause", "wrong_number_of_parameters", "params", params)
+		stats.IncErrors()
+		AddError(ctx, SyntaxError{fmt.Sprintf("wrong number of parameters in call to calc function"), "calc", params})
+		return nil
+	}
+	expr, err := govaluate.NewEvaluableExpression(extractStringParam(params[0]))
+	if err != nil {
+		ctx.Log().Error("error_type", "func_calc", "op", "calc", "cause", "invalid_expression", "params", params, "error", err.Error())
+		stats.IncErrors()
+		AddError(ctx, RuntimeError{fmt.Sprintf("invalid expression in call to calc function: %s", err.Error()), "calc", params})
+		return nil
+	}
+	res, err := expr.Evaluate(nil)
+	if err != nil {
+		ctx.Log().Error("error_type", "func_calc", "op", "calc", "cause", "invalid_evaluation", "params", params, "error", err.Error())
+		stats.IncErrors()
+		AddError(ctx, RuntimeError{fmt.Sprintf("invalid evaluation in call to calc function: %s", err.Error()), "calc", params})
+		return nil
+	}
+	return res
 }
 
 // fnMatch regular expression function returns true if regex matches.

@@ -244,6 +244,11 @@ func TestCanonicalizeEvent(t *testing.T) {
 	transformEvent(t, "data/test01/", nil)
 }
 
+func TestSimpleArithmetic(t *testing.T) {
+	initTests("data/test57/handlers")
+	transformEvent(t, "data/test57/", nil)
+}
+
 /*func TestInjectExternalServiceResponse(t *testing.T) {
 	initTests("data/test02/handlers")
 	transformEvent(t, "data/test02/", nil)

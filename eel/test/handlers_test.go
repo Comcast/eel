@@ -299,7 +299,7 @@ func TestEventHandler(t *testing.T) {
 	}
 }
 
-func TestEventHandlerMulti(t *testing.T) {
+/*func TestEventHandlerMulti(t *testing.T) {
 	initTests("../../config-handlers")
 	ts := httptest.NewServer(http.HandlerFunc(EventHandler))
 	defer ts.Close()
@@ -328,7 +328,7 @@ func TestEventHandlerMulti(t *testing.T) {
 			}
 		}()
 	}
-}
+}*/
 
 func TestEventHandlerInvalidJSON(t *testing.T) {
 	initTests("../../config-handlers")
@@ -357,7 +357,7 @@ func TestEventHandlerInvalidJSON(t *testing.T) {
 	}
 }
 
-func TestEventHandlerInvalidJSONMulti(t *testing.T) {
+/*func TestEventHandlerInvalidJSONMulti(t *testing.T) {
 	initTests("../../config-handlers")
 	ts := httptest.NewServer(http.HandlerFunc(EventHandler))
 	defer ts.Close()
@@ -386,7 +386,7 @@ func TestEventHandlerInvalidJSONMulti(t *testing.T) {
 			}
 		}()
 	}
-}
+}*/
 
 func TestEventHandlerBlankMessage(t *testing.T) {
 	initTests("../../config-handlers")

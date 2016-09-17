@@ -799,6 +799,42 @@ func TestParserRegex(t *testing.T) {
 	}
 }
 
+func TestParserCalc(t *testing.T) {
+	initTests("../../config-handlers")
+	e1, err := NewJDocFromString(iot)
+	if err != nil {
+		t.Fatal("could not get event1")
+	}
+	test := `{{calc('(32+47)/2')}}`
+	jexpr, err := NewJExpr(test)
+	if err != nil {
+		t.Errorf("error: %s\n", err.Error())
+	}
+	result := jexpr.Execute(Gctx, e1)
+	expected := 39.5
+	if result != expected {
+		t.Errorf("wrong parsing result: %v expected: %v\n", result, expected)
+	}
+}
+
+func TestParserCalc2(t *testing.T) {
+	initTests("../../config-handlers")
+	e1, err := NewJDocFromString(iot)
+	if err != nil {
+		t.Fatal("could not get event1")
+	}
+	test := `{{calc('32>23 && 42>24')}}`
+	jexpr, err := NewJExpr(test)
+	if err != nil {
+		t.Errorf("error: %s\n", err.Error())
+	}
+	result := jexpr.Execute(Gctx, e1)
+	expected := true
+	if result != expected {
+		t.Errorf("wrong parsing result: %v expected: %v\n", result, expected)
+	}
+}
+
 func TestParserSelectBool(t *testing.T) {
 	initTests("../../config-handlers")
 	e1, err := NewJDocFromString(event1)
