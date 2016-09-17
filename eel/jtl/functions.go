@@ -223,7 +223,7 @@ func fnCalc(ctx Context, doc *JDoc, params []string) interface{} {
 	}
 	functions := map[string]govaluate.ExpressionFunction{
 		"now": func(args ...interface{}) (interface{}, error) {
-			return time.Now().UnixNano() / 1e6, nil
+			return float64(time.Now().UnixNano() / 1e6), nil
 		},
 	}
 	expr, err := govaluate.NewEvaluableExpressionWithFunctions(extractStringParam(params[0]), functions)
