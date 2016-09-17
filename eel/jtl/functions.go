@@ -670,7 +670,7 @@ func fnTraceId(ctx Context, doc *JDoc, params []string) interface{} {
 	return ctx.LogValue("tx.traceId")
 }
 
-// fnTime return current time in nano-seconds.
+// fnTime return current time in milli-seconds.
 func fnTime(ctx Context, doc *JDoc, params []string) interface{} {
 	stats := ctx.Value(EelTotalStats).(*ServiceStats)
 	if params == nil || params[0] != "" {
@@ -679,7 +679,7 @@ func fnTime(ctx Context, doc *JDoc, params []string) interface{} {
 		AddError(ctx, SyntaxError{fmt.Sprintf("no parameters expected in call to uuid function"), "time", params})
 		return ""
 	}
-	return time.Now().UnixNano()
+	return time.Now().UnixNano() / 1e6
 }
 
 // fnIdent is a function that does nothing. Somtimes interesting for debugging.

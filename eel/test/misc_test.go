@@ -848,7 +848,7 @@ func TestParserCalc3(t *testing.T) {
 		t.Errorf("error: %s\n", err.Error())
 	}
 	result := jexpr.Execute(Gctx, e1)
-	expected := time.Now().UnixNano() / 1e6
+	expected := float64(time.Now().UnixNano() / 1e6)
 	if result != expected {
 		t.Errorf("wrong parsing result: %v expected: %v\n", result, expected)
 	}
