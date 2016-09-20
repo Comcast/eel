@@ -841,6 +841,8 @@ func (h *HandlerConfiguration) ProcessEvent(ctx Context, event *JDoc) ([]EventPu
 			return make([]EventPublisher, 0), errors.New("bad transformation")
 		}
 		payload = tfd.StringPretty()
+		// apply debug logs
+		h.applyDebugLogsIfWhiteListed(ctx, tfd)
 	}
 	// filtering
 	if h.FilterAfterTransformation {

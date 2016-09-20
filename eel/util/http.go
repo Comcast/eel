@@ -91,7 +91,7 @@ func HitEndpoint(ctx Context, url string, payload string, verb string, headers m
 	stats.IncBytesOut(len(payload))
 	req, err := http.NewRequest(verb, url, bytes.NewBuffer([]byte(payload)))
 	if err != nil {
-		ctx.Log().Error("op", "HitEndpoint", error_type", "reaching_service", "cause", "error_new_request", "url", url, "verb", verb, "error", err.Error())
+		ctx.Log().Error("op", "HitEndpoint", "error_type", "reaching_service", "cause", "error_new_request", "url", url, "verb", verb, "error", err.Error())
 		stats.IncErrors()
 		return "", 0, err
 	}
