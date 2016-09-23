@@ -132,6 +132,8 @@ func EventHandler(w http.ResponseWriter, r *http.Request) {
 			case []interface{}:
 				if len(events.([]interface{})) == 1 {
 					events = events.([]interface{})[0]
+				} else if len(events.([]interface{})) == 0 {
+					events = ""
 				}
 			}
 		}
