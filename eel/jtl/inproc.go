@@ -98,7 +98,7 @@ func EventHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	dc := ctx.Value(EelDuplicateChecker).(DuplicateChecker)
 	if dc.GetTtl() > 0 && dc.IsDuplicate(ctx, body) {
-		ctx.Log().Info("status", "200", "action", "dropping_duplicate", "trace.in.data", string(body))
+		ctx.Log().Info("status", "200", "action", "dropping_duplicate")
 		ctx.Log().Metric("dropping_duplicate", M_Namespace, "xrs", M_Metric, "dropping_duplicate", M_Unit, "Count", M_Dims, "app="+AppId+"&env="+EnvName+"&instance="+InstanceName, M_Val, 1.0)
 		w.WriteHeader(http.StatusOK)
 		w.Write(GetResponse(ctx, StatusDuplicateEliminated))
