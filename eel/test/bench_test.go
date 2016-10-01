@@ -153,6 +153,11 @@ func BenchmarkRawTransformationCanonicalizeEvent(b *testing.B) {
 	benchmarkRawTransformation(b, "data/test01/", false)
 }
 
+/*func BenchmarkRawTransformationArithmetic(b *testing.B) {
+	initTests("data/test57/handlers")
+	benchmarkRawTransformation(b, "data/test57/", false)
+}*/
+
 func BenchmarkRawTransformationByExample(b *testing.B) {
 	initTests("data/test03/handlers")
 	benchmarkRawTransformation(b, "data/test03/", true)

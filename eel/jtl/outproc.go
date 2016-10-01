@@ -34,6 +34,9 @@ func handleEvent(ctx Context, stats *ServiceStats, event *JDoc, raw string, debu
 	ctx = ctx.SubContext()
 	for _, handler := range handlers {
 		//TODO: validate JSON schema
+		ctx.AddLogValue("topic", handler.Topic)
+		ctx.AddLogValue("tenant", handler.TenantId)
+		ctx.AddLogValue("handler", handler.Name)
 		publishers, err := handler.ProcessEvent(initialCtx.SubContext(), event)
 		if err != nil {
 			ctx.Log().Error("error_type", "transformation", "cause", "bad_transformation", "handler", handler.Name, "tenant", handler.TenantId, "trace.in.data", event.GetOriginalObject(), "error", err.Error())
@@ -44,7 +47,7 @@ func handleEvent(ctx Context, stats *ServiceStats, event *JDoc, raw string, debu
 		for _, publisher := range publishers {
 			dc := ctx.Value(EelDuplicateChecker).(DuplicateChecker)
 			if dc.GetTtl() > 0 && dc.IsDuplicate(ctx, []byte(publisher.GetUrl()+"\n"+publisher.GetPayload())) {
-				ctx.Log().Error("status", "200", "action", "dropping_duplicate", "error_type", "duplicate", "cause", "duplicate", "handler", handler.Name, "tenant", handler.TenantId, "trace.in.data", event.GetOriginalObject())
+				ctx.Log().Info("action", "dropping_duplicate", "handler", handler.Name, "tenant", handler.TenantId)
 				ctx.Log().Metric("dropping_duplicate", M_Namespace, "xrs", M_Metric, "dropping_duplicate", M_Unit, "Count", M_Dims, "app="+AppId+"&env="+EnvName+"&instance="+InstanceName+"&destination="+ctx.LogValue("destination").(string), M_Val, 1.0)
 				continue
 			}
@@ -60,16 +63,13 @@ func handleEvent(ctx Context, stats *ServiceStats, event *JDoc, raw string, debu
 			ctx.AddValue("tx.traceId", publisher.GetHeaders()[traceHeaderKey])
 			// other log params
 			ctx.AddLogValue("trace.out.url", publisher.GetUrl())
-			ctx.AddLogValue("topic", handler.Topic)
-			ctx.AddLogValue("tenant", handler.TenantId)
-			ctx.AddLogValue("handler", handler.Name)
-			ctx.AddLogValue("trace.in.data", event.GetOriginalObject())
-			ctx.AddLogValue("trace.out.data", publisher.GetPayload())
+			//ctx.AddLogValue("trace.in.data", event.GetOriginalObject())
+			//ctx.AddLogValue("trace.out.data", publisher.GetPayload())
 			ctx.AddLogValue("trace.out.protocol", publisher.GetProtocol())
-			ctx.AddLogValue("trace.out.path", publisher.GetPath())
+			//ctx.AddLogValue("trace.out.path", publisher.GetPath())
 			ctx.AddLogValue("trace.out.headers", publisher.GetHeaders())
 			ctx.AddLogValue("trace.out.protocol", publisher.GetProtocol())
-			ctx.AddLogValue("trace.out.endpoint", publisher.GetEndpoint())
+			//ctx.AddLogValue("trace.out.endpoint", publisher.GetEndpoint())
 			ctx.AddLogValue("trace.out.verb", publisher.GetVerb())
 			ctx.AddLogValue("trace.out.url", publisher.GetUrl())
 			if sync {
@@ -78,10 +78,11 @@ func handleEvent(ctx Context, stats *ServiceStats, event *JDoc, raw string, debu
 			} else if debug {
 				// sequential execution to collect debug info
 				_, err := publisher.Publish()
+				AddLatencyLog(ctx, stats, "stat.eel.time")
 				ctx.AddLogValue("trace.out.endpoint", publisher.GetEndpoint())
 				ctx.AddLogValue("trace.out.url", publisher.GetUrl())
 				if err != nil {
-					ctx.Log().Error("error_type", "published_event", "error", err.Error())
+					ctx.Log().Error("error_type", "publish_event", "error", err.Error(), "cause", "publish_event")
 					ctx.Log().Metric("publish_failed", M_Namespace, "xrs", M_Metric, "publish_failed", M_Unit, "Count", M_Dims, "app="+AppId+"&env="+EnvName+"&instance="+InstanceName+"&destination="+ctx.LogValue("destination").(string), M_Val, 1.0)
 					stats.IncErrors()
 				} else {
@@ -117,16 +118,16 @@ func handleEvent(ctx Context, stats *ServiceStats, event *JDoc, raw string, debu
 					de["tx.errors"] = errs
 				}
 				debuginfo = append(debuginfo, de)
-
 			} else {
 				//c := ctx
 				//p := publisher
 				go func(c Context, p EventPublisher) {
 					_, err := p.Publish()
-					c.AddLogValue("trace.out.endpoint", p.GetEndpoint())
+					AddLatencyLog(c, stats, "stat.eel.time")
+					//c.AddLogValue("trace.out.endpoint", p.GetEndpoint())
 					c.AddLogValue("trace.out.url", p.GetUrl())
 					if err != nil {
-						c.Log().Error("error_type", "published_event", "error", err.Error())
+						c.Log().Error("error_type", "publish_event", "error", err.Error(), "cause", "publish_event")
 						c.Log().Metric("publish_failed", M_Namespace, "xrs", M_Metric, "publish_failed", M_Unit, "Count", M_Dims, "app="+AppId+"&env="+EnvName+"&instance="+InstanceName+"&destination="+ctx.LogValue("destination").(string), M_Val, 1.0)
 						stats.IncErrors()
 					} else {

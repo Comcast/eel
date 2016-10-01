@@ -598,7 +598,7 @@ Syntax:
 
 ### time
 
-Returns current time.
+Returns current time in milliseconds.
 
 Syntax:
 
@@ -609,7 +609,7 @@ Syntax:
 Example return value:
 
 ```
-1449194313000000
+1449194313
 ```
 
 ### tenant

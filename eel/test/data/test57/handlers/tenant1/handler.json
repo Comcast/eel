@@ -1,0 +1,20 @@
+{
+    "Version": "1.0",
+    "Name": "SimpleArithmetic",
+    "Info": "",
+    "Active": true,
+    "Match": null,
+    "IsMatchByExample": false,
+    "TerminateOnMatch": true,
+    "Transformation": {
+        "{{/age}}": "{{calc('{{/age}}*2')}}"
+    },
+    "IsTransformationByExample": false,
+    "Path": "",
+    "Verb": "POST",
+    "Endpoint": "",
+    "HttpHeaders": {
+      "X-B3-TraceId": "{{traceid()}}",
+      "Xrs-Tenant-Id": "{{tenant()}}"
+    }
+}

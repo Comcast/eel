@@ -91,7 +91,7 @@ func HitEndpoint(ctx Context, url string, payload string, verb string, headers m
 	stats.IncBytesOut(len(payload))
 	req, err := http.NewRequest(verb, url, bytes.NewBuffer([]byte(payload)))
 	if err != nil {
-		ctx.Log().Error("error_type", "reaching_service", "cause", "error_new_request", "url", url, "verb", verb, "error", err.Error())
+		ctx.Log().Error("op", "HitEndpoint", "error_type", "reaching_service", "cause", "error_new_request", "url", url, "verb", verb, "error", err.Error())
 		stats.IncErrors()
 		return "", 0, err
 	}
@@ -117,44 +117,31 @@ func HitEndpoint(ctx Context, url string, payload string, verb string, headers m
 			req.SetBasicAuth(auth["username"], auth["password"])
 		}
 	}
-	duration := int64(0)
-	startTime := int64(0)
-	if ctx.Value("start_ts") != nil {
-		startTime = (ctx.Value("start_ts")).(int64)
-	}
-	if startTime > 0 {
-		duration = time.Now().UnixNano() - startTime
-	}
-	ctx.AddLogValue("stat.eel.time", duration)
-	stats.IncTimeInternal(duration)
+	//AddLatencyLog(ctx, stats, "stat.eel.time")
 	// send request
 	resp, err := GetHttpClient(ctx).Do(req)
 	if err != nil {
-		ctx.Log().Error("error_type", "reaching_service", "trace.out.url", url, "trace.out.verb", verb, "trace.out.headers", headers, "error", err.Error())
+		ctx.Log().Error("op", "HitEndpoint", "error_type", "reaching_service", "cause", "get_http_client", "trace.out.url", url, "trace.out.verb", verb, "trace.out.headers", headers, "error", err.Error())
 		stats.IncErrors()
 		if ctx.LogValue("destination") != nil {
 			ctx.Log().Metric("drops", M_Namespace, "xrs", M_Metric, "drops", M_Unit, "Count", M_Dims, "app="+AppId+"&env="+EnvName+"&instance="+InstanceName+"&destination="+ctx.LogValue("destination").(string), M_Val, 1.0)
 		}
 		return "", 0, err
 	}
-	if startTime > 0 {
-		duration = (time.Now().UnixNano() - startTime) - duration
-	}
-	ctx.AddLogValue("stat.external.time", duration)
-	stats.IncTimeExternal(duration)
+	//AddLatencyLog(ctx, stats, "stat.external.time")
 	// read response
 	var body []byte
 	if resp != nil && resp.Body != nil {
 		var readErr error
 		body, readErr = ioutil.ReadAll(resp.Body)
 		if readErr != nil {
-			ctx.Log().Error("error_type", "reaching_service", "cause", "error_reading_response", "trace.out.url", url, "trace.out.verb", verb, "trace.out.headers", headers, "status", strconv.Itoa(resp.StatusCode), "error", readErr.Error())
+			ctx.Log().Error("op", "HitEndpoint", "error_type", "reaching_service", "cause", "error_reading_response", "trace.out.url", url, "trace.out.verb", verb, "trace.out.headers", headers, "status", strconv.Itoa(resp.StatusCode), "error", readErr.Error())
 			stats.IncErrors()
 			return "", resp.StatusCode, readErr
 		}
 		closeErr := resp.Body.Close()
 		if closeErr != nil {
-			ctx.Log().Error("error_type", "reaching_service", "cause", "error_closing_response", "trace.out.url", url, "trace.out.verb", verb, "trace.out.headers", headers, "status", strconv.Itoa(resp.StatusCode), "error", closeErr.Error())
+			ctx.Log().Error("op", "HitEndpoint", "error_type", "reaching_service", "cause", "error_closing_response", "trace.out.url", url, "trace.out.verb", verb, "trace.out.headers", headers, "status", strconv.Itoa(resp.StatusCode), "error", closeErr.Error())
 			stats.IncErrors()
 		}
 		if body == nil {
@@ -162,11 +149,11 @@ func HitEndpoint(ctx Context, url string, payload string, verb string, headers m
 		}
 	}
 	// only log short responses from outgoing http requests
-	if len(body) <= 512 {
-		ctx.Log().Info("action", "reached_service", "trace.out.url", url, "trace.out.verb", verb, "trace.out.headers", headers, "status", strconv.Itoa(resp.StatusCode), "length", len(body), "response", string(body))
+	/*if len(body) <= 512 {
+		ctx.Log().Info("op", "HitEndpoint", "action", "reached_service", "trace.out.url", url, "trace.out.verb", verb, "trace.out.headers", headers, "status", strconv.Itoa(resp.StatusCode), "length", len(body), "response", string(body))
 	} else {
-		ctx.Log().Info("action", "reached_service", "trace.out.url", url, "trace.out.verb", verb, "trace.out.headers", headers, "status", strconv.Itoa(resp.StatusCode), "length", len(body))
-	}
+		ctx.Log().Info("op", "HitEndpoint", "action", "reached_service", "trace.out.url", url, "trace.out.verb", verb, "trace.out.headers", headers, "status", strconv.Itoa(resp.StatusCode), "length", len(body))
+	}*/
 	if ctx.LogValue("destination") != nil {
 		ctx.Log().Metric("hits", M_Namespace, "xrs", M_Metric, "hits", M_Unit, "Count", M_Dims, "app="+AppId+"&env="+EnvName+"&instance="+InstanceName+"&destination="+ctx.LogValue("destination").(string), M_Val, 1.0)
 	}

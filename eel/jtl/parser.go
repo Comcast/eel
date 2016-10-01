@@ -252,13 +252,13 @@ func (a *JExprItem) optimizeConditional(ctx Context, doc *JDoc) (*JExprItem, err
 	stats := ctx.Value(EelTotalStats).(*ServiceStats)
 	if a.typ == astFunction && a.val == "ifte" {
 		if len(a.kids) != 3 {
-			ctx.Log().Error("error_type", "parser", "cause", "wrong_number_of_parameters", "type", a.typ, "val", a.val, "num_params", len(a.kids))
+			ctx.Log().Error("error_type", "parser", "cause", "wrong_number_of_parameters", "type", a.typ, "val", a.val, "num_params", len(a.kids), "error", "wrong number of parameters")
 			stats.IncErrors()
 			AddError(ctx, RuntimeError{fmt.Sprintf("iwrong number of parameters"), "ifte", nil})
 			return nil, errors.New("ifte has wrong number of parameters")
 		}
 		if a.mom == nil {
-			ctx.Log().Error("error_type", "parser", "cause", "conditional_orphan", "type", a.typ, "val", a.val)
+			ctx.Log().Error("error_type", "parser", "cause", "conditional_orphan", "type", a.typ, "val", a.val, "error", "conditional orphan")
 			stats.IncErrors()
 			AddError(ctx, RuntimeError{fmt.Sprintf("conditional orphan"), "ifte", nil})
 			return nil, errors.New("conditional orphan")
@@ -276,7 +276,7 @@ func (a *JExprItem) optimizeConditional(ctx Context, doc *JDoc) (*JExprItem, err
 		} else if cond.val == false || cond.val == "false" || cond.val == "'false'" {
 			chosenChild = a.kids[2]
 		} else {
-			ctx.Log().Error("error_type", "parser", "cause", "non_boolean_condition", "type", cond.typ, "val", cond.val)
+			ctx.Log().Error("error_type", "parser", "cause", "non_boolean_condition", "type", cond.typ, "val", cond.val, "error", "non boolean condition")
 			stats.IncErrors()
 			AddError(ctx, RuntimeError{fmt.Sprintf("non-boolean condition"), "ifte", nil})
 			return nil, errors.New("non-boolean condition")
@@ -289,7 +289,7 @@ func (a *JExprItem) optimizeConditional(ctx Context, doc *JDoc) (*JExprItem, err
 			if strings.Contains(strVal, "{") && strings.Contains(strVal, "}") {
 				obj, err := NewJDocFromString(strVal)
 				if err != nil {
-					ctx.Log().Error("error_type", "parser", "cause", "invalid_json", "type", cond.typ, "val", cond.val)
+					ctx.Log().Error("error_type", "parser", "cause", "invalid_json", "type", cond.typ, "val", cond.val, "error", "invalid json")
 					stats.IncErrors()
 					AddError(ctx, RuntimeError{fmt.Sprintf("non json parameter"), "ifte", nil})
 					return nil, errors.New("non json parameters in call to ifte function")
@@ -304,13 +304,13 @@ func (a *JExprItem) optimizeConditional(ctx Context, doc *JDoc) (*JExprItem, err
 		return a.mom.kids[childIdx], nil
 	} else if a.typ == astFunction && a.val == "alt" {
 		if len(a.kids) < 2 {
-			ctx.Log().Error("error_type", "parser", "cause", "wrong_number_of_parameters", "type", a.typ, "val", a.val, "num_params", len(a.kids))
+			ctx.Log().Error("error_type", "parser", "cause", "wrong_number_of_parameters", "type", a.typ, "val", a.val, "num_params", len(a.kids), "error", "wrong number of parameters")
 			stats.IncErrors()
 			AddError(ctx, RuntimeError{fmt.Sprintf("wrong number of parameters"), "alt", nil})
 			return nil, errors.New("alt has wrong number of parameters")
 		}
 		if a.mom == nil {
-			ctx.Log().Error("error_type", "parser", "cause", "conditional_orphan", "type", a.typ, "val", a.val)
+			ctx.Log().Error("error_type", "parser", "cause", "conditional_orphan", "type", a.typ, "val", a.val, "error", "conditional orphan")
 			return nil, errors.New("conditional orphan")
 		}
 		childIdx := a.getMotherIdx()
@@ -335,13 +335,13 @@ func (a *JExprItem) optimizeConditional(ctx Context, doc *JDoc) (*JExprItem, err
 		return a.mom.kids[childIdx], nil
 	} else if a.typ == astFunction && a.val == "case" {
 		if len(a.kids) < 3 || len(a.kids)%3 > 1 {
-			ctx.Log().Error("error_type", "parser", "cause", "wrong_number_of_parameters", "type", a.typ, "val", a.val, "num_params", len(a.kids))
+			ctx.Log().Error("error_type", "parser", "cause", "wrong_number_of_parameters", "type", a.typ, "val", a.val, "num_params", len(a.kids), "error", "wrong number of parameters")
 			stats.IncErrors()
 			AddError(ctx, RuntimeError{fmt.Sprintf("wrong number of parameters"), "case", nil})
 			return nil, errors.New("case has wrong number of parameters")
 		}
 		if a.mom == nil {
-			ctx.Log().Error("error_type", "parser", "cause", "conditional_orphan", "type", a.typ, "val", a.val)
+			ctx.Log().Error("error_type", "parser", "cause", "conditional_orphan", "type", a.typ, "val", a.val, "error", "conditional orphan")
 			stats.IncErrors()
 			AddError(ctx, RuntimeError{fmt.Sprintf("conditional orphan"), "case", nil})
 			return nil, errors.New("conditional orphan")
@@ -387,7 +387,7 @@ func (a *JExprItem) optimizeConditional(ctx Context, doc *JDoc) (*JExprItem, err
 		chosenChild.print(0, "CHOSENCHILD")
 		return a.mom.kids[childIdx], nil
 	} else {
-		ctx.Log().Error("error_type", "parser", "cause", "unsupported_conditional", "type", a.typ, "val", a.val)
+		ctx.Log().Error("error_type", "parser", "cause", "unsupported_conditional", "type", a.typ, "val", a.val, "error", "unsupported conditional")
 		stats.IncErrors()
 		AddError(ctx, RuntimeError{fmt.Sprintf("unsupported conditional"), "", nil})
 		return nil, errors.New("unsupported conditional")
