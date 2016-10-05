@@ -33,7 +33,7 @@ type EelSettings struct {
 	EventProxyPath                 string
 	EventProcPath                  string
 	EventPort                      int
-	EelWebhook                     string
+	EelWebhooks                    interface{}
 	FunctionalMonitoringPort       int
 	Endpoint                       interface{}
 	MaxAttempts                    int
