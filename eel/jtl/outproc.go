@@ -18,12 +18,13 @@ package jtl
 
 import (
 	"encoding/json"
+	"sync"
 
 	. "github.com/Comcast/eel/eel/util"
 )
 
 // handleEvent processes an event (usually from the work queue) by selecting the correct handlers, applying the appropriate transformations and then sending off the tranformed event via appropriate publisher(s).
-func handleEvent(ctx Context, stats *ServiceStats, event *JDoc, raw string, debug bool, sync bool) interface{} {
+func handleEvent(ctx Context, stats *ServiceStats, event *JDoc, raw string, debug bool, syncExec bool) interface{} {
 	debuginfo := make([]interface{}, 0)
 	ctx.AddLogValue("destination", "unknown")
 	handlers := GetHandlerFactory(ctx).GetHandlersForEvent(ctx, event)
@@ -32,6 +33,7 @@ func handleEvent(ctx Context, stats *ServiceStats, event *JDoc, raw string, debu
 	}
 	initialCtx := ctx
 	ctx = ctx.SubContext()
+	var wg sync.WaitGroup
 	for _, handler := range handlers {
 		//TODO: validate JSON schema
 		ctx.AddLogValue("topic", handler.Topic)
@@ -72,7 +74,7 @@ func handleEvent(ctx Context, stats *ServiceStats, event *JDoc, raw string, debu
 			//ctx.AddLogValue("trace.out.endpoint", publisher.GetEndpoint())
 			ctx.AddLogValue("trace.out.verb", publisher.GetVerb())
 			ctx.AddLogValue("trace.out.url", publisher.GetUrl())
-			if sync {
+			if syncExec {
 				// no need to call out to endpoint in sync mode
 				debuginfo = append(debuginfo, publisher.GetPayloadParsed().GetOriginalObject())
 			} else if debug {
@@ -121,7 +123,9 @@ func handleEvent(ctx Context, stats *ServiceStats, event *JDoc, raw string, debu
 			} else {
 				//c := ctx
 				//p := publisher
+				wg.Add(1)
 				go func(c Context, p EventPublisher) {
+					defer wg.Done()
 					_, err := p.Publish()
 					AddLatencyLog(c, stats, "stat.eel.time")
 					//c.AddLogValue("trace.out.endpoint", p.GetEndpoint())
@@ -139,5 +143,6 @@ func handleEvent(ctx Context, stats *ServiceStats, event *JDoc, raw string, debu
 			}
 		}
 	}
+	wg.Wait()
 	return debuginfo
 }
