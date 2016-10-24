@@ -20,10 +20,11 @@ import (
 	"bytes"
 	"encoding/json"
 	"io/ioutil"
-	"net"
 	"net/http"
 	"strconv"
 	"time"
+
+	"code.comcast.com/VariousArtists/common/csv-rest-util/rest"
 )
 
 var (
@@ -66,10 +67,7 @@ func GetHttpClient(ctx Context) *http.Client {
 
 // InitHttpTransport initializes http transport with some parameters from config.json.
 func InitHttpTransport(ctx Context) {
-	dialer := &net.Dialer{
-		Timeout:   70 * time.Second, // ToDo: Expose
-		KeepAlive: 70 * time.Second, // ToDo: Expose
-	}
+	dialer := rest.NewCacheDialer(70, 70)
 	tr := &http.Transport{
 		MaxIdleConnsPerHost:   GetConfig(ctx).MaxIdleConnsPerHost,
 		ResponseHeaderTimeout: GetConfig(ctx).ResponseHeaderTimeout * time.Millisecond,
