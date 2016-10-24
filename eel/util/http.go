@@ -20,6 +20,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"io/ioutil"
+	"net"
 	"net/http"
 	"strconv"
 	"time"
@@ -65,10 +66,15 @@ func GetHttpClient(ctx Context) *http.Client {
 
 // InitHttpTransport initializes http transport with some parameters from config.json.
 func InitHttpTransport(ctx Context) {
+	dialer := &net.Dialer{
+		Timeout:   70 * time.Second, // ToDo: Expose
+		KeepAlive: 70 * time.Second, // ToDo: Expose
+	}
 	tr := &http.Transport{
 		MaxIdleConnsPerHost:   GetConfig(ctx).MaxIdleConnsPerHost,
 		ResponseHeaderTimeout: GetConfig(ctx).ResponseHeaderTimeout * time.Millisecond,
-		DisableKeepAlives:     true,
+		Dial: dialer.Dial,
+		//DisableKeepAlives:     true,
 	}
 	if GetConfig(ctx).CloseIdleConnectionIntervalSec > 0 && !GetConfig(ctx).CloseIdleConnectionsStarted {
 		go func() {
