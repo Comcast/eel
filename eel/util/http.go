@@ -67,7 +67,7 @@ func GetHttpClient(ctx Context) *http.Client {
 
 // InitHttpTransport initializes http transport with some parameters from config.json.
 func InitHttpTransport(ctx Context) {
-	dialer := rest.NewCacheDialer(70, 70)
+	dialer := rest.NewCacheDialer(0, 0)
 	tr := &http.Transport{
 		MaxIdleConnsPerHost:   GetConfig(ctx).MaxIdleConnsPerHost,
 		ResponseHeaderTimeout: GetConfig(ctx).ResponseHeaderTimeout * time.Millisecond,
