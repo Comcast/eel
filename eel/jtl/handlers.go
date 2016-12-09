@@ -686,6 +686,8 @@ func (h *HandlerConfiguration) applyDebugLogsIfWhiteListed(ctx Context, event *J
 		return
 	}
 	c := ctx.SubContext()
+	dlp.Lock.RLock()
+	defer dlp.Lock.RUnlock()
 	if _, ok := dlp.IdWhiteList[wlistId.(string)]; ok {
 		for k, v := range dlp.LogParams {
 			ev := event.ParseExpression(ctx, v)
