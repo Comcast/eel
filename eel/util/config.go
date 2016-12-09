@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"sync"
 	"time"
 )
 
@@ -72,6 +73,7 @@ type EelSettings struct {
 
 // EelDebugLogParams struct is an optional debug white list and log param config in eel settings
 type EelDebugLogParams struct {
+	Lock           sync.RWMutex
 	RefreshSec     int
 	WhiteListTable string
 	IdWhiteList    map[string]string
