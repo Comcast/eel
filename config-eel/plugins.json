@@ -1,0 +1,16 @@
+[
+	{
+		"Type" : "WEBHOOK",
+		"Name" : "WEBHOOK",
+		"Active" : true,
+		"Parameters" : {
+			"todo" : "should move settings from config.json here"
+		}
+	},
+	{
+		"Type" : "STDIN",
+		"Name" : "STDIN",
+		"Active" : true,
+		"Parameters" : {}
+	}
+]

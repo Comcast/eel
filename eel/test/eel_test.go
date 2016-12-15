@@ -28,7 +28,6 @@ import (
 	"time"
 
 	. "github.com/Comcast/eel/eel/eellib"
-	. "github.com/Comcast/eel/eel/handlers"
 	. "github.com/Comcast/eel/eel/jtl"
 	. "github.com/Comcast/eel/eel/util"
 )
