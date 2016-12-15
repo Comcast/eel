@@ -95,6 +95,8 @@ func initLogging() {
 	Gctx.AddValue(Eel1hrStats, new(ServiceStats))
 	Gctx.AddValue(Eel24hrStats, new(ServiceStats))
 
+	Gctx.AddConfigValue(EelTraceLogger, NewTraceLogger(Gctx, config))
+
 	getWorkQueueFillLevel := func() int {
 		wd := GetWorkDispatcher(Gctx)
 		if wd != nil {
@@ -127,6 +129,7 @@ func registerAdminServices() {
 	http.HandleFunc("/status", StatusHandler)
 	http.HandleFunc("/plugins", PluginConfigHandler)
 	http.HandleFunc("/reload", ReloadConfigHandler)
+	http.HandleFunc("/toggletracelogger", TraceLogConfigHandler)
 	http.HandleFunc("/vet", VetHandler)
 	http.HandleFunc("/test", TopicTestHandler)
 	http.HandleFunc("/test/handlers", HandlersTestHandler)

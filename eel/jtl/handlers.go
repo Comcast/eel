@@ -761,6 +761,9 @@ func (h *HandlerConfiguration) ProcessEvent(ctx Context, event *JDoc) ([]EventPu
 	}
 	// apply debug logs
 	h.applyDebugLogsIfWhiteListed(ctx, event, event)
+	if ctx.ConfigValue(EelTraceLogger) != nil {
+		ctx.ConfigValue(EelTraceLogger).(*TraceLogger).TraceLog(ctx, event, true)
+	}
 	// prepare headers
 	headers := make(map[string]string, 0)
 	if h.HttpHeaders != nil {
@@ -845,6 +848,9 @@ func (h *HandlerConfiguration) ProcessEvent(ctx Context, event *JDoc) ([]EventPu
 		payload = tfd.StringPretty()
 		// apply debug logs
 		h.applyDebugLogsIfWhiteListed(ctx, tfd, event)
+		if ctx.ConfigValue(EelTraceLogger) != nil {
+			ctx.ConfigValue(EelTraceLogger).(*TraceLogger).TraceLog(ctx, event, false)
+		}
 	}
 	// filtering
 	if h.FilterAfterTransformation {

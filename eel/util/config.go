@@ -52,6 +52,7 @@ type EelSettings struct {
 	Misc                           map[string]interface{}
 	LogParams                      map[string]string
 	DebugLogParams                 *EelDebugLogParams
+	TraceLogParams                 *EelTraceLogParams
 	WorkerPoolSize                 int
 	MessageQueueTimeout            int
 	MessageQueueDepth              int
@@ -76,6 +77,15 @@ type EelDebugLogParams struct {
 	IdWhiteList    map[string]string
 	IdPath         string
 	LogParams      map[string]string
+}
+
+// EelTraceLogParams struct is an optional trace log config in eel settings to be activated for brief periods of time to capture a full trace of incoming or outgoing events
+type EelTraceLogParams struct {
+	Active      bool
+	FileName    string
+	LogIncoming bool
+	LogOutgoing bool
+	LogParams   map[string]string
 }
 
 const (
@@ -103,6 +113,7 @@ const (
 	EelRetryService         = "Eel.RetryService"
 	EelErrors               = "Eel.Errors"
 	EelSyncPath             = "Eel.SyncPath"
+	EelTraceLogger          = "Eel.TraceLogger"
 )
 
 const (
