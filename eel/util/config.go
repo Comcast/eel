@@ -31,10 +31,6 @@ type EelSettings struct {
 	AppName                        string
 	ElementsPublishEndpoint        string
 	ElementsWebhookEndpoint        string
-	EventProxyPath                 string
-	EventProcPath                  string
-	EventPort                      int
-	EelWebhook                     string
 	FunctionalMonitoringPort       int
 	Endpoint                       interface{}
 	MaxAttempts                    int
@@ -105,6 +101,7 @@ const (
 	EelCustomProperties     = "Eel.CustomProperties"
 	EelRetryService         = "Eel.RetryService"
 	EelErrors               = "Eel.Errors"
+	EelSyncPath             = "Eel.SyncPath"
 )
 
 const (

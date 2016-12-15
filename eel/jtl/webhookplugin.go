@@ -42,18 +42,18 @@ func (p *WebhookPlugin) StartPlugin(ctx Context, c chan int) {
 
 func (p *WebhookPlugin) StartWebhookConsumer(ctx Context, c chan int) {
 	ctx.Log().Info("action", "starting_plugin", "op", "webhook")
-	startWebhookServices(ctx)
+	p.startWebhookServices(ctx)
 	ctx.Log().Info("action", "stopping_plugin", "op", "webhook")
 	c <- 0
 }
 
-func startWebhookServices(ctx Context) {
-	eventProxyPort := GetConfig(ctx).EventPort
+func (p *WebhookPlugin) startWebhookServices(ctx Context) {
+	eventProxyPort := int(p.GetSettings().Parameters["EventPort"].(float64))
 	if eventProxyPort == 0 {
 		eventProxyPort = 8080
 	}
-	eventProxyPath := GetConfig(ctx).EventProxyPath
-	eventProcPath := GetConfig(ctx).EventProcPath
+	eventProxyPath := p.GetSettings().Parameters["EventProxyPath"].(string)
+	eventProcPath := p.GetSettings().Parameters["EventProcPath"].(string)
 	http.HandleFunc(eventProxyPath, EventHandler)
 	http.HandleFunc(eventProcPath, EventHandler)
 	ctx.Log().Info("action", "listening_for_events", "port", eventProxyPort, "proxy_path", eventProxyPath, "proc_path", eventProcPath)

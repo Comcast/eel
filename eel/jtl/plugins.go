@@ -59,6 +59,16 @@ func RegisterInboundPluginType(newPlugin NewInboundPlugin, pluginType string) {
 	inboundPluginTypeMap[pluginType] = newPlugin
 }
 
+func GetInboundPluginByType(pluginType string) InboundPlugin {
+	// currently only one active plugin per type allowed!!!
+	for _, v := range inboundPluginMap {
+		if v.GetSettings().Type == pluginType {
+			return v
+		}
+	}
+	return nil
+}
+
 func PluginConfigHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := Gctx.SubContext()
 	w.Header().Set("Content-Type", "application/json")
@@ -99,6 +109,7 @@ func GetPluginConfigList(ctx Context) PluginConfigList {
 }
 
 func LoadInboundPlugins(ctx Context) {
+	// load plugin configs
 	pluginConfigList = GetPluginConfigList(ctx)
 	for _, e := range pluginConfigList {
 		// dependency injection
@@ -111,6 +122,7 @@ func LoadInboundPlugins(ctx Context) {
 	}
 	c := make(chan int)
 	activePlugins := 0
+	// launch plugins
 	for k, v := range inboundPluginMap {
 		if v.GetSettings().Active {
 			ctx.Log().Info("action", "launching_inbound_plugin", "plugin_name", k, "pugin_type", v.GetSettings().Type)
@@ -120,6 +132,14 @@ func LoadInboundPlugins(ctx Context) {
 			ctx.Log().Info("action", "skipping_inactive_plugin", "plugin_name", k, "pugin_type", v.GetSettings().Type)
 		}
 	}
+	// need sync path in inproc.go
+	if GetInboundPluginByType("WEBHOOK") != nil {
+		syncPath := GetInboundPluginByType("WEBHOOK").GetSettings().Parameters["EventProcPath"]
+		Gctx.AddConfigValue(EelSyncPath, syncPath)
+	} else {
+		Gctx.AddConfigValue(EelSyncPath, "")
+	}
+	// wait for plugins to finish
 	for i := 0; i < activePlugins; i++ {
 		<-c
 		ctx.Log().Info("action", "plugin_terminated")
