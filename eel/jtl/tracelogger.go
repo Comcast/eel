@@ -26,16 +26,23 @@ import (
 	. "github.com/Comcast/eel/eel/util"
 )
 
+type TraceLogEvent struct {
+	Event    *JDoc
+	Incoming bool
+}
+
 type TraceLogger struct {
-	File     *os.File
-	Writer   *bufio.Writer
-	Settings *EelTraceLogParams
+	File         *os.File
+	Writer       *bufio.Writer
+	Settings     *EelTraceLogParams
+	EventChannel chan *TraceLogEvent
 }
 
 func NewTraceLogger(ctx Context, config *EelSettings) *TraceLogger {
 	tl := new(TraceLogger)
 	if config.TraceLogParams != nil && config.TraceLogParams.FileName != "" {
 		tl.Settings = config.TraceLogParams
+		tl.EventChannel = make(chan *TraceLogEvent)
 		var err error
 		tl.File, err = os.Create(config.TraceLogParams.FileName)
 		if err != nil {
@@ -44,6 +51,7 @@ func NewTraceLogger(ctx Context, config *EelSettings) *TraceLogger {
 			tl.Writer = bufio.NewWriter(tl.File)
 		}
 	}
+	tl.processTraceLogLoop(ctx)
 	return tl
 }
 
@@ -66,22 +74,32 @@ func TraceLogConfigHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (t *TraceLogger) TraceLog(ctx Context, event *JDoc, incoming bool) {
-	if t.Writer != nil && t.Settings.LogParams != nil {
-		if (incoming && t.Settings.LogIncoming) || (!incoming && t.Settings.LogOutgoing) {
-			entry := make(map[string]interface{}, 0)
-			for k, v := range t.Settings.LogParams {
-				ev := event.ParseExpression(ctx, v)
-				entry[k] = ev
-			}
-			buf, err := json.Marshal(entry)
-			if err != nil {
-				ctx.Log().Error("error_type", "json_error", "op", "trace_logger", "cause", "unable_to_marshal_entry", "error", err.Error())
-			} else {
-				t.Writer.WriteString(string(buf) + "\n")
+func (t *TraceLogger) processTraceLogLoop(ctx Context) {
+	go func() {
+		for {
+			tle := <-t.EventChannel
+			if t.Writer != nil && t.Settings.LogParams != nil {
+				if (tle.Incoming && t.Settings.LogIncoming) || (!tle.Incoming && t.Settings.LogOutgoing) {
+					entry := make(map[string]interface{}, 0)
+					for k, v := range t.Settings.LogParams {
+						ev := tle.Event.ParseExpression(ctx, v)
+						entry[k] = ev
+					}
+					buf, err := json.Marshal(entry)
+					if err != nil {
+						ctx.Log().Error("error_type", "json_error", "op", "trace_logger", "cause", "unable_to_marshal_entry", "error", err.Error())
+					} else {
+						t.Writer.WriteString(string(buf) + "\n")
+					}
+				}
 			}
 		}
-	}
+	}()
+}
+
+func (t *TraceLogger) TraceLog(ctx Context, event *JDoc, incoming bool) {
+	tle := TraceLogEvent{event, incoming}
+	t.EventChannel <- &tle
 }
 
 func (t *TraceLogger) CloseTraceLog(ctx Context) {
