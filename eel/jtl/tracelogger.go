@@ -26,23 +26,19 @@ import (
 	. "github.com/Comcast/eel/eel/util"
 )
 
-type TraceLogEvent struct {
-	Event    *JDoc
-	Incoming bool
-}
-
 type TraceLogger struct {
 	File         *os.File
 	Writer       *bufio.Writer
 	Settings     *EelTraceLogParams
-	EventChannel chan *TraceLogEvent
+	EventChannel chan *JDoc
 }
 
 func NewTraceLogger(ctx Context, config *EelSettings) *TraceLogger {
 	tl := new(TraceLogger)
 	if config.TraceLogParams != nil && config.TraceLogParams.FileName != "" {
 		tl.Settings = config.TraceLogParams
-		tl.EventChannel = make(chan *TraceLogEvent)
+		tl.EventChannel = make(chan *JDoc)
+		ctx.Log().Info("SETTINGS", tl.Settings)
 		var err error
 		tl.File, err = os.Create(config.TraceLogParams.FileName)
 		if err != nil {
@@ -77,20 +73,18 @@ func TraceLogConfigHandler(w http.ResponseWriter, r *http.Request) {
 func (t *TraceLogger) processTraceLogLoop(ctx Context) {
 	go func() {
 		for {
-			tle := <-t.EventChannel
+			event := <-t.EventChannel
 			if t.Writer != nil && t.Settings.LogParams != nil {
-				if (tle.Incoming && t.Settings.LogIncoming) || (!tle.Incoming && t.Settings.LogOutgoing) {
-					entry := make(map[string]interface{}, 0)
-					for k, v := range t.Settings.LogParams {
-						ev := tle.Event.ParseExpression(ctx, v)
-						entry[k] = ev
-					}
-					buf, err := json.Marshal(entry)
-					if err != nil {
-						ctx.Log().Error("error_type", "json_error", "op", "trace_logger", "cause", "unable_to_marshal_entry", "error", err.Error())
-					} else {
-						t.Writer.WriteString(string(buf) + "\n")
-					}
+				entry := make(map[string]interface{}, 0)
+				for k, v := range t.Settings.LogParams {
+					ev := event.ParseExpression(ctx, v)
+					entry[k] = ev
+				}
+				buf, err := json.Marshal(entry)
+				if err != nil {
+					ctx.Log().Error("error_type", "json_error", "op", "trace_logger", "cause", "unable_to_marshal_entry", "error", err.Error())
+				} else {
+					t.Writer.WriteString(string(buf) + "\n")
 				}
 			}
 		}
@@ -98,8 +92,16 @@ func (t *TraceLogger) processTraceLogLoop(ctx Context) {
 }
 
 func (t *TraceLogger) TraceLog(ctx Context, event *JDoc, incoming bool) {
-	tle := TraceLogEvent{event, incoming}
-	t.EventChannel <- &tle
+	if !t.Settings.Active {
+		return
+	}
+	if incoming && !t.Settings.LogIncoming {
+		return
+	}
+	if !incoming && !t.Settings.LogOutgoing {
+		return
+	}
+	t.EventChannel <- event
 }
 
 func (t *TraceLogger) CloseTraceLog(ctx Context) {
