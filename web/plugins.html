@@ -1,0 +1,38 @@
+<html>
+<head>
+<title>EEL Inbound Plugins</title>	
+<style>
+body 	{background-color:black}
+h1   	{color:white; font-family:verdana;}
+h2   	{color:white; font-family:verdana;}
+h3   	{color:white; font-family:verdana;}
+p    	{color:white; font-family:verdana;}
+td    	{color:white; font-family:verdana;}
+th    	{color:white; font-family:verdana; text-align: left}
+</style>
+</head>
+<body>
+<div align="center">
+<h1>EEL Inbound Plugins</h1>
+<p><img src="/img/eel.png" width="250"/></p>
+<table>
+<tr><th>Plugin Name</th><th>Plugin Type</th><th>Active</th><th></th><th></th></tr>
+{{ range . }}
+   <tr>
+   <td>{{.Name}}</td><td>{{.Type}}</td><td>{{.Active}}</td>
+   <td>
+{{if eq .Active false }}
+   <form action="/plugins" method="POST"><input type="hidden" name="name" value="{{ .Name }}"/><input type="submit" name="operation" value="Start"/></form>
+{{ end }}   	
+   </td>
+   <td>
+{{if eq .Active true }}
+   <form action="/plugins" method="POST"><input type="hidden" name="name" value="{{ .Name }}"/><input type="submit" name="operation" value="Stop"/></form>
+{{ end }}   	
+   </td>
+   </tr>
+{{ end }}	
+</table>
+</div>
+</body>
+</html>

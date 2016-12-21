@@ -127,7 +127,8 @@ func registerAdminServices() {
 	http.HandleFunc("/health/deep", StatusHandler)
 	http.HandleFunc("/health", StatusHandler)
 	http.HandleFunc("/status", StatusHandler)
-	http.HandleFunc("/plugins", PluginConfigHandler)
+	http.HandleFunc("/plugins/config", PluginConfigHandler)
+	http.HandleFunc("/plugins", ManagePluginsUIHandler)
 	http.HandleFunc("/reload", ReloadConfigHandler)
 	http.HandleFunc("/toggletracelogger", TraceLogConfigHandler)
 	http.HandleFunc("/vet", VetHandler)
@@ -163,5 +164,8 @@ func main() {
 		RegisterInboundPluginType(NewStdinPlugin, "STDIN")
 		RegisterInboundPluginType(NewWebhookPlugin, "WEBHOOK")
 		LoadInboundPlugins(Gctx)
+		// hang on channel forever
+		c := make(chan int)
+		<-c
 	}
 }

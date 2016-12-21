@@ -22,17 +22,22 @@ package jtl
 import (
 	"encoding/json"
 	"fmt"
+	"html/template"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"path/filepath"
+	"time"
 
 	. "github.com/Comcast/eel/eel/util"
 )
 
 type InboundPlugin interface {
-	StartPlugin(Context, chan int)
+	StartPlugin(Context)
 	GetSettings() *PluginSettings
+	StopPlugin(Context)
+	CanShutdown() bool
+	IsActive() bool
 }
 
 type PluginSettings struct {
@@ -69,6 +74,10 @@ func GetInboundPluginByType(pluginType string) InboundPlugin {
 	return nil
 }
 
+func GetInboundPluginByName(name string) InboundPlugin {
+	return inboundPluginMap[name]
+}
+
 func PluginConfigHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := Gctx.SubContext()
 	w.Header().Set("Content-Type", "application/json")
@@ -80,6 +89,34 @@ func PluginConfigHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, `{"error":"%s"}`, err.Error())
 	} else {
 		fmt.Fprintf(w, string(buf))
+	}
+}
+
+func ManagePluginsUIHandler(w http.ResponseWriter, r *http.Request) {
+	ctx := Gctx.SubContext()
+	tmpl, _ := template.ParseFiles("web/plugins.html")
+	operation := r.FormValue("operation")
+	name := r.FormValue("name")
+	if operation == "Start" && name != "" {
+		p := GetInboundPluginByName(name)
+		if p != nil && !p.IsActive() {
+			go p.StartPlugin(ctx)
+		}
+	} else if operation == "Stop" && name != "" {
+		p := GetInboundPluginByName(name)
+		if p != nil && p.IsActive() {
+			go p.StopPlugin(ctx)
+			time.Sleep(1000 * time.Millisecond) //uhm
+		}
+	}
+	psl := make([]*PluginSettings, 0)
+	for _, p := range inboundPluginMap {
+		psl = append(psl, p.GetSettings())
+	}
+
+	err := tmpl.Execute(w, psl)
+	if err != nil {
+		ctx.Log().Error("error_type", "manage_plugins", "cause", "template_error", "error", err.Error())
 	}
 }
 
@@ -120,14 +157,11 @@ func LoadInboundPlugins(ctx Context) {
 			inboundPluginMap[e.Name] = np(e)
 		}
 	}
-	c := make(chan int)
-	activePlugins := 0
 	// launch plugins
 	for k, v := range inboundPluginMap {
 		if v.GetSettings().Active {
 			ctx.Log().Info("action", "launching_inbound_plugin", "plugin_name", k, "pugin_type", v.GetSettings().Type)
-			go v.StartPlugin(ctx, c)
-			activePlugins++
+			go v.StartPlugin(ctx)
 		} else {
 			ctx.Log().Info("action", "skipping_inactive_plugin", "plugin_name", k, "pugin_type", v.GetSettings().Type)
 		}
@@ -138,10 +172,5 @@ func LoadInboundPlugins(ctx Context) {
 		Gctx.AddConfigValue(EelSyncPath, syncPath)
 	} else {
 		Gctx.AddConfigValue(EelSyncPath, "")
-	}
-	// wait for plugins to finish
-	for i := 0; i < activePlugins; i++ {
-		<-c
-		ctx.Log().Info("action", "plugin_terminated")
 	}
 }

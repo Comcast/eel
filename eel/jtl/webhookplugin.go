@@ -23,7 +23,8 @@ import (
 )
 
 type WebhookPlugin struct {
-	Settings *PluginSettings
+	Settings     *PluginSettings
+	ShuttingDown bool
 }
 
 func NewWebhookPlugin(settings *PluginSettings) InboundPlugin {
@@ -36,18 +37,19 @@ func (p *WebhookPlugin) GetSettings() *PluginSettings {
 	return p.Settings
 }
 
-func (p *WebhookPlugin) StartPlugin(ctx Context, c chan int) {
-	p.StartWebhookConsumer(ctx, c)
+func (p *WebhookPlugin) StartPlugin(ctx Context) {
+	p.StartWebhookConsumer(ctx)
 }
 
-func (p *WebhookPlugin) StartWebhookConsumer(ctx Context, c chan int) {
+func (p *WebhookPlugin) StartWebhookConsumer(ctx Context) {
 	ctx.Log().Info("action", "starting_plugin", "op", "webhook")
 	p.startWebhookServices(ctx)
 	ctx.Log().Info("action", "stopping_plugin", "op", "webhook")
-	c <- 0
 }
 
 func (p *WebhookPlugin) startWebhookServices(ctx Context) {
+	p.ShuttingDown = false
+	p.Settings.Active = true
 	eventProxyPort := int(p.GetSettings().Parameters["EventPort"].(float64))
 	if eventProxyPort == 0 {
 		eventProxyPort = 8080
@@ -56,9 +58,21 @@ func (p *WebhookPlugin) startWebhookServices(ctx Context) {
 	eventProcPath := p.GetSettings().Parameters["EventProcPath"].(string)
 	http.HandleFunc(eventProxyPath, EventHandler)
 	http.HandleFunc(eventProcPath, EventHandler)
-	ctx.Log().Info("action", "listening_for_events", "port", eventProxyPort, "proxy_path", eventProxyPath, "proc_path", eventProcPath)
+	ctx.Log().Info("action", "listening_for_events", "port", eventProxyPort, "proxy_path", eventProxyPath, "proc_path", eventProcPath, "op", "webhook")
 	err := http.ListenAndServe(":"+strconv.Itoa(eventProxyPort), nil)
 	if err != nil {
 		ctx.Log().Error("error_type", "eel_service", "error", err.Error())
 	}
+}
+
+func (p *WebhookPlugin) StopPlugin(ctx Context) {
+	ctx.Log().Info("action", "shutdown_plugin", "op", "stdin", "details", "cannot_shutdonw")
+}
+
+func (p *WebhookPlugin) CanShutdown() bool {
+	return false
+}
+
+func (p *WebhookPlugin) IsActive() bool {
+	return p.Settings.Active
 }

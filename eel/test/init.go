@@ -44,4 +44,5 @@ func initTests(handlers string) {
 	Gctx.AddValue(EelDispatcher, dp)
 	dc := NewLocalInMemoryDupChecker(GetConfig(Gctx).DuplicateTimeout, 10000)
 	Gctx.AddValue(EelDuplicateChecker, dc)
+	Gctx.AddConfigValue(EelSyncPath, "/proc")
 }

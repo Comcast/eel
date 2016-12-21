@@ -26,7 +26,8 @@ import (
 )
 
 type StdinPlugin struct {
-	Settings *PluginSettings
+	Settings     *PluginSettings
+	ShuttingDown bool
 }
 
 func NewStdinPlugin(settings *PluginSettings) InboundPlugin {
@@ -39,11 +40,13 @@ func (p *StdinPlugin) GetSettings() *PluginSettings {
 	return p.Settings
 }
 
-func (p *StdinPlugin) StartPlugin(ctx Context, c chan int) {
-	p.StartStdInConsumer(ctx, os.Stdin, c)
+func (p *StdinPlugin) StartPlugin(ctx Context) {
+	p.StartStdInConsumer(ctx, os.Stdin)
 }
 
-func (p *StdinPlugin) StartStdInConsumer(ctx Context, r io.Reader, c chan int) {
+func (p *StdinPlugin) StartStdInConsumer(ctx Context, r io.Reader) {
+	p.ShuttingDown = false
+	p.Settings.Active = true
 	//scanner := bufio.NewScanner(r)
 	stdinreader := bufio.NewReader(r)
 	ctx.Log().Info("action", "starting_plugin", "op", "stdin")
@@ -91,5 +94,16 @@ func (p *StdinPlugin) StartStdInConsumer(ctx Context, r io.Reader, c chan int) {
 		}
 	}
 	ctx.Log().Info("action", "stopping_plugin", "op", "stdin")
-	c <- 0
+}
+
+func (p *StdinPlugin) StopPlugin(ctx Context) {
+	ctx.Log().Info("action", "shutdown_plugin", "op", "stdin", "details", "cannot_shutdonw")
+}
+
+func (p *StdinPlugin) CanShutdown() bool {
+	return false
+}
+
+func (p *StdinPlugin) IsActive() bool {
+	return p.Settings.Active
 }
