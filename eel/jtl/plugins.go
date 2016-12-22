@@ -58,8 +58,6 @@ var inboundPluginTypeMap = make(map[string]NewInboundPlugin, 0)
 
 var pluginConfigList PluginConfigList
 
-var pluginsTemplate *template.Template
-
 // RegisterInboundPlugin registers an (external) plugin implementation by plugin type
 func RegisterInboundPluginType(newPlugin NewInboundPlugin, pluginType string) {
 	inboundPluginTypeMap[pluginType] = newPlugin
@@ -95,13 +93,9 @@ func PluginConfigHandler(w http.ResponseWriter, r *http.Request) {
 
 func ManagePluginsUIHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := Gctx.SubContext()
-	var err error
-	//TODO: need to figure out too many open files issue
-	if pluginsTemplate == nil {
-		pluginsTemplate, err = template.ParseFiles("web/plugins.html")
-		if err != nil {
-			ctx.Log().Error("error_type", "manage_plugins", "cause", "template_parse_error", "error", err.Error())
-		}
+	pluginsTemplate, err := template.ParseFiles("web/plugins.html")
+	if err != nil {
+		ctx.Log().Error("error_type", "manage_plugins", "cause", "template_parse_error", "error", err.Error())
 	}
 	operation := r.FormValue("operation")
 	name := r.FormValue("name")
