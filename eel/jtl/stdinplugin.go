@@ -100,10 +100,6 @@ func (p *StdinPlugin) StopPlugin(ctx Context) {
 	ctx.Log().Info("action", "shutdown_plugin", "op", "stdin", "details", "cannot_shutdonw")
 }
 
-func (p *StdinPlugin) CanShutdown() bool {
-	return false
-}
-
 func (p *StdinPlugin) IsActive() bool {
 	return p.Settings.Active
 }

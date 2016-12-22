@@ -69,10 +69,6 @@ func (p *WebhookPlugin) StopPlugin(ctx Context) {
 	ctx.Log().Info("action", "shutdown_plugin", "op", "stdin", "details", "cannot_shutdonw")
 }
 
-func (p *WebhookPlugin) CanShutdown() bool {
-	return false
-}
-
 func (p *WebhookPlugin) IsActive() bool {
 	return p.Settings.Active
 }

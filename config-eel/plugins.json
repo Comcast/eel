@@ -3,6 +3,7 @@
 		"Type" : "WEBHOOK",
 		"Name" : "WEBHOOK",
 		"Active" : true,
+		"RestartOk": false,
 		"Parameters" : {
 		    "EventPort": 8080,
 		    "EventProxyPath": "/proxy",
@@ -13,6 +14,7 @@
 		"Type" : "STDIN",
 		"Name" : "STDIN",
 		"Active" : false,
+		"RestartOk": false,
 		"Parameters" : {}
 	}
 ]

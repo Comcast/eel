@@ -27,7 +27,6 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"time"
 
 	. "github.com/Comcast/eel/eel/util"
 )
@@ -36,7 +35,6 @@ type InboundPlugin interface {
 	StartPlugin(Context)
 	GetSettings() *PluginSettings
 	StopPlugin(Context)
-	CanShutdown() bool
 	IsActive() bool
 }
 
@@ -44,6 +42,7 @@ type PluginSettings struct {
 	Type       string
 	Name       string
 	Active     bool
+	RestartOk  bool
 	Parameters map[string]interface{}
 }
 
@@ -58,6 +57,8 @@ var inboundPluginMap = make(map[string]InboundPlugin, 0)
 var inboundPluginTypeMap = make(map[string]NewInboundPlugin, 0)
 
 var pluginConfigList PluginConfigList
+
+var pluginsTemplate *template.Template
 
 // RegisterInboundPlugin registers an (external) plugin implementation by plugin type
 func RegisterInboundPluginType(newPlugin NewInboundPlugin, pluginType string) {
@@ -94,7 +95,14 @@ func PluginConfigHandler(w http.ResponseWriter, r *http.Request) {
 
 func ManagePluginsUIHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := Gctx.SubContext()
-	tmpl, _ := template.ParseFiles("web/plugins.html")
+	var err error
+	//TODO: need to figure out too many open files issue
+	if pluginsTemplate == nil {
+		pluginsTemplate, err = template.ParseFiles("web/plugins.html")
+		if err != nil {
+			ctx.Log().Error("error_type", "manage_plugins", "cause", "template_parse_error", "error", err.Error())
+		}
+	}
 	operation := r.FormValue("operation")
 	name := r.FormValue("name")
 	if operation == "Start" && name != "" {
@@ -105,18 +113,16 @@ func ManagePluginsUIHandler(w http.ResponseWriter, r *http.Request) {
 	} else if operation == "Stop" && name != "" {
 		p := GetInboundPluginByName(name)
 		if p != nil && p.IsActive() {
-			go p.StopPlugin(ctx)
-			time.Sleep(1000 * time.Millisecond) //uhm
+			p.StopPlugin(ctx)
 		}
 	}
 	psl := make([]*PluginSettings, 0)
 	for _, p := range inboundPluginMap {
 		psl = append(psl, p.GetSettings())
 	}
-
-	err := tmpl.Execute(w, psl)
+	err = pluginsTemplate.Execute(w, psl)
 	if err != nil {
-		ctx.Log().Error("error_type", "manage_plugins", "cause", "template_error", "error", err.Error())
+		ctx.Log().Error("error_type", "manage_plugins", "cause", "template_exec_error", "error", err.Error())
 	}
 }
 
