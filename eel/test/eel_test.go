@@ -531,6 +531,11 @@ func TestETransformFunction(t *testing.T) {
 	transformEvent(t, "data/test58/", nil)
 }
 
+func TestPTransformFunction(t *testing.T) {
+	initTests("data/test59/handlers")
+	transformEvent(t, "data/test59/", nil)
+}
+
 func TestTopicHandlerParent(t *testing.T) {
 	initTests("data/test97/handlers")
 	fanoutEvent(t, "data/test97/", 1, false, nil)
