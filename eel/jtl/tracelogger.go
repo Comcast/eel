@@ -38,7 +38,6 @@ func NewTraceLogger(ctx Context, config *EelSettings) *TraceLogger {
 	if config.TraceLogParams != nil && config.TraceLogParams.FileName != "" {
 		tl.Settings = config.TraceLogParams
 		tl.EventChannel = make(chan *JDoc)
-		ctx.Log().Info("SETTINGS", tl.Settings)
 		var err error
 		tl.File, err = os.Create(config.TraceLogParams.FileName)
 		if err != nil {
