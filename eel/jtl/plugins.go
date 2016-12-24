@@ -27,6 +27,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"time"
 
 	. "github.com/Comcast/eel/eel/util"
 )
@@ -103,6 +104,7 @@ func ManagePluginsUIHandler(w http.ResponseWriter, r *http.Request) {
 		p := GetInboundPluginByName(name)
 		if p != nil && !p.IsActive() {
 			go p.StartPlugin(ctx)
+			time.Sleep(1 * time.Second)
 		}
 	} else if operation == "Stop" && name != "" {
 		p := GetInboundPluginByName(name)
