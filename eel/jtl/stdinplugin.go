@@ -41,7 +41,7 @@ func (p *StdinPlugin) GetSettings() *PluginSettings {
 }
 
 func (p *StdinPlugin) StartPlugin(ctx Context) {
-	p.StartStdInConsumer(ctx, os.Stdin)
+	go p.StartStdInConsumer(ctx, os.Stdin)
 }
 
 func (p *StdinPlugin) StartStdInConsumer(ctx Context, r io.Reader) {

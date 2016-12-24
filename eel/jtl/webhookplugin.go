@@ -43,8 +43,7 @@ func (p *WebhookPlugin) StartPlugin(ctx Context) {
 
 func (p *WebhookPlugin) StartWebhookConsumer(ctx Context) {
 	ctx.Log().Info("action", "starting_plugin", "op", "webhook")
-	p.startWebhookServices(ctx)
-	ctx.Log().Info("action", "stopping_plugin", "op", "webhook")
+	go p.startWebhookServices(ctx)
 }
 
 func (p *WebhookPlugin) startWebhookServices(ctx Context) {
@@ -63,6 +62,7 @@ func (p *WebhookPlugin) startWebhookServices(ctx Context) {
 	if err != nil {
 		ctx.Log().Error("error_type", "eel_service", "error", err.Error())
 	}
+	ctx.Log().Info("action", "stopping_plugin", "op", "webhook")
 }
 
 func (p *WebhookPlugin) StopPlugin(ctx Context) {

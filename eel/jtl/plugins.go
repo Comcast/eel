@@ -27,6 +27,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	. "github.com/Comcast/eel/eel/util"
@@ -103,7 +104,7 @@ func ManagePluginsUIHandler(w http.ResponseWriter, r *http.Request) {
 	if operation == "Start" && name != "" {
 		p := GetInboundPluginByName(name)
 		if p != nil && !p.IsActive() {
-			go p.StartPlugin(ctx)
+			p.StartPlugin(ctx)
 			time.Sleep(1 * time.Second)
 		}
 	} else if operation == "Stop" && name != "" {
@@ -119,6 +120,101 @@ func ManagePluginsUIHandler(w http.ResponseWriter, r *http.Request) {
 	err = pluginsTemplate.Execute(w, psl)
 	if err != nil {
 		ctx.Log().Error("error_type", "manage_plugins", "cause", "template_exec_error", "error", err.Error())
+	}
+}
+
+func ManagePluginsHandler(w http.ResponseWriter, r *http.Request) {
+	ctx := Gctx.SubContext()
+	path := strings.Split(r.URL.Path, "/")
+	if len(path) != 4 {
+		ctx.Log().Error("error_type", "manage_plugins", "cause", "bad_path", "error", "bad path "+r.URL.Path)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, `{"error":"%s"}`, "bad path "+r.URL.Path)
+		return
+	}
+	pName := path[2]
+	p := GetInboundPluginByName(pName)
+	if p == nil {
+		ctx.Log().Error("error_type", "manage_plugins", "cause", "unknown_plugin", "error", "unknown plugin "+pName)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, `{"error":"%s"}`, "unknown plugin "+pName)
+		return
+	}
+	op := path[3]
+	switch op {
+	case "start":
+		if p.GetSettings().RestartOk == false {
+			ctx.Log().Error("error_type", "manage_plugins", "cause", "plugin_cannot_restart", "error", "plugin cannot restart "+pName)
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintf(w, `{"error":"%s"}`, "plugin cannot restart "+pName)
+			return
+		}
+		if p.GetSettings().Active == true {
+			ctx.Log().Error("error_type", "manage_plugins", "cause", "plugin_already_running", "error", "plugin already running "+pName)
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintf(w, `{"error":"%s"}`, "plugin already running "+pName)
+			return
+		}
+		p.StartPlugin(ctx)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprintf(w, `{"plugin":"%s", "action":"started"}`, pName)
+	case "stop":
+		if p.GetSettings().RestartOk == false {
+			ctx.Log().Error("error_type", "manage_plugins", "cause", "plugin_cannot_restart", "error", "plugin cannot restart "+pName)
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintf(w, `{"error":"%s"}`, "plugin cannot restart "+pName)
+			return
+		}
+		if p.GetSettings().Active == false {
+			ctx.Log().Error("error_type", "manage_plugins", "cause", "plugin_stopped", "error", "plugin stopped "+pName)
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintf(w, `{"error":"%s"}`, "plugin stopped "+pName)
+			return
+		}
+		p.StopPlugin(ctx)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprintf(w, `{"plugin":"%s", "action":"stopped"}`, pName)
+	case "state":
+		state := make(map[string]interface{}, 0)
+		state["Version"] = GetConfig(ctx).Version
+		state["PluginConfigs"] = p.GetSettings()
+		buf, err := json.MarshalIndent(state, "", "\t")
+		if err != nil {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintf(w, `{"error":"%s"}`, err.Error())
+		} else {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprintf(w, string(buf))
+		}
+	case "config":
+		state := make(map[string]interface{}, 0)
+		state["Version"] = GetConfig(ctx).Version
+		state["PluginConfigs"] = p.GetSettings()
+		buf, err := json.MarshalIndent(state, "", "\t")
+		if err != nil {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintf(w, `{"error":"%s"}`, err.Error())
+		} else {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprintf(w, string(buf))
+		}
+	default:
+		ctx.Log().Error("error_type", "manage_plugins", "cause", "unknown_op", "error", "unknown op "+op)
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, `{"error":"%s"}`, "unknown plugin "+pName)
+		return
 	}
 }
 
@@ -163,7 +259,7 @@ func LoadInboundPlugins(ctx Context) {
 	for k, v := range inboundPluginMap {
 		if v.GetSettings().Active {
 			ctx.Log().Info("action", "launching_inbound_plugin", "plugin_name", k, "pugin_type", v.GetSettings().Type)
-			go v.StartPlugin(ctx)
+			v.StartPlugin(ctx)
 		} else {
 			ctx.Log().Info("action", "skipping_inactive_plugin", "plugin_name", k, "pugin_type", v.GetSettings().Type)
 		}
