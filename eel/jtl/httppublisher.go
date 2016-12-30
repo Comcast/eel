@@ -34,6 +34,7 @@ type (
 		auth     map[string]string
 		headers  map[string]string
 		event    *JDoc
+		debug    bool
 		ctx      Context
 	}
 )
@@ -54,6 +55,10 @@ func (p *HttpPublisher) Publish() (string, error) {
 	}
 	if p.verb == "" {
 		return "", errors.New("missing verb")
+	}
+	debugHeaderKey := GetConfig(p.ctx).HttpDebugHeader
+	if p.debug && p.headers != nil && debugHeaderKey != "" {
+		p.headers[debugHeaderKey] = "true"
 	}
 	resp, status, err := GetRetrier(p.ctx).RetryEndpoint(p.ctx, p.GetUrl(), p.payload, p.verb, p.headers, nil)
 	if err != nil {
@@ -82,6 +87,14 @@ func (p *HttpPublisher) GetUrl() string {
 
 func (p *HttpPublisher) GetErrors() []error {
 	return GetErrors(p.ctx)
+}
+
+func (p *HttpPublisher) SetDebug(debug bool) {
+	p.debug = debug
+}
+
+func (p *HttpPublisher) GetDebug() bool {
+	return p.debug
 }
 
 func (p *HttpPublisher) SetPath(path string) {

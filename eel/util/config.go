@@ -44,6 +44,7 @@ type EelSettings struct {
 	ActionTopics                   []string
 	MaxMessageSize                 int64
 	HttpTransactionHeader          string
+	HttpDebugHeader                string
 	HttpTenantHeader               string
 	HttpTimeout                    time.Duration
 	ResponseHeaderTimeout          time.Duration

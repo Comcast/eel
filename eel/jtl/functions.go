@@ -536,14 +536,11 @@ func fnCurl(ctx Context, doc *JDoc, params []string) interface{} {
 			return nil
 		}
 	}
-
 	endpoint := extractStringParam(params[1])
-
-	//urlencode query string
+	// url encode query string
 	parsed, _ := url.Parse(endpoint)
 	parsed.RawQuery = parsed.Query().Encode()
 	endpoint = parsed.String()
-
 	if ctx.ConfigValue("debug.url") != nil {
 		endpoint = ctx.ConfigValue("debug.url").(string)
 	}
@@ -560,7 +557,6 @@ func fnCurl(ctx Context, doc *JDoc, params []string) interface{} {
 		}
 	}
 	headers := make(map[string]string, 0)
-
 	traceHeaderKey := GetConfig(ctx).HttpTransactionHeader
 	if traceHeaderKey != "" && ctx.Value(traceHeaderKey) != nil {
 		if _, ok := ctx.Value(traceHeaderKey).(string); ok {
@@ -573,7 +569,23 @@ func fnCurl(ctx Context, doc *JDoc, params []string) interface{} {
 			headers[tenantHeaderKey] = ctx.Value(tenantHeaderKey).(string)
 		}
 	}
-
+	debugHeaderKey := GetConfig(ctx).HttpDebugHeader
+	if debugHeaderKey != "" {
+		dlp := GetDebugLogParams(ctx)
+		if dlp != nil && dlp.IdWhiteList != nil && dlp.LogParams != nil {
+			wlistId := doc.ParseExpression(ctx, dlp.IdPath)
+			if wlistId != nil {
+				switch wlistId.(type) {
+				case string:
+					dlp.Lock.RLock()
+					defer dlp.Lock.RUnlock()
+					if _, ok := dlp.IdWhiteList[wlistId.(string)]; ok {
+						headers[GetConfig(ctx).HttpTransactionHeader] = "true"
+					}
+				}
+			}
+		}
+	}
 	if hmap != nil {
 		for k, v := range hmap {
 			if s, ok := v.(string); ok {
