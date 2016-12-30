@@ -774,6 +774,10 @@ func (h *HandlerConfiguration) ProcessEvent(ctx Context, event *JDoc) ([]EventPu
 			headers[hk] = ToFlatString(event.ParseExpression(ctx, jexpr))
 		}
 	}
+	debugHeaderKey := GetConfig(ctx).HttpDebugHeader
+	if debug && debugHeaderKey != "" {
+		headers[debugHeaderKey] = "true"
+	}
 	// prepare relative paths
 	relativePaths := make([]string, 0)
 	if h.Path != nil {

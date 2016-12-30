@@ -56,10 +56,6 @@ func (p *HttpPublisher) Publish() (string, error) {
 	if p.verb == "" {
 		return "", errors.New("missing verb")
 	}
-	debugHeaderKey := GetConfig(p.ctx).HttpDebugHeader
-	if p.debug && p.headers != nil && debugHeaderKey != "" {
-		p.headers[debugHeaderKey] = "true"
-	}
 	resp, status, err := GetRetrier(p.ctx).RetryEndpoint(p.ctx, p.GetUrl(), p.payload, p.verb, p.headers, nil)
 	if err != nil {
 		return resp, err
