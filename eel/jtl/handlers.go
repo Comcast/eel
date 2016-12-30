@@ -669,16 +669,16 @@ func (h *HandlerConfiguration) applyDebugLogsIfWhiteListed(ctx Context, event *J
 	debug := false
 	dlp := GetDebugLogParams(ctx)
 	if dlp == nil {
-		//ctx.Log().Info("action", "debug_no_white_list")
+		ctx.Log().Info("action", "debug_no_white_list")
 		return false
 	}
 	if dlp.IdWhiteList == nil || dlp.LogParams == nil {
-		//ctx.Log().Info("action", "debug_no_white_list")
+		ctx.Log().Info("action", "debug_no_white_list")
 		return false
 	}
 	wlistId := wl.ParseExpression(ctx, dlp.IdPath)
 	if wlistId == nil {
-		//ctx.Log().Info("action", "debug_no_location")
+		ctx.Log().Info("action", "debug_no_location")
 		return false
 	}
 	switch wlistId.(type) {
@@ -697,7 +697,7 @@ func (h *HandlerConfiguration) applyDebugLogsIfWhiteListed(ctx Context, event *J
 		}
 		c.Log().Info("action", "debug_event", "handler", h.Name)
 	} else {
-		//ctx.Log().Info("action", "location_not_in_white_list")
+		ctx.Log().Info("action", "location_not_in_white_list", "location", wlistId)
 	}
 	return debug
 }
