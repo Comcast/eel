@@ -83,7 +83,7 @@ func StatusHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, string(buf))
 	}
 	elapsed4 := time.Since(start)
-	ctx.Log().Info("action", "health", "d1", elapsed1/1e6, "d2", elapsed2/1e6, "d3", elapsed3/1e6, "d4", elapsed4/1e6)
+	ctx.Log().Info("action", "health", "d1", int64(elapsed1/1e6), "d2", int64(elapsed2/1e6), "d3", int64(elapsed3/1e6), "d4", int64(elapsed4/1e6))
 }
 
 // VetHandler http handler for vetting all handler configurations. Writes JSON with list of warnings (if any) to w.
