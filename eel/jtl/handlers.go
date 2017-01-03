@@ -697,7 +697,7 @@ func (h *HandlerConfiguration) applyDebugLogsIfWhiteListed(ctx Context, event *J
 		}
 		c.Log().Info("action", "debug_event", "handler", h.Name)
 	} else {
-		//ctx.Log().Info("action", "location_not_in_white_list")
+		//ctx.Log().Info("action", "location_not_in_white_list", "location", wlistId)
 	}
 	return debug
 }
