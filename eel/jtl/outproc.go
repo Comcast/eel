@@ -30,6 +30,7 @@ func handleEvent(ctx Context, stats *ServiceStats, event *JDoc, raw string, debu
 	handlers := GetHandlerFactory(ctx).GetHandlersForEvent(ctx, event)
 	if len(handlers) == 0 {
 		ctx.Log().Info("action", "no_matching_handlers")
+		ctx.Log().Debug("debug_action", "no_matching_handlers", "payload", event.GetOriginalObject())
 	}
 	initialCtx := ctx
 	ctx = ctx.SubContext()
