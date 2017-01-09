@@ -35,6 +35,16 @@ func handleEvent(ctx Context, stats *ServiceStats, event *JDoc, raw string, debu
 	initialCtx := ctx
 	ctx = ctx.SubContext()
 	var wg sync.WaitGroup
+	// add missing debug logs if any
+	logParams := GetConfig(ctx).LogParams
+	if logParams != nil {
+		for k, v := range logParams {
+			if ctx.LogValue(k) == nil {
+				ev := event.ParseExpression(ctx, v)
+				ctx.AddLogValue(k, ev)
+			}
+		}
+	}
 	for _, handler := range handlers {
 		//TODO: validate JSON schema
 		ctx.AddLogValue("topic", handler.Topic)
