@@ -1,0 +1,25 @@
+{
+    "Version": "1.0",
+    "Name": "FOO",
+    "Info": "",
+    "Active": true,
+    "Match": null,
+    "IsMatchByExample": true,
+    "TerminateOnMatch": true,
+    "Transformation": {
+        "{{/}}": "{{etransform('{{join('{{/}}','{{prop('p')}}')}}')}}"
+    },
+	"CustomProperties" : {
+		"p" : {
+			"boo" : "boo"
+		}
+	},
+    "IsTransformationByExample": false,
+    "Path": "",
+    "Verb": "POST",
+    "Endpoint": "",
+    "HttpHeaders": {
+      "X-B3-TraceId": "{{traceid()}}",
+      "Xrs-Tenant-Id": "{{tenant()}}"
+    }
+}

@@ -1,0 +1,22 @@
+{
+    "Version": "1.0",
+    "Name": "BOO",
+    "Info": "",
+    "Active": true,
+    "Match": {
+		"boo" : "boo"
+	},
+    "IsMatchByExample": true,
+    "TerminateOnMatch": true,
+    "Transformation": {
+        "{{/bar}}": "{{/}}"
+    },
+    "IsTransformationByExample": false,
+    "Path": "",
+    "Verb": "POST",
+    "Endpoint": "",
+    "HttpHeaders": {
+      "X-B3-TraceId": "{{traceid()}}",
+      "Xrs-Tenant-Id": "{{tenant()}}"
+    }
+}

@@ -34,7 +34,7 @@ func EventHandler(w http.ResponseWriter, r *http.Request) {
 	sync := false
 	if r.Header.Get("X-Debug") == "true" {
 		debug = true
-	} else if r.Header.Get("X-Sync") == "true" || r.URL.Path == GetConfig(ctx).EventProcPath {
+	} else if r.Header.Get("X-Sync") == "true" || r.URL.Path == Gctx.ConfigValue(EelSyncPath).(string) {
 		sync = true
 	}
 	ctx.AddValue("start_ts", time.Now().UnixNano())

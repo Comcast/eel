@@ -136,6 +136,12 @@ func NewFunction(fn string) *JFunction {
 		// - if a pattern is provided will only be applied if document is matching the pattern
 		// - if a join is provided it will be joined with the document before applying the transformation
 		return &JFunction{fnITransform, 1, 4}
+	case "etransform":
+		// apply external transformation and return single result (efficient shortcut for and equivalent to curl http://localhost:8080/proc)
+		return &JFunction{fnETransform, 1, 1}
+	case "ptransform":
+		// apply external transformation and execute publisher(s) (efficient shortcut for and equivalent to curl http://localhost:8080/proxy)
+		return &JFunction{fnPTransform, 1, 1}
 	case "true":
 		// returns always true, shorthand for equals('1', '1')
 		return &JFunction{fnTrue, 0, 0}
@@ -1214,6 +1220,90 @@ func fnExists(ctx Context, doc *JDoc, params []string) interface{} {
 		}
 	}
 	return doc.HasPath(extractStringParam(params[0]))
+}
+
+// fnETransform function applies matching transformation to document passed in as parameter (equivalent to curl http://localhost:8080/proc).
+// A single result is returned by this function.
+func fnETransform(ctx Context, doc *JDoc, params []string) interface{} {
+	stats := ctx.Value(EelTotalStats).(*ServiceStats)
+	if params == nil || len(params) == 0 || len(params) > 1 {
+		ctx.Log().Error("error_type", "func_etransform", "op", "etransform", "cause", "wrong_number_of_parameters", "params", params)
+		stats.IncErrors()
+		AddError(ctx, SyntaxError{fmt.Sprintf("wrong number of parameters in call to etransform function"), "etransform", params})
+		return nil
+	}
+	// prepare event
+	event, err := NewJDocFromString(extractStringParam(params[0]))
+	if err != nil {
+		ctx.Log().Error("error_type", "func_etransform", "op", "etransform", "cause", "invalid_json", "params", params, "error", err.Error())
+		stats.IncErrors()
+		AddError(ctx, SyntaxError{fmt.Sprintf("non json parameters in call to etransform function"), "etransform", params})
+		return nil
+	}
+	// pick handler
+	handlers := GetHandlerFactory(ctx).GetHandlersForEvent(ctx, event)
+	if len(handlers) == 0 {
+		ctx.Log().Error("error_type", "func_etransform", "op", "etransform", "cause", "no_matching_handler", "params", params)
+		stats.IncErrors()
+		AddError(ctx, RuntimeError{fmt.Sprintf("no matching handler found in call to etransform function"), "etransform", params})
+		return nil
+	}
+	if len(handlers) > 1 {
+		ctx.Log().Error("error_type", "func_etransform", "op", "etransform", "cause", "too_many_matching_handlers", "params", params)
+		stats.IncErrors()
+		AddError(ctx, RuntimeError{fmt.Sprintf("too many matching handlers found in call to etransform function"), "etransform", params})
+		return nil
+	}
+	// apply handler / transformation
+	h := handlers[0]
+	eps, err := h.ProcessEvent(Gctx.SubContext(), event)
+	if err != nil {
+		ctx.Log().Error("error_type", "func_etransform", "op", "etransform", "cause", "bad_transformation", "params", params)
+		stats.IncErrors()
+		AddError(ctx, RuntimeError{fmt.Sprintf("failed to process external transformation in call to etransform function"), "etransform", params})
+		return nil
+	}
+	if len(eps) == 0 {
+		ctx.Log().Error("error_type", "func_etransform", "op", "etransform", "cause", "no_results", "params", params)
+		stats.IncErrors()
+		AddError(ctx, RuntimeError{fmt.Sprintf("no results found in call to etransform function"), "etransform", params})
+		return nil
+	}
+	// if this check is present some unit tests will fail
+	/*if len(eps) > 1 {
+		ctx.Log().Error("error_type", "func_etransform", "op", "etransform", "cause", "too_many_results", "params", params, "count", len(eps))
+		stats.IncErrors()
+		AddError(ctx, RuntimeError{fmt.Sprintf("too many results found in call to etransform function"), "etransform", params})
+		return nil
+	}*/
+	result := eps[0].GetPayloadParsed().GetOriginalObject()
+	return result
+}
+
+// fnPTransform function applies matching transformation to document passed in as parameter. Any resulting publisher(s) will be
+// executed (equivalent to curl http://localhost:8080/proxy).
+func fnPTransform(ctx Context, doc *JDoc, params []string) interface{} {
+	//TODO: note: calling ptransform in sync or debug mode does not make sense - should we raise an error in such a scenario?
+	stats := ctx.Value(EelTotalStats).(*ServiceStats)
+	if params == nil || len(params) == 0 || len(params) > 1 {
+		ctx.Log().Error("error_type", "func_ptransform", "op", "etransform", "cause", "wrong_number_of_parameters", "params", params)
+		stats.IncErrors()
+		AddError(ctx, SyntaxError{fmt.Sprintf("wrong number of parameters in call to ptransform function"), "etransform", params})
+		return nil
+	}
+	// prepare event
+	rawEvent := extractStringParam(params[0])
+	event, err := NewJDocFromString(rawEvent)
+	if err != nil {
+		ctx.Log().Error("error_type", "func_ptransform", "op", "etransform", "cause", "invalid_json", "params", params, "error", err.Error())
+		stats.IncErrors()
+		AddError(ctx, SyntaxError{fmt.Sprintf("non json parameters in call to ptransform function"), "etransform", params})
+		return nil
+	}
+	// handle event and execute publisher(s)
+	// both sync=true or debug=true would not make sense here
+	handleEvent(ctx, stats, event, rawEvent, false, false)
+	return nil
 }
 
 func extractStringParam(param string) string {
