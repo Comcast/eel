@@ -39,10 +39,10 @@ func handleEvent(ctx Context, stats *ServiceStats, event *JDoc, raw string, debu
 	logParams := GetConfig(ctx).LogParams
 	if logParams != nil {
 		for k, v := range logParams {
-			if ctx.LogValue(k) == nil {
-				ev := event.ParseExpression(ctx, v)
-				ctx.AddLogValue(k, ev)
-			}
+			//if ctx.LogValue(k) == nil {
+			ev := event.ParseExpression(ctx, v)
+			ctx.AddLogValue(k, ev)
+			//}
 		}
 	}
 	for _, handler := range handlers {
