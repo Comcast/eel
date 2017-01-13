@@ -17,6 +17,7 @@
     "DuplicateTimeout": 0,
     "HttpTransactionHeader": "X-B3-TraceId",
     "HttpTenantHeader": "Xrs-Tenant-Id",
+	"HttpDebugHeader": "X-Debug",
     "CustomProperties": {
         "key" : "value"
     },
