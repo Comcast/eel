@@ -1,9 +1,6 @@
 {
     "Name": "Default",
 	"AppName": "eel",
-    "EventPort": 8080,
-    "EventProxyPath": "/proxy",
-    "EventProcPath": "/proc",
     "Endpoint": "http://localhost:8088",
     "MaxAttempts": 3,
     "InitialDelay": 125,
@@ -20,6 +17,7 @@
     "DuplicateTimeout": 0,
     "HttpTransactionHeader": "X-B3-TraceId",
     "HttpTenantHeader": "Xrs-Tenant-Id",
+	"HttpDebugHeader": "X-Debug",
     "CustomProperties": {
         "key" : "value"
     },

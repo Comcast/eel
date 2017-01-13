@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package handlers
+package jtl
 
 import (
 	"encoding/json"
@@ -23,7 +23,6 @@ import (
 	"net/http"
 	"os"
 
-	. "github.com/Comcast/eel/eel/jtl"
 	. "github.com/Comcast/eel/eel/util"
 )
 

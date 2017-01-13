@@ -28,6 +28,7 @@ type (
 		protocol string
 		api      string
 		verb     string
+		debug    bool
 		auth     map[string]string
 		headers  map[string]string
 		event    *JDoc
@@ -55,6 +56,14 @@ func (p *NullPublisher) GetUrl() string {
 
 func (p *NullPublisher) GetErrors() []error {
 	return GetErrors(p.ctx)
+}
+
+func (p *NullPublisher) SetDebug(debug bool) {
+	p.debug = debug
+}
+
+func (p *NullPublisher) GetDebug() bool {
+	return p.debug
 }
 
 func (p *NullPublisher) SetPath(path string) {

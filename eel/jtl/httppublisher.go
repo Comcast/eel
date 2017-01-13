@@ -34,6 +34,7 @@ type (
 		auth     map[string]string
 		headers  map[string]string
 		event    *JDoc
+		debug    bool
 		ctx      Context
 	}
 )
@@ -82,6 +83,14 @@ func (p *HttpPublisher) GetUrl() string {
 
 func (p *HttpPublisher) GetErrors() []error {
 	return GetErrors(p.ctx)
+}
+
+func (p *HttpPublisher) SetDebug(debug bool) {
+	p.debug = debug
+}
+
+func (p *HttpPublisher) GetDebug() bool {
+	return p.debug
 }
 
 func (p *HttpPublisher) SetPath(path string) {
