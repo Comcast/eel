@@ -27,14 +27,6 @@ import (
 func handleEvent(ctx Context, stats *ServiceStats, event *JDoc, raw string, debug bool, syncExec bool) interface{} {
 	debuginfo := make([]interface{}, 0)
 	ctx.AddLogValue("destination", "unknown")
-	handlers := GetHandlerFactory(ctx).GetHandlersForEvent(ctx, event)
-	if len(handlers) == 0 {
-		ctx.Log().Info("action", "no_matching_handlers")
-		ctx.Log().Debug("debug_action", "no_matching_handlers", "payload", event.GetOriginalObject())
-	}
-	initialCtx := ctx
-	ctx = ctx.SubContext()
-	var wg sync.WaitGroup
 	// add missing debug logs if any
 	logParams := GetConfig(ctx).LogParams
 	if logParams != nil {
@@ -45,6 +37,14 @@ func handleEvent(ctx Context, stats *ServiceStats, event *JDoc, raw string, debu
 			//}
 		}
 	}
+	handlers := GetHandlerFactory(ctx).GetHandlersForEvent(ctx, event)
+	if len(handlers) == 0 {
+		ctx.Log().Info("action", "no_matching_handlers")
+		ctx.Log().Debug("debug_action", "no_matching_handlers", "payload", event.GetOriginalObject())
+	}
+	initialCtx := ctx
+	ctx = ctx.SubContext()
+	var wg sync.WaitGroup
 	for _, handler := range handlers {
 		//TODO: validate JSON schema
 		ctx.AddLogValue("topic", handler.Topic)
