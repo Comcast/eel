@@ -29,6 +29,8 @@ import (
 	. "github.com/Comcast/eel/eel/handlers"
 	. "github.com/Comcast/eel/eel/jtl"
 	. "github.com/Comcast/eel/eel/util"
+
+    _ "net/http/pprof"
 )
 
 // build hint: go build -ldflags "-X main.Version 2.0"
@@ -89,6 +91,12 @@ func startProxyServices(ctx Context) {
 	http.HandleFunc("/event/dummy", DummyEventHandler)
 	http.Handle("/img/", http.StripPrefix("/img/", http.FileServer(http.Dir(filepath.Join(BasePath, "mascot")))))
 	ctx.Log().Info("action", "listening_for_events", "port", eventProxyPort, "proxy_path", eventProxyPath, "proc_path", eventProcPath)
+
+    // refer to https://golang.org/pkg/net/http/pprof
+    go func() {
+    	ctx.Log().Error(http.ListenAndServe("localhost:6060", nil))
+    }()
+
 	err := http.ListenAndServe(":"+strconv.Itoa(eventProxyPort), nil)
 	if err != nil {
 		ctx.Log().Error("error_type", "eel_service", "error", err.Error())
