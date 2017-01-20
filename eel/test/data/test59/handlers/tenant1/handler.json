@@ -1,0 +1,19 @@
+{
+    "Version": "1.0",
+    "Name": "FOO",
+    "Info": "",
+    "Active": true,
+    "Match": null,
+    "IsMatchByExample": true,
+    "TerminateOnMatch": true,
+    "Transformation": {
+        "{{/}}": "{{ptransform('{{join('{{/}}','{{prop('p')}}')}}')}}"
+    },
+	"CustomProperties" : {
+		"p" : {
+			"boo" : "boo"
+		}
+	},
+    "IsTransformationByExample": false,
+    "Protocol": "null"
+}
