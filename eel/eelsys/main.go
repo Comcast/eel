@@ -26,7 +26,6 @@ import (
 	"strconv"
 	"time"
 
-	. "github.com/Comcast/eel/eel/handlers"
 	. "github.com/Comcast/eel/eel/jtl"
 	. "github.com/Comcast/eel/eel/util"
 
@@ -67,10 +66,11 @@ func useCores(ctx Context) {
 
 // startProxyServices starts service and registers all http handlers.
 func startProxyServices(ctx Context) {
-	eventProxyPort := GetConfig(ctx).EventPort
-	if eventProxyPort == 0 {
-		eventProxyPort = 8080
-	}
+    eventProxyPort := GetConfig(ctx).EventPort
+	      if eventProxyPort == 0 {
+		        eventProxyPort = 8080
+}
+  
 	eventProxyPath := GetConfig(ctx).EventProxyPath
 	eventProcPath := GetConfig(ctx).EventProcPath
 	ctx.Log().Info("action", "registering_event_proxy", "path", "http://localhost:"+strconv.Itoa(eventProxyPort)+eventProxyPath)
@@ -92,10 +92,10 @@ func startProxyServices(ctx Context) {
 	http.Handle("/img/", http.StripPrefix("/img/", http.FileServer(http.Dir(filepath.Join(BasePath, "mascot")))))
 	ctx.Log().Info("action", "listening_for_events", "port", eventProxyPort, "proxy_path", eventProxyPath, "proc_path", eventProcPath)
 
-    // refer to https://golang.org/pkg/net/http/pprof
-    go func() {
-    	ctx.Log().Error(http.ListenAndServe("localhost:6060", nil))
-    }()
+  // refer to https://golang.org/pkg/net/http/pprof
+  go func() {
+      ctx.Log().Error(http.ListenAndServe("localhost:6060", nil))
+  }()
 
 	err := http.ListenAndServe(":"+strconv.Itoa(eventProxyPort), nil)
 	if err != nil {
@@ -136,6 +136,8 @@ func initLogging() {
 	Gctx.AddValue(Eel1hrStats, new(ServiceStats))
 	Gctx.AddValue(Eel24hrStats, new(ServiceStats))
 
+	Gctx.AddConfigValue(EelTraceLogger, NewTraceLogger(Gctx, config))
+
 	getWorkQueueFillLevel := func() int {
 		wd := GetWorkDispatcher(Gctx)
 		if wd != nil {
@@ -161,6 +163,27 @@ func initLogging() {
 	}
 }
 
+func registerAdminServices() {
+	http.HandleFunc("/health/shallow", NilHandler)
+	http.HandleFunc("/health/deep", StatusHandler)
+	http.HandleFunc("/health", StatusHandler)
+	http.HandleFunc("/status", StatusHandler)
+	http.HandleFunc("/pluginconfigs", PluginConfigHandler)
+	http.HandleFunc("/plugins", ManagePluginsUIHandler)
+	http.HandleFunc("/plugins/", ManagePluginsHandler)
+	http.HandleFunc("/reload", ReloadConfigHandler)
+	http.HandleFunc("/toggletracelogger", TraceLogConfigHandler)
+	http.HandleFunc("/vet", VetHandler)
+	http.HandleFunc("/test", TopicTestHandler)
+	http.HandleFunc("/test/handlers", HandlersTestHandler)
+	http.HandleFunc("/test/process/", ProcessExpressionHandler)
+	http.HandleFunc("/test/ast", ParserDebugHandler)
+	http.HandleFunc("/test/astjson/", GetASTJsonHandler)
+	http.HandleFunc("/test/asttree/", ParserDebugVizHandler)
+	http.HandleFunc("/event/dummy", DummyEventHandler)
+	http.Handle("/img/", http.StripPrefix("/img/", http.FileServer(http.Dir(filepath.Join(BasePath, "mascot")))))
+}
+
 func main() {
 	flag.Parse()
 	if *tf != "" {
@@ -178,6 +201,13 @@ func main() {
 		dp := NewWorkDispatcher(GetConfig(ctx).WorkerPoolSize, GetConfig(ctx).MessageQueueDepth)
 		dp.Start(ctx)
 		Gctx.AddValue(EelDispatcher, dp)
-		startProxyServices(ctx)
+		registerAdminServices()
+		// register inbound plugins
+		RegisterInboundPluginType(NewStdinPlugin, "STDIN")
+		RegisterInboundPluginType(NewWebhookPlugin, "WEBHOOK")
+		LoadInboundPlugins(Gctx)
+		// hang on channel forever
+		c := make(chan int)
+		<-c
 	}
 }

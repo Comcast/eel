@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package handlers
+package jtl
 
 import (
 	"encoding/json"
@@ -22,13 +22,14 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"time"
 
-	. "github.com/Comcast/eel/eel/jtl"
 	. "github.com/Comcast/eel/eel/util"
 )
 
 // StatusHandler http handler for health and status checks. Writes JSON containing config.json, handler configs and basic stats to w.
 func StatusHandler(w http.ResponseWriter, r *http.Request) {
+	start := time.Now()
 	ctx := Gctx.SubContext()
 	w.Header().Set("Content-Type", "application/json")
 	state := make(map[string]interface{}, 0)
@@ -59,6 +60,7 @@ func StatusHandler(w http.ResponseWriter, r *http.Request) {
 	if host != "" {
 		callstats["Hostname"] = host
 	}
+	elapsed1 := time.Since(start)
 	addrs, err := net.InterfaceAddrs()
 	if err == nil {
 		for _, addr := range addrs {
@@ -69,15 +71,19 @@ func StatusHandler(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}
+	elapsed2 := time.Since(start)
 	state["Stats"] = callstats
 	state["CustomHandlers"] = GetHandlerFactory(ctx).CustomHandlerMap
 	state["TopicHandlers"] = GetHandlerFactory(ctx).TopicHandlerMap
 	buf, err := json.MarshalIndent(state, "", "\t")
+	elapsed3 := time.Since(start)
 	if err != nil {
 		fmt.Fprintf(w, `{"error":"%s"}`, err.Error())
 	} else {
 		fmt.Fprintf(w, string(buf))
 	}
+	elapsed4 := time.Since(start)
+	ctx.Log().Info("action", "health", "d1", int64(elapsed1/1e6), "d2", int64(elapsed2/1e6), "d3", int64(elapsed3/1e6), "d4", int64(elapsed4/1e6))
 }
 
 // VetHandler http handler for vetting all handler configurations. Writes JSON with list of warnings (if any) to w.

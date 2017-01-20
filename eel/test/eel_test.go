@@ -28,7 +28,6 @@ import (
 	"time"
 
 	. "github.com/Comcast/eel/eel/eellib"
-	. "github.com/Comcast/eel/eel/handlers"
 	. "github.com/Comcast/eel/eel/jtl"
 	. "github.com/Comcast/eel/eel/util"
 )
@@ -525,6 +524,16 @@ func TestTrueConditionalCase(t *testing.T) {
 func TestTrueConditionalNested(t *testing.T) {
 	initTests("data/test56/handlers")
 	transformEvent(t, "data/test56/", nil)
+}
+
+func TestETransformFunction(t *testing.T) {
+	initTests("data/test58/handlers")
+	transformEvent(t, "data/test58/", nil)
+}
+
+func TestPTransformFunction(t *testing.T) {
+	initTests("data/test59/handlers")
+	transformEvent(t, "data/test59/", nil)
 }
 
 func TestTopicHandlerParent(t *testing.T) {
