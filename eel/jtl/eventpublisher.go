@@ -27,6 +27,8 @@ type (
 		Publish() (string, error)
 		SetEndpoint(endpoint string)
 		GetEndpoint() string
+		SetDebug(debug bool)
+		GetDebug() bool
 		SetPayload(payload string)
 		GetPayload() string
 		SetAuthInfo(auth map[string]string)

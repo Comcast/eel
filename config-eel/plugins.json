@@ -1,0 +1,20 @@
+[
+	{
+		"Type" : "WEBHOOK",
+		"Name" : "WEBHOOK",
+		"Active" : true,
+		"RestartOk": false,
+		"Parameters" : {
+		    "EventPort": 8080,
+		    "EventProxyPath": "/proxy",
+		    "EventProcPath": "/proc"
+		}
+	},
+	{
+		"Type" : "STDIN",
+		"Name" : "STDIN",
+		"Active" : false,
+		"RestartOk": false,
+		"Parameters" : {}
+	}
+]

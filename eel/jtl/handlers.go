@@ -665,38 +665,41 @@ func (h *HandlerConfiguration) logFilter(ctx Context, event *JDoc, f *Filter) {
 	ctx.Log().Info("action", "filtered_event", "tenant", h.TenantId, "handler", h.Name)
 }
 
-func (h *HandlerConfiguration) applyDebugLogsIfWhiteListed(ctx Context, event *JDoc, wl *JDoc) {
+func (h *HandlerConfiguration) applyDebugLogsIfWhiteListed(ctx Context, event *JDoc, wl *JDoc) bool {
+	debug := false
 	dlp := GetDebugLogParams(ctx)
 	if dlp == nil {
-		//ctx.Log().Info("action", "debug_no_white_list")
-		return
+		ctx.Log().Info("action", "debug_no_white_list")
+		return false
 	}
 	if dlp.IdWhiteList == nil || dlp.LogParams == nil {
-		//ctx.Log().Info("action", "debug_no_white_list")
-		return
+		ctx.Log().Info("action", "debug_no_white_list")
+		return false
 	}
 	wlistId := wl.ParseExpression(ctx, dlp.IdPath)
 	if wlistId == nil {
-		//ctx.Log().Info("action", "debug_no_location")
-		return
+		ctx.Log().Info("action", "debug_no_location")
+		return false
 	}
 	switch wlistId.(type) {
 	case string:
 	default:
-		return
+		return false
 	}
 	c := ctx.SubContext()
 	dlp.Lock.RLock()
 	defer dlp.Lock.RUnlock()
 	if _, ok := dlp.IdWhiteList[wlistId.(string)]; ok {
+		debug = true
 		for k, v := range dlp.LogParams {
 			ev := event.ParseExpression(ctx, v)
 			c.AddLogValue(k, ev)
 		}
 		c.Log().Info("action", "debug_event", "handler", h.Name)
 	} else {
-		//ctx.Log().Info("action", "location_not_in_white_list")
+		//ctx.Log().Info("action", "location_not_in_white_list", "location", wlistId)
 	}
+	return debug
 }
 
 // new version allowing a set of filters presented as array
@@ -737,6 +740,7 @@ func (h *HandlerConfiguration) ProcessEvent(ctx Context, event *JDoc) ([]EventPu
 	/*if h.t == nil {
 		return make([]EventPublisher, 0), errors.New("no transformation")
 	}*/
+	ctx.Log().Debug("debug_action", "event_before_transformation", "payload", event.GetOriginalObject(), "handler", h.Name)
 	if h.Protocol == "" {
 		return make([]EventPublisher, 0), errors.New("no protocol")
 	}
@@ -760,13 +764,20 @@ func (h *HandlerConfiguration) ProcessEvent(ctx Context, event *JDoc) ([]EventPu
 		ctx.AddValue(EelCustomProperties, cp)
 	}
 	// apply debug logs
-	h.applyDebugLogsIfWhiteListed(ctx, event, event)
+	debug := h.applyDebugLogsIfWhiteListed(ctx, event, event)
+	if ctx.ConfigValue(EelTraceLogger) != nil {
+		ctx.ConfigValue(EelTraceLogger).(*TraceLogger).TraceLog(ctx, event, true)
+	}
 	// prepare headers
 	headers := make(map[string]string, 0)
 	if h.HttpHeaders != nil {
 		for hk, jexpr := range h.HttpHeaders {
 			headers[hk] = ToFlatString(event.ParseExpression(ctx, jexpr))
 		}
+	}
+	debugHeaderKey := GetConfig(ctx).HttpDebugHeader
+	if debug && debugHeaderKey != "" {
+		headers[debugHeaderKey] = "true"
 	}
 	// prepare relative paths
 	relativePaths := make([]string, 0)
@@ -844,7 +855,11 @@ func (h *HandlerConfiguration) ProcessEvent(ctx Context, event *JDoc) ([]EventPu
 		}
 		payload = tfd.StringPretty()
 		// apply debug logs
+		ctx.Log().Debug("debug_action", "event_after_transformation", "payload", tfd.GetOriginalObject(), "handler", h.Name)
 		h.applyDebugLogsIfWhiteListed(ctx, tfd, event)
+		if ctx.ConfigValue(EelTraceLogger) != nil {
+			ctx.ConfigValue(EelTraceLogger).(*TraceLogger).TraceLog(ctx, event, false)
+		}
 	}
 	// filtering
 	if h.FilterAfterTransformation {
@@ -875,6 +890,7 @@ func (h *HandlerConfiguration) ProcessEvent(ctx Context, event *JDoc) ([]EventPu
 			publisher.SetPayload(payload)
 			publisher.SetPath(rp)
 			publisher.SetPayloadParsed(tfd)
+			publisher.SetDebug(debug)
 			publishers = append(publishers, publisher)
 		}
 	}

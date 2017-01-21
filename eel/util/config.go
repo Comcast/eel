@@ -31,9 +31,6 @@ type EelSettings struct {
 	AppName                        string
 	ElementsPublishEndpoint        string
 	ElementsWebhookEndpoint        string
-	EventProxyPath                 string
-	EventProcPath                  string
-	EventPort                      int
 	EelWebhook                     string
 	FunctionalMonitoringPort       int
 	Endpoint                       interface{}
@@ -47,6 +44,7 @@ type EelSettings struct {
 	ActionTopics                   []string
 	MaxMessageSize                 int64
 	HttpTransactionHeader          string
+	HttpDebugHeader                string
 	HttpTenantHeader               string
 	HttpTimeout                    time.Duration
 	ResponseHeaderTimeout          time.Duration
@@ -55,6 +53,7 @@ type EelSettings struct {
 	Misc                           map[string]interface{}
 	LogParams                      map[string]string
 	DebugLogParams                 *EelDebugLogParams
+	TraceLogParams                 *EelTraceLogParams
 	WorkerPoolSize                 int
 	MessageQueueTimeout            int
 	MessageQueueDepth              int
@@ -81,6 +80,15 @@ type EelDebugLogParams struct {
 	LogParams      map[string]string
 }
 
+// EelTraceLogParams struct is an optional trace log config in eel settings to be activated for brief periods of time to capture a full trace of incoming or outgoing events
+type EelTraceLogParams struct {
+	Active      bool
+	FileName    string
+	LogIncoming bool
+	LogOutgoing bool
+	LogParams   map[string]string
+}
+
 const (
 	EelFile                 = "mascot/eel.txt"
 	EelConfigFile           = "config-eel/config.json"
@@ -105,6 +113,8 @@ const (
 	EelCustomProperties     = "Eel.CustomProperties"
 	EelRetryService         = "Eel.RetryService"
 	EelErrors               = "Eel.Errors"
+	EelSyncPath             = "Eel.SyncPath"
+	EelTraceLogger          = "Eel.TraceLogger"
 )
 
 const (

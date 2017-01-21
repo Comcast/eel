@@ -27,9 +27,20 @@ import (
 func handleEvent(ctx Context, stats *ServiceStats, event *JDoc, raw string, debug bool, syncExec bool) interface{} {
 	debuginfo := make([]interface{}, 0)
 	ctx.AddLogValue("destination", "unknown")
+	// add missing debug logs if any
+	logParams := GetConfig(ctx).LogParams
+	if logParams != nil {
+		for k, v := range logParams {
+			//if ctx.LogValue(k) == nil {
+			ev := event.ParseExpression(ctx, v)
+			ctx.AddLogValue(k, ev)
+			//}
+		}
+	}
 	handlers := GetHandlerFactory(ctx).GetHandlersForEvent(ctx, event)
 	if len(handlers) == 0 {
 		ctx.Log().Info("action", "no_matching_handlers")
+		ctx.Log().Debug("debug_action", "no_matching_handlers", "payload", event.GetOriginalObject())
 	}
 	initialCtx := ctx
 	ctx = ctx.SubContext()

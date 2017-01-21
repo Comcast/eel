@@ -497,6 +497,28 @@ Example Transformations section in topic handler config:
 },
 ```
 
+### etransform
+
+Selects appropriate handler for event, performs transformation and returns result. Only works if only one handler
+matches the event and the transformation yields only a single result. Otherwise an error will be returned. etransform
+is equivalent to but slightly more efficient than `curl http://localhost:8080/proc`.
+
+Syntax:
+
+```
+{{transform('<doc>')}}
+```
+
+Parameters:
+
+* doc - document to be transformed
+
+Example:
+
+```
+{{etransform('{{/}}')}}
+```
+
 ### itransform
 
 Same as transform() but applies named transformation iteratively if document is an array: In this case the transformation,
