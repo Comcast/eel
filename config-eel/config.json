@@ -25,5 +25,14 @@
 	"TopicPath": "{{/topic}}",
 	"CloseIdleConnectionIntervalSec": 0,
 	"Version": "1.0",
-	"HandlerConfigPath": ""
+	"HandlerConfigPath": "",
+	"TraceLogParams": {
+		"Active": false,
+		"FileName": "event.trace.log",
+		"LogIncoming": true,
+		"LogOutgoing": false,
+		"LogParams": {
+			"payload": "{{/}}"
+		}		
+	}
 }
