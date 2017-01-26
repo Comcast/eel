@@ -164,11 +164,6 @@ func main() {
 		Gctx.AddValue(EelDispatcher, dp)
 		registerAdminServices()
 
-		// resgister profile service
-		go func() {
-			ctx.Log().Error(http.ListenAndServe("localhost:6060", nil))
-		}()
-
 		// register inbound plugins
 		RegisterInboundPluginType(NewStdinPlugin, "STDIN")
 		RegisterInboundPluginType(NewWebhookPlugin, "WEBHOOK")
