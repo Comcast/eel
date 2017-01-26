@@ -26,6 +26,8 @@ import (
 	"strconv"
 	"time"
 
+	_ "net/http/pprof"
+
 	. "github.com/Comcast/eel/eel/jtl"
 	. "github.com/Comcast/eel/eel/util"
 )
@@ -161,10 +163,17 @@ func main() {
 		dp.Start(ctx)
 		Gctx.AddValue(EelDispatcher, dp)
 		registerAdminServices()
+
+		// resgister profile service
+		go func() {
+			ctx.Log().Error(http.ListenAndServe("localhost:6060", nil))
+		}()
+
 		// register inbound plugins
 		RegisterInboundPluginType(NewStdinPlugin, "STDIN")
 		RegisterInboundPluginType(NewWebhookPlugin, "WEBHOOK")
 		LoadInboundPlugins(Gctx)
+
 		// hang on channel forever
 		c := make(chan int)
 		<-c
