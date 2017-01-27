@@ -14,5 +14,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-./eel -path=. -loglevel=info > eel.log &
+./bin/eel -path=. -loglevel=info > eel.log &
 echo $! > bin/eel.pid
