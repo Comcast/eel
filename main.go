@@ -28,6 +28,8 @@ import (
 
 	. "github.com/Comcast/eel/jtl"
 	. "github.com/Comcast/eel/util"
+
+	_ "net/http/pprof"
 )
 
 // build hint: go build -ldflags "-X main.Version 2.0"
