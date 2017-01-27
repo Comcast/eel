@@ -1,7 +1,8 @@
 # EEL - A simple Proxy Service for JSON Event Transformation and Forwarding
 
-## Motivation
+Requires go 1.7 or greater.
 
+----
 It's simple - a single JSON event comes in and one (or maybe a few) transformed events get out.
 Events are arbitrary JSON encoded payloads and they are typically sent around as
 HTTP POSTs. EEL is stateless and therefore scales easily.
@@ -30,6 +31,31 @@ and transform events between upstream and downstream services. The goals of the 
 simple and yet powerful. EEL can be the glue in a JSON based service oriented eco-system.
 
 The syntax of the EEL transformation language is inspired by a few of the core concepts from XPath and XSLT applied to JSON.
+
+## Installation
+
+    go get -u github.com/comcast/eel
+
+## Usage
+```
+Usage of ./eel [options...]
+
+Options:
+  -config  path to config.json. (optional)
+  -env  environment name such as qa, prod for logging. Default is "default"
+  -handlers  path to handlers. (optional)
+  -in  incoming event string or @file.
+  -istbe  is template by example flag. Default true.
+  -loglevel  log level. Default "info". (optional)
+  -path  base path for config.json and handlers (optional)
+  -tf  transformation string or @file
+
+```
+
+## No nonsense
+
+        go build -o bin/eel
+        ./bin/starteel.sh
 
 ## A Simple Example
 
