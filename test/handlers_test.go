@@ -28,7 +28,6 @@ import (
 
 	"testing"
 
-	. "github.com/Comcast/eel"
 	. "github.com/Comcast/eel/jtl"
 	. "github.com/Comcast/eel/util"
 )
@@ -59,8 +58,8 @@ func TestHealthCheckHandler(t *testing.T) {
 	if err != nil {
 		t.Fatalf("json error: %s\n", err.Error())
 	}
-	if statusJSON.ParseExpression(Gctx, "{{/Version}}") != Version {
-		t.Fatalf("wrong version: expected: %s received: %s\n", Version, statusJSON.ParseExpression(Gctx, "{{/Version}}"))
+	if statusJSON.ParseExpression(Gctx, "{{/Version}}") != "1.0" {
+		t.Fatalf("wrong version: expected: %s received: %s\n", "1.0", statusJSON.ParseExpression(Gctx, "{{/Version}}"))
 	}
 }
 
@@ -90,8 +89,8 @@ func TestReloadHandler(t *testing.T) {
 	if err != nil {
 		t.Fatalf("json error: %s\n", err.Error())
 	}
-	if statusJSON.ParseExpression(Gctx, "{{/Version}}") != Version {
-		t.Fatalf("wrong version: expected: %s received: %s\n", Version, statusJSON.ParseExpression(Gctx, "{{/Version}}"))
+	if statusJSON.ParseExpression(Gctx, "{{/Version}}") != "1.0" {
+		t.Fatalf("wrong version: expected: %s received: %s\n", "1.0", statusJSON.ParseExpression(Gctx, "{{/Version}}"))
 	}
 }
 
