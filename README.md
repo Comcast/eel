@@ -189,7 +189,7 @@ Or, you can launch EEL with the handler configurations for a specific test and s
 
 ```
 cd eel/eelsys
-./eelsys -config=../../config-eel/config.json -handlers=../test/data/test01/handlers > eel.log &
+./eelsys -config=../config-eel/config.json -handlers=../test/data/test01/handlers > eel.log &
 curl -X POST --data @../test/data/test01/in.json http://localhost:8080/proc
 ```
 

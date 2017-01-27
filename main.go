@@ -26,8 +26,8 @@ import (
 	"strconv"
 	"time"
 
-	. "github.com/Comcast/eel/eel/jtl"
-	. "github.com/Comcast/eel/eel/util"
+	. "github.com/Comcast/eel/jtl"
+	. "github.com/Comcast/eel/util"
 )
 
 // build hint: go build -ldflags "-X main.Version 2.0"

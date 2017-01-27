@@ -19,7 +19,7 @@ import (
 	"net/http"
 	"strconv"
 
-	. "github.com/Comcast/eel/eel/util"
+	. "github.com/Comcast/eel/util"
 )
 
 type WebhookPlugin struct {

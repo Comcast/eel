@@ -20,14 +20,14 @@ import (
 	"os"
 	"time"
 
-	. "github.com/Comcast/eel/eel/jtl"
-	. "github.com/Comcast/eel/eel/util"
+	. "github.com/Comcast/eel/jtl"
+	. "github.com/Comcast/eel/util"
 )
 
 func initTests(handlers string) {
 	LogsOn := os.Getenv("LOGS_ON")
 	BasePath = ""
-	ConfigPath = "../../" + EelConfigFile
+	ConfigPath = "../" + EelConfigFile
 	HandlerPath = handlers
 	Gctx = NewDefaultContext(L_InfoLevel)
 	Gctx.AddLogValue("app.id", "eel")

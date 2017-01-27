@@ -28,13 +28,13 @@ import (
 
 	"testing"
 
-	. "github.com/Comcast/eel/eel/eelsys"
-	. "github.com/Comcast/eel/eel/jtl"
-	. "github.com/Comcast/eel/eel/util"
+	. "github.com/Comcast/eel"
+	. "github.com/Comcast/eel/jtl"
+	. "github.com/Comcast/eel/util"
 )
 
 func TestHealthCheckHandler(t *testing.T) {
-	initTests("../../config-handlers")
+	initTests("../config-handlers")
 	ts := httptest.NewServer(http.HandlerFunc(StatusHandler))
 	defer ts.Close()
 	client := &http.Client{}
@@ -65,7 +65,7 @@ func TestHealthCheckHandler(t *testing.T) {
 }
 
 func TestReloadHandler(t *testing.T) {
-	initTests("../../config-handlers")
+	initTests("../config-handlers")
 	ts := httptest.NewServer(http.HandlerFunc(ReloadConfigHandler))
 	defer ts.Close()
 	client := &http.Client{}
@@ -96,7 +96,7 @@ func TestReloadHandler(t *testing.T) {
 }
 
 func TestVetHandler(t *testing.T) {
-	initTests("../../config-handlers")
+	initTests("../config-handlers")
 	ts := httptest.NewServer(http.HandlerFunc(VetHandler))
 	defer ts.Close()
 	client := &http.Client{}
@@ -127,7 +127,7 @@ func TestVetHandler(t *testing.T) {
 }
 
 func TestNopHandler(t *testing.T) {
-	initTests("../../config-handlers")
+	initTests("../config-handlers")
 	ts := httptest.NewServer(http.HandlerFunc(NilHandler))
 	defer ts.Close()
 	client := &http.Client{}
@@ -186,7 +186,7 @@ var (
 )
 
 func TestEventHandlerDebug(t *testing.T) {
-	initTests("../../config-handlers")
+	initTests("../config-handlers")
 	ts := httptest.NewServer(http.HandlerFunc(EventHandler))
 	defer ts.Close()
 	client := &http.Client{}
@@ -234,7 +234,7 @@ func TestEventHandlerDebug(t *testing.T) {
 }
 
 func TestEventHandlerSync(t *testing.T) {
-	initTests("../../config-handlers")
+	initTests("../config-handlers")
 	ts := httptest.NewServer(http.HandlerFunc(EventHandler))
 	defer ts.Close()
 	client := &http.Client{}
@@ -272,7 +272,7 @@ func TestEventHandlerSync(t *testing.T) {
 }
 
 func TestEventHandler(t *testing.T) {
-	initTests("../../config-handlers")
+	initTests("../config-handlers")
 	ts := httptest.NewServer(http.HandlerFunc(EventHandler))
 	defer ts.Close()
 	client := &http.Client{}
@@ -299,7 +299,7 @@ func TestEventHandler(t *testing.T) {
 }
 
 /*func TestEventHandlerMulti(t *testing.T) {
-	initTests("../../config-handlers")
+	initTests("../config-handlers")
 	ts := httptest.NewServer(http.HandlerFunc(EventHandler))
 	defer ts.Close()
 	client := &http.Client{}
@@ -330,7 +330,7 @@ func TestEventHandler(t *testing.T) {
 }*/
 
 func TestEventHandlerInvalidJSON(t *testing.T) {
-	initTests("../../config-handlers")
+	initTests("../config-handlers")
 	ts := httptest.NewServer(http.HandlerFunc(EventHandler))
 	defer ts.Close()
 	event := `foo bar`
@@ -357,7 +357,7 @@ func TestEventHandlerInvalidJSON(t *testing.T) {
 }
 
 /*func TestEventHandlerInvalidJSONMulti(t *testing.T) {
-	initTests("../../config-handlers")
+	initTests("../config-handlers")
 	ts := httptest.NewServer(http.HandlerFunc(EventHandler))
 	defer ts.Close()
 	event := `foo bar`
@@ -388,7 +388,7 @@ func TestEventHandlerInvalidJSON(t *testing.T) {
 }*/
 
 func TestEventHandlerBlankMessage(t *testing.T) {
-	initTests("../../config-handlers")
+	initTests("../config-handlers")
 	ts := httptest.NewServer(http.HandlerFunc(EventHandler))
 	defer ts.Close()
 	event := ``
@@ -415,7 +415,7 @@ func TestEventHandlerBlankMessage(t *testing.T) {
 }
 
 func TestEventHandlerLargeMessage(t *testing.T) {
-	initTests("../../config-handlers")
+	initTests("../config-handlers")
 	ts := httptest.NewServer(http.HandlerFunc(EventHandler))
 	defer ts.Close()
 	event := string(make([]byte, 1000000))
@@ -442,7 +442,7 @@ func TestEventHandlerLargeMessage(t *testing.T) {
 }
 
 func TestDropDuplicateEvent(t *testing.T) {
-	initTests("../../config-handlers")
+	initTests("../config-handlers")
 	// turn on duplicate checker
 	dc := NewLocalInMemoryDupChecker(1000, 10000)
 	Gctx.AddValue(EelDuplicateChecker, dc)
