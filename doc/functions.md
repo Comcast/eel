@@ -506,7 +506,7 @@ is equivalent to but slightly more efficient than `curl http://localhost:8080/pr
 Syntax:
 
 ```
-{{transform('<doc>')}}
+{{etransform('<doc>')}}
 ```
 
 Parameters:
@@ -517,6 +517,27 @@ Example:
 
 ```
 {{etransform('{{/}}')}}
+```
+
+### ptransform
+
+Selects appropriate handlers for event, performs transformations and publishes results. ptransform
+is equivalent to but slightly more efficient than `curl http://localhost:8080/proxy`.
+
+Syntax:
+
+```
+{{ptransform('<doc>')}}
+```
+
+Parameters:
+
+* doc - document to be transformed
+
+Example:
+
+```
+{{ptransform('{{/}}')}}
 ```
 
 ### itransform
