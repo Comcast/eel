@@ -29,7 +29,7 @@ import (
 	"github.com/Knetic/govaluate"
 	"github.com/robertkrimen/otto"
 
-	. "github.com/Comcast/eel/eel/util"
+	. "github.com/Comcast/eel/util"
 )
 
 type (

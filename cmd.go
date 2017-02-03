@@ -24,8 +24,8 @@ import (
 	"os"
 	"strings"
 
-	. "github.com/Comcast/eel/eel/eellib"
-	. "github.com/Comcast/eel/eel/util"
+	. "github.com/Comcast/eel/eellib"
+	. "github.com/Comcast/eel/util"
 )
 
 func eelCmd(in, tf string, istbe bool) {

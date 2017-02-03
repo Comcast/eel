@@ -23,7 +23,7 @@ import (
 	"net/http"
 	"time"
 
-	. "github.com/Comcast/eel/eel/util"
+	. "github.com/Comcast/eel/util"
 )
 
 // EventHandler processes incoming events (arbitrary JSON payloads) and places them on the worker pool queue.

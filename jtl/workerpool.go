@@ -19,7 +19,7 @@ package jtl
 import (
 	"strconv"
 
-	. "github.com/Comcast/eel/eel/util"
+	. "github.com/Comcast/eel/util"
 )
 
 // Worker is a worker in the pool

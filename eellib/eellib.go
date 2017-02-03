@@ -21,8 +21,8 @@ import (
 	"errors"
 	"sync"
 
-	. "github.com/Comcast/eel/eel/jtl"
-	. "github.com/Comcast/eel/eel/util"
+	. "github.com/Comcast/eel/jtl"
+	. "github.com/Comcast/eel/util"
 )
 
 // EELInit initalize environment for EEL API use

@@ -26,7 +26,7 @@ import (
 	"sort"
 	"strings"
 
-	. "github.com/Comcast/eel/eel/util"
+	. "github.com/Comcast/eel/util"
 )
 
 type (

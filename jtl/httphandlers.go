@@ -24,7 +24,7 @@ import (
 	"os"
 	"time"
 
-	. "github.com/Comcast/eel/eel/util"
+	. "github.com/Comcast/eel/util"
 )
 
 // StatusHandler http handler for health and status checks. Writes JSON containing config.json, handler configs and basic stats to w.

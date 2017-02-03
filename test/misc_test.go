@@ -23,8 +23,8 @@ import (
 	"testing"
 	"time"
 
-	. "github.com/Comcast/eel/eel/jtl"
-	. "github.com/Comcast/eel/eel/util"
+	. "github.com/Comcast/eel/jtl"
+	. "github.com/Comcast/eel/util"
 )
 
 var (
@@ -62,7 +62,7 @@ var (
 )
 
 func TestJDocEquals(t *testing.T) {
-	initTests("../../config-handlers")
+	initTests("../config-handlers")
 	e1, err := NewJDocFromString(event1)
 	if err != nil {
 		t.Fatal("could not get event1")
@@ -86,7 +86,7 @@ func TestJDocEquals(t *testing.T) {
 }
 
 func TestSimpleJPathExpressions(t *testing.T) {
-	initTests("../../config-handlers")
+	initTests("../config-handlers")
 	e1, err := NewJDocFromString(event1)
 	if err != nil {
 		t.Fatal("could not get event1")
@@ -135,7 +135,7 @@ var (
 )
 
 func TestBadTransformations(t *testing.T) {
-	initTests("../../config-handlers")
+	initTests("../config-handlers")
 	thf := GetHandlerFactory(Gctx)
 	var h HandlerConfiguration
 	err := json.Unmarshal([]byte(badTransformation1), &h)
@@ -161,7 +161,7 @@ func TestBadTransformations(t *testing.T) {
 }
 
 func TestHttpPublisher(t *testing.T) {
-	initTests("../../config-handlers")
+	initTests("../config-handlers")
 	e1, err := NewJDocFromString(event1)
 	if err != nil {
 		t.Fatal("could not get event1")
@@ -192,7 +192,7 @@ func TestHttpPublisher(t *testing.T) {
 }
 
 func TestParserFormat(t *testing.T) {
-	initTests("../../config-handlers")
+	initTests("../config-handlers")
 	e1, err := NewJDocFromString(event1)
 	if err != nil {
 		t.Fatal("could not get event1")
@@ -210,7 +210,7 @@ func TestParserFormat(t *testing.T) {
 }
 
 func TestParserJoin(t *testing.T) {
-	initTests("../../config-handlers")
+	initTests("../config-handlers")
 	e1, err := NewJDocFromString(event1)
 	if err != nil {
 		t.Fatal("could not get event1")
@@ -235,7 +235,7 @@ func TestParserJoin(t *testing.T) {
 }
 
 func TestParserArrayPathAsEval(t *testing.T) {
-	initTests("../../config-handlers")
+	initTests("../config-handlers")
 	e1, err := NewJDocFromString(event1)
 	if err != nil {
 		t.Fatal("could not get event1")
@@ -253,7 +253,7 @@ func TestParserArrayPathAsEval(t *testing.T) {
 }
 
 func TestParserEscape(t *testing.T) {
-	initTests("../../config-handlers")
+	initTests("../config-handlers")
 	e1, err := NewJDocFromString(event1)
 	if err != nil {
 		t.Fatal("could not get event1")
@@ -271,7 +271,7 @@ func TestParserEscape(t *testing.T) {
 }
 
 func TestParserEscapeTwo(t *testing.T) {
-	initTests("../../config-handlers")
+	initTests("../config-handlers")
 	e1, err := NewJDocFromString(event1)
 	if err != nil {
 		t.Fatal("could not get event1")
@@ -289,7 +289,7 @@ func TestParserEscapeTwo(t *testing.T) {
 }
 
 func TestParserEqualsTrue(t *testing.T) {
-	initTests("../../config-handlers")
+	initTests("../config-handlers")
 	e1, err := NewJDocFromString(event1)
 	if err != nil {
 		t.Fatal("could not get event1")
@@ -307,7 +307,7 @@ func TestParserEqualsTrue(t *testing.T) {
 }
 
 func TestParserEqualsFalse(t *testing.T) {
-	initTests("../../config-handlers")
+	initTests("../config-handlers")
 	e1, err := NewJDocFromString(event1)
 	if err != nil {
 		t.Fatal("could not get event1")
@@ -325,7 +325,7 @@ func TestParserEqualsFalse(t *testing.T) {
 }
 
 func TestParserEqualsTrueWithSecondParamString(t *testing.T) {
-	initTests("../../config-handlers")
+	initTests("../config-handlers")
 	test := "{{equals('carthaginem esse delendam', 'carthaginem esse delendam')}}"
 	jexpr, err := NewJExpr(test)
 	if err != nil {
@@ -339,7 +339,7 @@ func TestParserEqualsTrueWithSecondParamString(t *testing.T) {
 }
 
 func TestParserEqualsFalseWithSecondParamString(t *testing.T) {
-	initTests("../../config-handlers")
+	initTests("../config-handlers")
 	test := "{{equals('carthaginem esse delendam', 'carthaginem non esse delendam')}}"
 	jexpr, err := NewJExpr(test)
 	if err != nil {
@@ -353,7 +353,7 @@ func TestParserEqualsFalseWithSecondParamString(t *testing.T) {
 }
 
 func TestParserTrue(t *testing.T) {
-	initTests("../../config-handlers")
+	initTests("../config-handlers")
 	test := "{{true()}}"
 	jexpr, err := NewJExpr(test)
 	if err != nil {
@@ -367,7 +367,7 @@ func TestParserTrue(t *testing.T) {
 }
 
 func TestParserFalse(t *testing.T) {
-	initTests("../../config-handlers")
+	initTests("../config-handlers")
 	test := "{{false()}}"
 	jexpr, err := NewJExpr(test)
 	if err != nil {
@@ -381,7 +381,7 @@ func TestParserFalse(t *testing.T) {
 }
 
 func TestParserIfteFalse(t *testing.T) {
-	initTests("../../config-handlers")
+	initTests("../config-handlers")
 	e1, err := NewJDocFromString(event1)
 	if err != nil {
 		t.Fatal("could not get event1")
@@ -399,7 +399,7 @@ func TestParserIfteFalse(t *testing.T) {
 }
 
 func TestParserIfteTrue(t *testing.T) {
-	initTests("../../config-handlers")
+	initTests("../config-handlers")
 	e1, err := NewJDocFromString(event1)
 	if err != nil {
 		t.Fatal("could not get event1")
@@ -417,7 +417,7 @@ func TestParserIfteTrue(t *testing.T) {
 }
 
 func TestParserIfteOptimal(t *testing.T) {
-	initTests("../../config-handlers")
+	initTests("../config-handlers")
 	e1, err := NewJDocFromString(event1)
 	if err != nil {
 		t.Fatal("could not get event1")
@@ -435,7 +435,7 @@ func TestParserIfteOptimal(t *testing.T) {
 }
 
 func TestParserContainsTrue(t *testing.T) {
-	initTests("../../config-handlers")
+	initTests("../config-handlers")
 	e1, err := NewJDocFromString(event1)
 	if err != nil {
 		t.Fatal("could not get event1")
@@ -453,7 +453,7 @@ func TestParserContainsTrue(t *testing.T) {
 }
 
 func TestParserContainsFalse(t *testing.T) {
-	initTests("../../config-handlers")
+	initTests("../config-handlers")
 	e1, err := NewJDocFromString(event1)
 	if err != nil {
 		t.Fatal("could not get event1")
@@ -471,7 +471,7 @@ func TestParserContainsFalse(t *testing.T) {
 }
 
 func TestParserOrTrue(t *testing.T) {
-	initTests("../../config-handlers")
+	initTests("../config-handlers")
 	e1, err := NewJDocFromString(event1)
 	if err != nil {
 		t.Fatal("could not get event1")
@@ -489,7 +489,7 @@ func TestParserOrTrue(t *testing.T) {
 }
 
 func TestParserOrFalse(t *testing.T) {
-	initTests("../../config-handlers")
+	initTests("../config-handlers")
 	e1, err := NewJDocFromString(event1)
 	if err != nil {
 		t.Fatal("could not get event1")
@@ -507,7 +507,7 @@ func TestParserOrFalse(t *testing.T) {
 }
 
 func TestParserNotFalse(t *testing.T) {
-	initTests("../../config-handlers")
+	initTests("../config-handlers")
 	e1, err := NewJDocFromString(event1)
 	if err != nil {
 		t.Fatal("could not get event1")
@@ -525,7 +525,7 @@ func TestParserNotFalse(t *testing.T) {
 }
 
 func TestParserRegex2(t *testing.T) {
-	initTests("../../config-handlers")
+	initTests("../config-handlers")
 	e1, err := NewJDocFromString(event1)
 	if err != nil {
 		t.Fatal("could not get event1")
@@ -543,7 +543,7 @@ func TestParserRegex2(t *testing.T) {
 }
 
 func TestParserRegexAll(t *testing.T) {
-	initTests("../../config-handlers")
+	initTests("../config-handlers")
 	e1, err := NewJDocFromString(event1)
 	if err != nil {
 		t.Fatal("could not get event1")
@@ -561,7 +561,7 @@ func TestParserRegexAll(t *testing.T) {
 }
 
 func TestParserRegex3(t *testing.T) {
-	initTests("../../config-handlers")
+	initTests("../config-handlers")
 	e1, err := NewJDocFromString(event1)
 	if err != nil {
 		t.Fatal("could not get event1")
@@ -579,7 +579,7 @@ func TestParserRegex3(t *testing.T) {
 }
 
 func TestParserLen(t *testing.T) {
-	initTests("../../config-handlers")
+	initTests("../config-handlers")
 	e1, err := NewJDocFromString(event1)
 	if err != nil {
 		t.Fatal("could not get event1")
@@ -597,7 +597,7 @@ func TestParserLen(t *testing.T) {
 }
 
 func TestParserLen2(t *testing.T) {
-	initTests("../../config-handlers")
+	initTests("../config-handlers")
 	e1, err := NewJDocFromString(event1)
 	if err != nil {
 		t.Fatal("could not get event1")
@@ -615,7 +615,7 @@ func TestParserLen2(t *testing.T) {
 }
 
 func TestParserLen3(t *testing.T) {
-	initTests("../../config-handlers")
+	initTests("../config-handlers")
 	e1, err := NewJDocFromString(event1)
 	if err != nil {
 		t.Fatal("could not get event1")
@@ -633,7 +633,7 @@ func TestParserLen3(t *testing.T) {
 }
 
 func TestParserAndTrue(t *testing.T) {
-	initTests("../../config-handlers")
+	initTests("../config-handlers")
 	e1, err := NewJDocFromString(event1)
 	if err != nil {
 		t.Fatal("could not get event1")
@@ -651,7 +651,7 @@ func TestParserAndTrue(t *testing.T) {
 }
 
 func TestParserAndFalse(t *testing.T) {
-	initTests("../../config-handlers")
+	initTests("../config-handlers")
 	e1, err := NewJDocFromString(event1)
 	if err != nil {
 		t.Fatal("could not get event1")
@@ -678,7 +678,7 @@ var (
 )
 
 func TestNotification2(t *testing.T) {
-	initTests("../../config-handlers")
+	initTests("../config-handlers")
 	e1, err := NewJDocFromString(nest)
 	if err != nil {
 		t.Fatal("could not get event1")
@@ -715,7 +715,7 @@ var (
 
 func TestParserJS3(t *testing.T) {
 	// note that this test is functionally identical to TestParserRegex
-	initTests("../../config-handlers")
+	initTests("../config-handlers")
 	e1, err := NewJDocFromString(iot)
 	if err != nil {
 		t.Fatal("could not get event1")
@@ -746,7 +746,7 @@ var (
 )
 
 func TestParserExistsTrue(t *testing.T) {
-	initTests("../../config-handlers")
+	initTests("../config-handlers")
 	e1, err := NewJDocFromString(exists)
 	if err != nil {
 		t.Fatal("could not get event1")
@@ -764,7 +764,7 @@ func TestParserExistsTrue(t *testing.T) {
 }
 
 func TestParserExistsFalse(t *testing.T) {
-	initTests("../../config-handlers")
+	initTests("../config-handlers")
 	e1, err := NewJDocFromString(exists)
 	if err != nil {
 		t.Fatal("could not get event1")
@@ -782,7 +782,7 @@ func TestParserExistsFalse(t *testing.T) {
 }
 
 func TestParserRegex(t *testing.T) {
-	initTests("../../config-handlers")
+	initTests("../config-handlers")
 	e1, err := NewJDocFromString(iot)
 	if err != nil {
 		t.Fatal("could not get event1")
@@ -800,7 +800,7 @@ func TestParserRegex(t *testing.T) {
 }
 
 func TestParserCalc(t *testing.T) {
-	initTests("../../config-handlers")
+	initTests("../config-handlers")
 	e1, err := NewJDocFromString(iot)
 	if err != nil {
 		t.Fatal("could not get event1")
@@ -818,7 +818,7 @@ func TestParserCalc(t *testing.T) {
 }
 
 func TestParserCalc2(t *testing.T) {
-	initTests("../../config-handlers")
+	initTests("../config-handlers")
 	e1, err := NewJDocFromString(iot)
 	if err != nil {
 		t.Fatal("could not get event1")
@@ -836,7 +836,7 @@ func TestParserCalc2(t *testing.T) {
 }
 
 func TestParserCalc3(t *testing.T) {
-	initTests("../../config-handlers")
+	initTests("../config-handlers")
 	e1, err := NewJDocFromString(iot)
 	if err != nil {
 		t.Fatal("could not get event1")
@@ -854,7 +854,7 @@ func TestParserCalc3(t *testing.T) {
 }
 
 func TestParserCalc4(t *testing.T) {
-	initTests("../../config-handlers")
+	initTests("../config-handlers")
 	e1, err := NewJDocFromString(iot)
 	if err != nil {
 		t.Fatal("could not get event1")
@@ -872,7 +872,7 @@ func TestParserCalc4(t *testing.T) {
 }
 
 func TestParserSelectBool(t *testing.T) {
-	initTests("../../config-handlers")
+	initTests("../config-handlers")
 	e1, err := NewJDocFromString(event1)
 	if err != nil {
 		t.Fatal("could not get event1")
@@ -890,7 +890,7 @@ func TestParserSelectBool(t *testing.T) {
 }
 
 func TestParserJS(t *testing.T) {
-	initTests("../../config-handlers")
+	initTests("../config-handlers")
 	e1, err := NewJDocFromString(event1)
 	if err != nil {
 		t.Fatal("could not get event1")
@@ -908,7 +908,7 @@ func TestParserJS(t *testing.T) {
 }
 
 func TestParserJS2(t *testing.T) {
-	initTests("../../config-handlers")
+	initTests("../config-handlers")
 	e1, err := NewJDocFromString(event1)
 	if err != nil {
 		t.Fatal("could not get event1")
@@ -926,7 +926,7 @@ func TestParserJS2(t *testing.T) {
 }
 
 func TestEvalSpaceIncluded(t *testing.T) {
-	initTests("../../config-handlers")
+	initTests("../config-handlers")
 	e1, err := NewJDocFromString(event1)
 	if err != nil {
 		t.Fatal("could not get event1")
@@ -944,7 +944,7 @@ func TestEvalSpaceIncluded(t *testing.T) {
 }
 
 func TestParserIllegalPath(t *testing.T) {
-	initTests("../../config-handlers")
+	initTests("../config-handlers")
 	test := `{{event}}`
 	_, err := NewJExpr(test)
 	if err == nil {
@@ -953,7 +953,7 @@ func TestParserIllegalPath(t *testing.T) {
 }
 
 func TestParserIllegalPath2(t *testing.T) {
-	initTests("../../config-handlers")
+	initTests("../config-handlers")
 	test := `{/event}}`
 	_, err := NewJExpr(test)
 	if err == nil {
@@ -962,7 +962,7 @@ func TestParserIllegalPath2(t *testing.T) {
 }
 
 func TestParserIllegalFunction(t *testing.T) {
-	initTests("../../config-handlers")
+	initTests("../config-handlers")
 	test := `{{foo()}}`
 	_, err := NewJExpr(test)
 	if err == nil {
@@ -971,7 +971,7 @@ func TestParserIllegalFunction(t *testing.T) {
 }
 
 func TestParserInvalidFunction(t *testing.T) {
-	initTests("../../config-handlers")
+	initTests("../config-handlers")
 	test := `{{alt('')}}`
 	_, err := NewJExpr(test)
 	if err == nil {
@@ -980,7 +980,7 @@ func TestParserInvalidFunction(t *testing.T) {
 }
 
 func TestParserInvalidFunction2(t *testing.T) {
-	initTests("../../config-handlers")
+	initTests("../config-handlers")
 	test := `{{alt('', ''}}`
 	_, err := NewJExpr(test)
 	if err == nil {
@@ -989,7 +989,7 @@ func TestParserInvalidFunction2(t *testing.T) {
 }
 
 func TestParserInvalidFunction3(t *testing.T) {
-	initTests("../../config-handlers")
+	initTests("../config-handlers")
 	test := `{{alt('', ''))}}`
 	_, err := NewJExpr(test)
 	if err == nil {
@@ -998,7 +998,7 @@ func TestParserInvalidFunction3(t *testing.T) {
 }
 
 func TestParserSelectHeader(t *testing.T) {
-	initTests("../../config-handlers")
+	initTests("../config-handlers")
 	e1, err := NewJDocFromString(event1)
 	if err != nil {
 		t.Fatal("could not get event1")
@@ -1054,7 +1054,7 @@ func TestParserSelectHeader(t *testing.T) {
 }
 
 func TestParserSelectNumber(t *testing.T) {
-	initTests("../../config-handlers")
+	initTests("../config-handlers")
 	e1, err := NewJDocFromString(event1)
 	if err != nil {
 		t.Fatal("could not get event1")
@@ -1072,7 +1072,7 @@ func TestParserSelectNumber(t *testing.T) {
 }
 
 func TestParserConstant(t *testing.T) {
-	initTests("../../config-handlers")
+	initTests("../config-handlers")
 	e1, err := NewJDocFromString(event1)
 	if err != nil {
 		t.Fatal("could not get event1")
@@ -1089,7 +1089,7 @@ func TestParserConstant(t *testing.T) {
 }
 
 func TestParserConstantLB(t *testing.T) {
-	initTests("../../config-handlers")
+	initTests("../config-handlers")
 	e1, err := NewJDocFromString(event1)
 	if err != nil {
 		t.Fatal("could not get event1")
@@ -1107,7 +1107,7 @@ func TestParserConstantLB(t *testing.T) {
 }
 
 func TestParserSelectJson(t *testing.T) {
-	initTests("../../config-handlers")
+	initTests("../config-handlers")
 	e1, err := NewJDocFromString(event1)
 	if err != nil {
 		t.Fatal("could not get event1")
@@ -1127,7 +1127,7 @@ func TestParserSelectJson(t *testing.T) {
 }
 
 func TestParserSelectJsonAlt(t *testing.T) {
-	initTests("../../config-handlers")
+	initTests("../config-handlers")
 	e1, err := NewJDocFromString(event1)
 	if err != nil {
 		t.Fatal("could not get event1")
@@ -1147,7 +1147,7 @@ func TestParserSelectJsonAlt(t *testing.T) {
 }
 
 func TestParserSelectString(t *testing.T) {
-	initTests("../../config-handlers")
+	initTests("../config-handlers")
 	e1, err := NewJDocFromString(event1)
 	if err != nil {
 		t.Fatal("could not get event1")
@@ -1165,7 +1165,7 @@ func TestParserSelectString(t *testing.T) {
 }
 
 func TestParserSelectStringAlt(t *testing.T) {
-	initTests("../../config-handlers")
+	initTests("../config-handlers")
 	e1, err := NewJDocFromString(event1)
 	if err != nil {
 		t.Fatal("could not get event1")
@@ -1183,7 +1183,7 @@ func TestParserSelectStringAlt(t *testing.T) {
 }
 
 func TestParserWhiteSpace(t *testing.T) {
-	initTests("../../config-handlers")
+	initTests("../config-handlers")
 	e1, err := NewJDocFromString(event1)
 	if err != nil {
 		t.Fatal("could not get event1")
@@ -1220,7 +1220,7 @@ func TestParserWhiteSpace(t *testing.T) {
 }
 
 func TestParserDeepNesting(t *testing.T) {
-	initTests("../../config-handlers")
+	initTests("../config-handlers")
 	e1, err := NewJDocFromString(event1)
 	if err != nil {
 		t.Fatal("could not get event1")
@@ -1238,7 +1238,7 @@ func TestParserDeepNesting(t *testing.T) {
 }
 
 func TestParserCurl(t *testing.T) {
-	initTests("../../config-handlers")
+	initTests("../config-handlers")
 	e1, err := NewJDocFromString(event1)
 	if err != nil {
 		t.Fatal("could not get event1")
@@ -1261,7 +1261,7 @@ func TestParserCurl(t *testing.T) {
 }
 
 func TestParserCurl2(t *testing.T) {
-	initTests("../../config-handlers")
+	initTests("../config-handlers")
 	e1, err := NewJDocFromString(event1)
 	if err != nil {
 		t.Fatal("could not get event1")
@@ -1300,7 +1300,7 @@ var (
 )
 
 func TestParserArrayPath(t *testing.T) {
-	initTests("../../config-handlers")
+	initTests("../config-handlers")
 	e1, err := NewJDocFromString(nest2)
 	if err != nil {
 		t.Fatal("could not get event1")
@@ -1318,7 +1318,7 @@ func TestParserArrayPath(t *testing.T) {
 }
 
 func TestParserArrayPathByKey(t *testing.T) {
-	initTests("../../config-handlers")
+	initTests("../config-handlers")
 	e1, err := NewJDocFromString(nest2)
 	if err != nil {
 		t.Fatal("could not get event1")
@@ -1336,7 +1336,7 @@ func TestParserArrayPathByKey(t *testing.T) {
 }
 
 func TestParserArrayPathIdxOutOfBounds(t *testing.T) {
-	initTests("../../config-handlers")
+	initTests("../config-handlers")
 	e1, err := NewJDocFromString(nest2)
 	if err != nil {
 		t.Fatal("could not get event1")
@@ -1354,7 +1354,7 @@ func TestParserArrayPathIdxOutOfBounds(t *testing.T) {
 }
 
 func TestParserArrayPathMissingChild(t *testing.T) {
-	initTests("../../config-handlers")
+	initTests("../config-handlers")
 	e1, err := NewJDocFromString(nest2)
 	if err != nil {
 		t.Fatal("could not get event1")

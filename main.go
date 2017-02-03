@@ -26,10 +26,10 @@ import (
 	"strconv"
 	"time"
 
-	_ "net/http/pprof"
+	. "github.com/Comcast/eel/jtl"
+	. "github.com/Comcast/eel/util"
 
-	. "github.com/Comcast/eel/eel/jtl"
-	. "github.com/Comcast/eel/eel/util"
+	_ "net/http/pprof"
 )
 
 // build hint: go build -ldflags "-X main.Version 2.0"
