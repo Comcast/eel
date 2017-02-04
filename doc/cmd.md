@@ -1,6 +1,6 @@
 # Using EEL as Command Line Tool
 
-## Parameters
+## Command Line Options
 
 * in - (single) incoming event string surrounded by single quotes or as file prefixed with @
 * tf - JSON transformation as string surrounded by single quotes (one of tf or tff is mandatory) or as file prefixed with @

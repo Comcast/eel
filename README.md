@@ -34,28 +34,31 @@ The syntax of the EEL transformation language is inspired by a few of the core c
 
 ## Installation
 
-    go get -u github.com/comcast/eel
+```
+go get -u github.com/comcast/eel
+```
 
 ## Usage
+
 ```
-Usage of ./eel [options...]
+./eel [options...]
+```
 
 Options:
-  -config  path to config.json. (optional)
-  -env  environment name such as qa, prod for logging. Default is "default"
-  -handlers  path to handlers. (optional)
-  -in  incoming event string or @file.
-  -istbe  is template by example flag. Default true.
-  -loglevel  log level. Default "info". (optional)
-  -path  base path for config.json and handlers (optional)
-  -tf  transformation string or @file
 
 ```
+-config  path to config.json (default is ./config-eel/config.json)
+-handlers  path to handlers (default is ./config-handlers)
+-loglevel  log level (default is "info")
+-env  environment name such as qa, prod for logging (default is "default")
+```
 
-## No nonsense
+## No Nonsense
 
-        go build -o bin/eel
-        ./bin/starteel.sh
+```
+go build -o bin/eel
+./bin/starteel.sh
+```
 
 ## A Simple Example
 
