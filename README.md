@@ -60,6 +60,30 @@ go build -o bin/eel
 ./bin/starteel.sh
 ```
 
+## Docker way
+
+Docker 1.13+ verified.
+
+Build a dev image
+
+```
+docker build -t eel:dev .
+```
+
+Run an instance
+
+```
+docker run --rm -p 8080:8080 --name eel-dev eel:dev
+```
+
+The command above will utilize port `8080` of your host.
+You can change it to any other port via `-p ANYOTHERPORT:8080`
+
+To pass parameters to `eel` you can use `EEL_PARAMS` env variable, e.g.
+```
+docker run --rm -e "EEL_PARAMS=-loglevel error" -p 8080:8080 --name eel-dev eel:dev
+```
+
 ## A Simple Example
 
 Transformation handlers are used to tell EEL if and how to process JSON events it receives and where to
