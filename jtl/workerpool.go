@@ -19,7 +19,7 @@ package jtl
 import (
 	"strconv"
 
-	. "github.com/Comcast/eel/eel/util"
+	. "github.com/Comcast/eel/util"
 )
 
 // Worker is a worker in the pool
@@ -32,8 +32,9 @@ type Worker struct {
 
 // WorkRequest is a work request
 type WorkRequest struct {
-	Message string
-	Ctx     Context
+	Raw   string
+	Event *JDoc
+	Ctx   Context
 }
 
 // WorkDispatcher dispatches work requests to workers in the pool using channels
@@ -71,13 +72,7 @@ func (w *Worker) Start() {
 			case work := <-w.work:
 				stats := work.Ctx.Value(EelTotalStats).(*ServiceStats)
 				//w.ctx.Log.Info("action", "received_work", "id", strconv.Itoa(w.id))
-				msg, err := NewJDocFromString(work.Message)
-				if err != nil {
-					work.Ctx.Log().Error("status", "400", "action", "rejected", "error_type", "rejected", "cause", "invalid_json", "error", err.Error(), "content", work.Message)
-					stats.IncErrors()
-				} else {
-					handleEvent(work.Ctx, stats, msg, work.Message, false, false)
-				}
+				handleEvent(work.Ctx, stats, work.Event, work.Raw, false, false)
 				//w.ctx.Log.Info("action", "handled_work", "id", strconv.Itoa(w.id))
 			case <-w.quitChan:
 				Gctx.Log().Info("action", "stopping_worker", "id", strconv.Itoa(w.id))

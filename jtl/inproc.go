@@ -23,7 +23,7 @@ import (
 	"net/http"
 	"time"
 
-	. "github.com/Comcast/eel/eel/util"
+	. "github.com/Comcast/eel/util"
 )
 
 // EventHandler processes incoming events (arbitrary JSON payloads) and places them on the worker pool queue.
@@ -106,7 +106,7 @@ func EventHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// json validation maybe only in debug mode?
-	msg, err := NewJDocFromString(string(body))
+	evt, err := NewJDocFromString(string(body))
 	if err != nil {
 		ctx.Log().Error("status", "400", "action", "rejected", "error_type", "rejected", "cause", "invalid_json", "error", err.Error(), "trace.in.data", string(body))
 		ctx.Log().Metric("rejected", M_Namespace, "xrs", M_Metric, "rejected", M_Unit, "Count", M_Dims, "app="+AppId+"&env="+EnvName+"&instance="+InstanceName, M_Val, 1.0)
@@ -118,7 +118,7 @@ func EventHandler(w http.ResponseWriter, r *http.Request) {
 	stats.IncBytesIn(len(body))
 	if GetConfig(ctx).LogParams != nil {
 		for k, v := range GetConfig(ctx).LogParams {
-			ev := msg.ParseExpression(ctx, v)
+			ev := evt.ParseExpression(ctx, v)
 			ctx.AddLogValue(k, ev)
 		}
 	}
@@ -126,7 +126,7 @@ func EventHandler(w http.ResponseWriter, r *http.Request) {
 		ctx.Log().Info("status", "200", "action", "accepted")
 		ctx.Log().Metric("accepted", M_Namespace, "xrs", M_Metric, "accepted", M_Unit, "Count", M_Dims, "app="+AppId+"&env="+EnvName+"&instance="+InstanceName, M_Val, 1.0)
 		var events interface{}
-		events = handleEvent(ctx, stats, msg, string(body), debug, sync)
+		events = handleEvent(ctx, stats, evt, string(body), debug, sync)
 		if sync {
 			switch events.(type) {
 			case []interface{}:
@@ -149,7 +149,7 @@ func EventHandler(w http.ResponseWriter, r *http.Request) {
 	} else {
 		if ctx.Value(EelDispatcher) != nil {
 			dp := GetWorkDispatcher(ctx)
-			work := WorkRequest{Message: string(body), Ctx: ctx}
+			work := WorkRequest{Raw: string(body), Event: evt, Ctx: ctx}
 			select {
 			case dp.WorkQueue <- &work:
 				ctx.Log().Info("status", "202", "action", "accepted")

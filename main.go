@@ -26,8 +26,10 @@ import (
 	"strconv"
 	"time"
 
-	. "github.com/Comcast/eel/eel/jtl"
-	. "github.com/Comcast/eel/eel/util"
+	. "github.com/Comcast/eel/jtl"
+	. "github.com/Comcast/eel/util"
+
+	_ "net/http/pprof"
 )
 
 // build hint: go build -ldflags "-X main.Version 2.0"
@@ -161,10 +163,12 @@ func main() {
 		dp.Start(ctx)
 		Gctx.AddValue(EelDispatcher, dp)
 		registerAdminServices()
+
 		// register inbound plugins
 		RegisterInboundPluginType(NewStdinPlugin, "STDIN")
 		RegisterInboundPluginType(NewWebhookPlugin, "WEBHOOK")
 		LoadInboundPlugins(Gctx)
+
 		// hang on channel forever
 		c := make(chan int)
 		<-c

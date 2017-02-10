@@ -29,7 +29,7 @@ import (
 	"github.com/Knetic/govaluate"
 	"github.com/robertkrimen/otto"
 
-	. "github.com/Comcast/eel/eel/util"
+	. "github.com/Comcast/eel/util"
 )
 
 type (
@@ -1266,9 +1266,16 @@ func fnETransform(ctx Context, doc *JDoc, params []string) interface{} {
 		AddError(ctx, RuntimeError{fmt.Sprintf("too many matching handlers found in call to etransform function"), "etransform", params})
 		return nil
 	}
+	// apply debug logs
+	logParams := GetConfig(ctx).LogParams
+	if logParams != nil {
+		for k, v := range logParams {
+			ev := event.ParseExpression(ctx, v)
+			ctx.AddLogValue(k, ev)
+		}
+	}
 	// apply handler / transformation
-	h := handlers[0]
-	eps, err := h.ProcessEvent(Gctx.SubContext(), event)
+	eps, err := handlers[0].ProcessEvent(Gctx.SubContext(), event)
 	if err != nil {
 		ctx.Log().Error("error_type", "func_etransform", "op", "etransform", "cause", "bad_transformation", "params", params)
 		stats.IncErrors()
@@ -1295,7 +1302,7 @@ func fnETransform(ctx Context, doc *JDoc, params []string) interface{} {
 // fnPTransform function applies matching transformation to document passed in as parameter. Any resulting publisher(s) will be
 // executed (equivalent to curl http://localhost:8080/proxy).
 func fnPTransform(ctx Context, doc *JDoc, params []string) interface{} {
-	//TODO: note: calling ptransform in sync or debug mode does not make sense - should we raise an error in such a scenario?
+	// note: calling ptransform in sync or debug mode does not make sense - should we raise an error in such a scenario?
 	stats := ctx.Value(EelTotalStats).(*ServiceStats)
 	if params == nil || len(params) == 0 || len(params) > 1 {
 		ctx.Log().Error("error_type", "func_ptransform", "op", "etransform", "cause", "wrong_number_of_parameters", "params", params)
@@ -1311,6 +1318,14 @@ func fnPTransform(ctx Context, doc *JDoc, params []string) interface{} {
 		stats.IncErrors()
 		AddError(ctx, SyntaxError{fmt.Sprintf("non json parameters in call to ptransform function"), "etransform", params})
 		return nil
+	}
+	// apply debug logs
+	logParams := GetConfig(ctx).LogParams
+	if logParams != nil {
+		for k, v := range logParams {
+			ev := event.ParseExpression(ctx, v)
+			ctx.AddLogValue(k, ev)
+		}
 	}
 	// handle event and execute publisher(s)
 	// both sync=true or debug=true would not make sense here

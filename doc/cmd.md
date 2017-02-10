@@ -1,6 +1,6 @@
 # Using EEL as Command Line Tool
 
-## Parameters
+## Command Line Options
 
 * in - (single) incoming event string surrounded by single quotes or as file prefixed with @
 * tf - JSON transformation as string surrounded by single quotes (one of tf or tff is mandatory) or as file prefixed with @
@@ -32,11 +32,11 @@ cat multipleevents.json | ./eelsys -tf='{"{{/}}":"{{/}}"}' -istbe=false
 You can even use entire transformation handler files:
 
 ```
-./eelsys -in='{"foo":"bar"}' -tf=@../../config-handlers/tenant1/default.json
+./eelsys -in='{"foo":"bar"}' -tf=@../config-handlers/tenant1/default.json
 ```
 
 Just for fun: Using the command line version of EEL to parse log output of proxy version of EEL:
 
 ```
-./eelsys -config=../../config-eel/config.json -handlers=../../config-handlers/ | ./eelsys -tf='{"{{/}}":"{{/}}"}' -istbe=false
+./eelsys -config=../config-eel/config.json -handlers=../config-handlers/ | ./eelsys -tf='{"{{/}}":"{{/}}"}' -istbe=false
 ``` 

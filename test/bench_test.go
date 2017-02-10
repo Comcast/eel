@@ -26,8 +26,8 @@ import (
 	"testing"
 	"time"
 
-	. "github.com/Comcast/eel/eel/jtl"
-	. "github.com/Comcast/eel/eel/util"
+	. "github.com/Comcast/eel/jtl"
+	. "github.com/Comcast/eel/util"
 )
 
 func benchmarkSingleEvent(b *testing.B, folder string, headers map[string]string) {

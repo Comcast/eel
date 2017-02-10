@@ -22,7 +22,7 @@ import (
 	"os"
 	"time"
 
-	. "github.com/Comcast/eel/eel/util"
+	. "github.com/Comcast/eel/util"
 )
 
 type StdinPlugin struct {
@@ -55,18 +55,19 @@ func (p *StdinPlugin) StartStdInConsumer(ctx Context, r io.Reader) {
 		ctx.Log().Error("error_type", "stdin_consumer_error", "cause", "no_work_dispatcher", "op", "stdin")
 		return
 	}
+	stats := ctx.Value(EelTotalStats).(*ServiceStats)
 	traceHeaderKey := GetConfig(ctx).HttpTransactionHeader
 	timeOutMS := time.Duration(GetConfig(ctx).MessageQueueTimeout)
 	//for scanner.Scan() {
 	for {
-		//msgBody := scanner.Text()
+		//body := scanner.Text()
 		line, isPrefix, err := stdinreader.ReadLine()
 		if err != nil {
 			ctx.Log().Error("error_type", "stdin_consumer_error", "cause", "read_line", "error", err.Error(), "action", "exiting_with_error_code", "expect", "restart_by_supervisord")
 			// exit here banking on supervisord to restart a healthy system
 			os.Exit(1)
 		}
-		msgBody := string(line)
+		body := string(line)
 		for isPrefix {
 			line, isPrefix, err = stdinreader.ReadLine()
 			if err != nil {
@@ -75,9 +76,9 @@ func (p *StdinPlugin) StartStdInConsumer(ctx Context, r io.Reader) {
 				os.Exit(1)
 			}
 			ctx.Log().Info("action", "read_continuation", "op", "stdin")
-			msgBody += string(line)
+			body += string(line)
 		}
-		if msgBody == "" {
+		if body == "" {
 			ctx.Log().Info("action", "blank_message", "op", "stdin")
 			continue
 		}
@@ -85,7 +86,21 @@ func (p *StdinPlugin) StartStdInConsumer(ctx Context, r io.Reader) {
 		sctx.AddLogValue("tx.traceId", sctx.Id())
 		sctx.AddValue("tx.traceId", sctx.Id())
 		sctx.AddValue(traceHeaderKey, sctx.Id())
-		work := WorkRequest{Message: msgBody, Ctx: sctx}
+		evt, err := NewJDocFromString(body)
+		if err != nil {
+			ctx.Log().Error("error_type", "rejected", "cause", "invalid_json", "error", err.Error(), "trace.in.data", body, "op", "stdin")
+			ctx.Log().Metric("rejected", M_Namespace, "xrs", M_Metric, "rejected", M_Unit, "Count", M_Dims, "app="+AppId+"&env="+EnvName+"&instance="+InstanceName, M_Val, 1.0)
+			stats.IncErrors()
+			continue
+		}
+		if GetConfig(ctx).LogParams != nil {
+			for k, v := range GetConfig(ctx).LogParams {
+				ev := evt.ParseExpression(ctx, v)
+				sctx.AddLogValue(k, ev)
+			}
+		}
+		stats.IncBytesIn(len(body))
+		work := WorkRequest{Raw: body, Event: evt, Ctx: sctx}
 		select {
 		case dp.WorkQueue <- &work:
 			sctx.Log().Info("action", "accepted", "op", "stdin")

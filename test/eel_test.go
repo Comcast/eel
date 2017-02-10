@@ -27,13 +27,13 @@ import (
 	"testing"
 	"time"
 
-	. "github.com/Comcast/eel/eel/eellib"
-	. "github.com/Comcast/eel/eel/jtl"
-	. "github.com/Comcast/eel/eel/util"
+	. "github.com/Comcast/eel/eellib"
+	. "github.com/Comcast/eel/jtl"
+	. "github.com/Comcast/eel/util"
 )
 
 func TestEELLibrary(t *testing.T) {
-	initTests("../../config-handlers")
+	initTests("../config-handlers")
 	in, err := NewJDocFromString(`{ "message" : "hello world!!!" }`)
 	if err != nil {
 		t.Fatalf("could not parse in event: %s\n", err.Error())
@@ -66,7 +66,7 @@ func TestEELLibrary2(t *testing.T) {
 	ctx.AddValue(EelTotalStats, eelServiceStats)
 	InitHttpTransport(ctx)
 	// load handlers from folder: note parameter is an array of one or more folders
-	eelHandlerFactory, warnings := NewHandlerFactory(ctx, []string{"../../config-handlers"})
+	eelHandlerFactory, warnings := NewHandlerFactory(ctx, []string{"../config-handlers"})
 	// check if parsing handlers caused warnings
 	for _, w := range warnings {
 		t.Logf("warning loading handlers: %s\n", w)
@@ -116,7 +116,7 @@ func TestEELLibrary3Sequential(t *testing.T) {
 	ctx := NewDefaultContext(L_InfoLevel)
 	EELInit(ctx)
 	// load handlers from folder: note parameter is an array of one or more folders
-	eelHandlerFactory, warnings := EELNewHandlerFactory(ctx, "../../config-handlers")
+	eelHandlerFactory, warnings := EELNewHandlerFactory(ctx, "../config-handlers")
 	// check if parsing handlers caused warnings
 	for _, w := range warnings {
 		t.Logf("warning loading handlers: %s\n", w)
@@ -143,7 +143,7 @@ func TestEELLibrary3Concurrent(t *testing.T) {
 	ctx := NewDefaultContext(L_InfoLevel)
 	EELInit(ctx)
 	// load handlers from folder: note parameter is an array of one or more folders
-	eelHandlerFactory, warnings := EELNewHandlerFactory(ctx, "../../config-handlers")
+	eelHandlerFactory, warnings := EELNewHandlerFactory(ctx, "../config-handlers")
 	// check if parsing handlers caused warnings
 	for _, w := range warnings {
 		t.Logf("warning loading handlers: %s\n", w)

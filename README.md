@@ -1,7 +1,8 @@
 # EEL - A simple Proxy Service for JSON Event Transformation and Forwarding
 
-## Motivation
+Requires go 1.7 or greater.
 
+----
 It's simple - a single JSON event comes in and one (or maybe a few) transformed events get out.
 Events are arbitrary JSON encoded payloads and they are typically sent around as
 HTTP POSTs. EEL is stateless and therefore scales easily.
@@ -30,6 +31,58 @@ and transform events between upstream and downstream services. The goals of the 
 simple and yet powerful. EEL can be the glue in a JSON based service oriented eco-system.
 
 The syntax of the EEL transformation language is inspired by a few of the core concepts from XPath and XSLT applied to JSON.
+
+## Installation
+
+```
+go get -u github.com/comcast/eel
+```
+
+## Usage
+
+```
+./eel [options...]
+```
+
+Options:
+
+```
+-config  path to config.json (default is ./config-eel/config.json)
+-handlers  path to handlers (default is ./config-handlers)
+-loglevel  log level (default is "info")
+-env  environment name such as qa, prod for logging (default is "default")
+```
+
+## No Nonsense
+
+```
+go build -o bin/eel
+./bin/starteel.sh
+```
+
+## Docker way
+
+Docker 1.13+ verified.
+
+Build a dev image
+
+```
+docker build -t eel:dev .
+```
+
+Run an instance
+
+```
+docker run --rm -p 8080:8080 --name eel-dev eel:dev
+```
+
+The command above will utilize port `8080` of your host.
+You can change it to any other port via `-p ANYOTHERPORT:8080`
+
+To pass parameters to `eel` you can use `EEL_PARAMS` env variable, e.g.
+```
+docker run --rm -e "EEL_PARAMS=-loglevel error" -p 8080:8080 --name eel-dev eel:dev
+```
 
 ## A Simple Example
 
@@ -189,7 +242,7 @@ Or, you can launch EEL with the handler configurations for a specific test and s
 
 ```
 cd eel/eelsys
-./eelsys -config=../../config-eel/config.json -handlers=../test/data/test01/handlers > eel.log &
+./eelsys -config=../config-eel/config.json -handlers=../test/data/test01/handlers > eel.log &
 curl -X POST --data @../test/data/test01/in.json http://localhost:8080/proc
 ```
 

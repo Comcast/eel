@@ -26,7 +26,7 @@ import (
 	"sort"
 	"strings"
 
-	. "github.com/Comcast/eel/eel/util"
+	. "github.com/Comcast/eel/util"
 )
 
 type (
@@ -669,11 +669,11 @@ func (h *HandlerConfiguration) applyDebugLogsIfWhiteListed(ctx Context, event *J
 	debug := false
 	dlp := GetDebugLogParams(ctx)
 	if dlp == nil {
-		ctx.Log().Info("action", "debug_no_white_list")
+		//ctx.Log().Info("action", "debug_no_white_list")
 		return false
 	}
 	if dlp.IdWhiteList == nil || dlp.LogParams == nil {
-		ctx.Log().Info("action", "debug_no_white_list")
+		//ctx.Log().Info("action", "debug_no_white_list")
 		return false
 	}
 	wlistId := wl.ParseExpression(ctx, dlp.IdPath)

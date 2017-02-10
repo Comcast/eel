@@ -30,7 +30,7 @@ import (
 	"strings"
 	"time"
 
-	. "github.com/Comcast/eel/eel/util"
+	. "github.com/Comcast/eel/util"
 )
 
 type InboundPlugin interface {
