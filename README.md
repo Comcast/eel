@@ -60,7 +60,7 @@ go build -o bin/eel
 ./bin/starteel.sh
 ```
 
-## Docker way
+## Docker Alternative
 
 Docker 1.13+ verified.
 
@@ -137,7 +137,7 @@ Launch EEL as a service and start listening to incoming events.
 Send a test event to EEL.
 
 ```
-curl -X POST --data '{ "message" : "hello world!!!" }' http://localhost:8080/proxy
+curl -X POST --data '{ "message" : "hello world!!!" }' http://localhost:8080/v1/proxy
 ```
 
 Output:
@@ -150,7 +150,7 @@ You can check EEL's log output `eel.log` to see if and how the event is processe
 debug response using the `X-Debug` header.
 
 ```
-curl -X POST -H 'X-Debug: true' --data '{ "message" : "hello world!!!" }' http://localhost:8080/proxy
+curl -X POST -H 'X-Debug: true' --data '{ "message" : "hello world!!!" }' http://localhost:8080/v1/proxy
 ```
 
 Output:
@@ -184,10 +184,10 @@ Output:
 ]
 ```
 
-Or, you can use the `/proc` instead of the `/proxy` endpoint to get an immediate response containing the transformed event as it would be forwarded to the downstream service.
+Or, you can use the `/v1/proc` instead of the `/v1/proxy` endpoint to get an immediate response containing the transformed event as it would be forwarded to the downstream service.
 
 ```
-curl -X POST --data '{ "message" : "hello world!!!" }' http://localhost:8080/proc
+curl -X POST --data '{ "message" : "hello world!!!" }' http://localhost:8080/v1/proc
 ```
 
 Output:
@@ -203,7 +203,7 @@ Output:
 To review the current set of active transformation handlers call the health check API.
 
 ```
-curl http://localhost:8080/health
+curl http://localhost:8080/v1/health
 ```
 
 Stop EEL.
@@ -217,7 +217,7 @@ Stop EEL.
 You can also start experimenting with EEL by using the command line parameters. Example:
 
 ```
-./eelsys -in='{"foo":"bar"}' -tf='{"Foo":"{{/foo}}"}' -istbe=true
+./eel -in='{"foo":"bar"}' -tf='{"Foo":"{{/foo}}"}' -istbe=true
 ```
 
 More examples can be found [here ](doc/cmd.md).
@@ -241,9 +241,8 @@ go test -v
 Or, you can launch EEL with the handler configurations for a specific test and send the `in.json` event manually.
 
 ```
-cd eel/eelsys
-./eelsys -config=../config-eel/config.json -handlers=../test/data/test01/handlers > eel.log &
-curl -X POST --data @../test/data/test01/in.json http://localhost:8080/proc
+./eel -handlers=test/data/test01/handlers > eel.log &
+curl -X POST --data @test/data/test01/in.json http://localhost:8080/v1/proc
 ```
 
 No | Name | Test Name | Description
