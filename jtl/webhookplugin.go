@@ -57,6 +57,8 @@ func (p *WebhookPlugin) startWebhookServices(ctx Context) {
 	eventProcPath := p.GetSettings().Parameters["EventProcPath"].(string)
 	http.HandleFunc(eventProxyPath, EventHandler)
 	http.HandleFunc(eventProcPath, EventHandler)
+	http.HandleFunc("/elementsevent", EventHandler) // hard coded during transition period
+	http.HandleFunc("/notify", EventHandler)        // hard coded during transition period
 	ctx.Log().Info("action", "listening_for_events", "port", eventProxyPort, "proxy_path", eventProxyPath, "proc_path", eventProcPath, "op", "webhook")
 	err := http.ListenAndServe(":"+strconv.Itoa(eventProxyPort), nil)
 	if err != nil {

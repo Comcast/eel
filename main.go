@@ -183,14 +183,11 @@ func main() {
 		dp.Start(ctx)
 		Gctx.AddValue(EelDispatcher, dp)
 		registerAdminServices()
-
 		// register inbound plugins
 		RegisterInboundPluginType(NewStdinPlugin, "STDIN")
 		RegisterInboundPluginType(NewWebhookPlugin, "WEBHOOK")
 		LoadInboundPlugins(Gctx)
-
 		// hang on channel forever
-		c := make(chan int)
-		<-c
+		<-make(chan int)
 	}
 }
