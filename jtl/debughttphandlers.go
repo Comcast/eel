@@ -155,14 +155,7 @@ func PostHandler(w http.ResponseWriter, r *http.Request) {
 // ProcessExpressionHandler http handler to process jpath expression given as part of the URL and writes results to w.
 func ProcessExpressionHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := Gctx.SubContext()
-	if !strings.HasPrefix(r.URL.Path, "/test/process/") {
-		ctx.Log().Error("comp", "debug", "status", "500", "action", "rejected", "error_type", "rejected", "cause", "invalid_path")
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, `{"error":"invalid path"}`)
-		fmt.Fprintf(w, "\n")
-		return
-	}
-	expression := r.URL.Path[len("/test/process/"):]
+	expression := r.URL.Path[strings.LastIndex(r.URL.Path, "/")+1:]
 	if expression == "" {
 		ctx.Log().Error("comp", "debug", "status", "500", "action", "rejected", "error_type", "rejected", "cause", "blank_expression")
 		w.WriteHeader(http.StatusInternalServerError)
@@ -216,14 +209,7 @@ func GetASTJsonHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "\n")
 		return
 	}
-	if !strings.HasPrefix(r.URL.Path, "/test/astjson/") {
-		ctx.Log().Error("comp", "debug", "status", "500", "action", "rejected", "error_type", "rejected", "cause", "invalid_path")
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, `{"error":"invalid path"}`)
-		fmt.Fprintf(w, "\n")
-		return
-	}
-	data := r.URL.Path[len("/test/astjson/"):]
+	data := r.URL.Path[strings.Index(r.URL.Path, "/test/astjson/")+len("/test/astjson/"):]
 	if data == "" {
 		ctx.Log().Error("comp", "debug", "status", "500", "action", "rejected", "error_type", "rejected", "cause", "blank_expression")
 		w.WriteHeader(http.StatusInternalServerError)
@@ -278,14 +264,7 @@ func GetASTJsonHandler(w http.ResponseWriter, r *http.Request) {
 // ParserDebugVizHandler http handler for D3 vizualization of jpath expression AST
 func ParserDebugVizHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := Gctx.SubContext()
-	if !strings.HasPrefix(r.URL.Path, "/test/asttree/") {
-		ctx.Log().Error("comp", "debug", "status", "500", "action", "rejected", "error_type", "rejected", "cause", "invalid_path")
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, `{"error":"invalid path"}`)
-		fmt.Fprintf(w, "\n")
-		return
-	}
-	expression := r.URL.Path[len("/test/asttree/"):]
+	expression := r.URL.Path[strings.Index(r.URL.Path, "/test/asttree/")+len("/test/asttree/"):]
 	if expression == "" {
 		ctx.Log().Error("comp", "debug", "status", "500", "action", "rejected", "error_type", "rejected", "cause", "blank_expression")
 		w.WriteHeader(http.StatusInternalServerError)
