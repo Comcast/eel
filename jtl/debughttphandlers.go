@@ -198,10 +198,10 @@ func ProcessExpressionHandler(w http.ResponseWriter, r *http.Request) {
 
 // GetASTJsonHandler http handler for step debugging of jpath expressions. Processes iter number of iterations of collapsing
 // the AST of a jpath expression given as part of the URL. The jpath expression operates against a JSON document stored at
-// events/asttest.json and writes D3 JSON results to w.
+// test/data/test01/in.json and writes D3 JSON results to w.
 func GetASTJsonHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := Gctx.SubContext()
-	doc, err := NewJDocFromFile(filepath.Join(BasePath, "events/asttest.json"))
+	doc, err := NewJDocFromFile(filepath.Join(BasePath, "test/data/test01/in.json"))
 	if err != nil {
 		ctx.Log().Error("comp", "debug", "status", "500", "action", "rejected", "error_type", "rejected", "cause", "error_loading_asttest_doc", "error", err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
