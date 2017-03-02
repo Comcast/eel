@@ -137,7 +137,7 @@ Launch EEL as a service and start listening to incoming events.
 Send a test event to EEL.
 
 ```
-curl -X POST --data '{ "message" : "hello world!!!" }' http://localhost:8080/v1/proxy
+curl -X POST --data '{ "message" : "hello world!!!" }' http://localhost:8080/v1/events
 ```
 
 Output:
@@ -150,7 +150,7 @@ You can check EEL's log output `eel.log` to see if and how the event is processe
 debug response using the `X-Debug` header.
 
 ```
-curl -X POST -H 'X-Debug: true' --data '{ "message" : "hello world!!!" }' http://localhost:8080/v1/proxy
+curl -X POST -H 'X-Debug: true' --data '{ "message" : "hello world!!!" }' http://localhost:8080/v1/events
 ```
 
 Output:
@@ -184,10 +184,10 @@ Output:
 ]
 ```
 
-Or, you can use the `/v1/proc` instead of the `/v1/proxy` endpoint to get an immediate response containing the transformed event as it would be forwarded to the downstream service.
+Or, you can use the `/v1/sync/events` instead of the `/v1/events` endpoint to get an immediate response containing the transformed event as it would be forwarded to the downstream service.
 
 ```
-curl -X POST --data '{ "message" : "hello world!!!" }' http://localhost:8080/v1/proc
+curl -X POST --data '{ "message" : "hello world!!!" }' http://localhost:8080/v1/sync/events
 ```
 
 Output:
@@ -242,7 +242,7 @@ Or, you can launch EEL with the handler configurations for a specific test and s
 
 ```
 ./eel -handlers=test/data/test01/handlers > eel.log &
-curl -X POST --data @test/data/test01/in.json http://localhost:8080/v1/proc
+curl -X POST --data @test/data/test01/in.json http://localhost:8080/v1/sync/events
 ```
 
 No | Name | Test Name | Description

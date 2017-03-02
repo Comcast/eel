@@ -501,7 +501,7 @@ Example Transformations section in topic handler config:
 
 Selects appropriate handler for event, performs transformation and returns result. Only works if only one handler
 matches the event and the transformation yields only a single result. Otherwise an error will be returned. etransform
-is equivalent to but slightly more efficient than `curl http://localhost:8080/v1/proc`.
+is equivalent to but slightly more efficient than `curl http://localhost:8080/v1/sync/events`.
 
 Syntax:
 
@@ -522,7 +522,7 @@ Example:
 ### ptransform
 
 Selects appropriate handlers for event, performs transformations and publishes results. ptransform
-is equivalent to but slightly more efficient than `curl http://localhost:8080/v1/proxy`.
+is equivalent to but slightly more efficient than `curl http://localhost:8080/v1/events`.
 
 Syntax:
 

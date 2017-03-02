@@ -6,8 +6,8 @@
 		"RestartOk": false,
 		"Parameters" : {
 		    "EventPort": 8080,
-		    "EventProxyPath": "/v1/proxy",
-		    "EventProcPath": "/v1/proc"
+		    "EventProxyPath": "/v1/events",
+		    "EventProcPath": "/v1/sync/events"
 		}
 	},
 	{

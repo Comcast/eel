@@ -4,13 +4,13 @@
 
 EEL Web Hook for receiving JSON events for event forwarding:
 
-[http://localhost:8080/v1/proxy](http://localhost:8080/v1/proxy)
+[http://localhost:8080/v1/events](http://localhost:8080/v1/events)
 
 ### proc
 
 EEL Web API for processing JSON events synchronously and returning the transformed event immediately in the response body:
 
-[http://localhost:8080/v1/proc](http://localhost:8080/v1/proc)
+[http://localhost:8080/v1/sync/events](http://localhost:8080/v1/sync/events)
 
 ### health
 
