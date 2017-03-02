@@ -125,6 +125,7 @@ func initLogging() {
 }
 
 func registerAdminServices() {
+	// old handlers
 	http.HandleFunc("/health/shallow", NilHandler)
 	http.HandleFunc("/health/deep", StatusHandler)
 	http.HandleFunc("/health", StatusHandler)
@@ -142,6 +143,25 @@ func registerAdminServices() {
 	http.HandleFunc("/test/astjson/", GetASTJsonHandler)
 	http.HandleFunc("/test/asttree/", ParserDebugVizHandler)
 	http.HandleFunc("/event/dummy", DummyEventHandler)
+	// v1 handlers
+	http.HandleFunc("/v1/health/shallow", NilHandler)
+	http.HandleFunc("/v1/health/deep", StatusHandler)
+	http.HandleFunc("/v1/health", StatusHandler)
+	http.HandleFunc("/v1/status", StatusHandler)
+	http.HandleFunc("/v1/pluginconfigs", PluginConfigHandler)
+	http.HandleFunc("/v1/plugins", ManagePluginsUIHandler)
+	http.HandleFunc("/v1/plugins/", ManagePluginsHandler)
+	http.HandleFunc("/v1/reload", ReloadConfigHandler)
+	http.HandleFunc("/v1/toggletracelogger", TraceLogConfigHandler)
+	http.HandleFunc("/v1/vet", VetHandler)
+	http.HandleFunc("/v1/test", TopicTestHandler)
+	http.HandleFunc("/v1/test/handlers", HandlersTestHandler)
+	http.HandleFunc("/v1/test/process/", ProcessExpressionHandler)
+	http.HandleFunc("/v1/test/ast", ParserDebugHandler)
+	http.HandleFunc("/v1/test/astjson/", GetASTJsonHandler)
+	http.HandleFunc("/v1/test/asttree/", ParserDebugVizHandler)
+	http.HandleFunc("/v1/event/dummy", DummyEventHandler)
+	//
 	http.Handle("/img/", http.StripPrefix("/img/", http.FileServer(http.Dir(filepath.Join(BasePath, "mascot")))))
 }
 
@@ -163,14 +183,11 @@ func main() {
 		dp.Start(ctx)
 		Gctx.AddValue(EelDispatcher, dp)
 		registerAdminServices()
-
 		// register inbound plugins
 		RegisterInboundPluginType(NewStdinPlugin, "STDIN")
 		RegisterInboundPluginType(NewWebhookPlugin, "WEBHOOK")
 		LoadInboundPlugins(Gctx)
-
 		// hang on channel forever
-		c := make(chan int)
-		<-c
+		<-make(chan int)
 	}
 }

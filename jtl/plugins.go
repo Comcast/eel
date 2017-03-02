@@ -126,14 +126,7 @@ func ManagePluginsUIHandler(w http.ResponseWriter, r *http.Request) {
 func ManagePluginsHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := Gctx.SubContext()
 	path := strings.Split(r.URL.Path, "/")
-	if len(path) != 4 {
-		ctx.Log().Error("error_type", "manage_plugins", "cause", "bad_path", "error", "bad path "+r.URL.Path)
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, `{"error":"%s"}`, "bad path "+r.URL.Path)
-		return
-	}
-	pName := path[2]
+	pName := path[len(path)-2]
 	p := GetInboundPluginByName(pName)
 	if p == nil {
 		ctx.Log().Error("error_type", "manage_plugins", "cause", "unknown_plugin", "error", "unknown plugin "+pName)
@@ -142,7 +135,7 @@ func ManagePluginsHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, `{"error":"%s"}`, "unknown plugin "+pName)
 		return
 	}
-	op := path[3]
+	op := path[len(path)-1]
 	switch op {
 	case "start":
 		if p.GetSettings().RestartOk == false {

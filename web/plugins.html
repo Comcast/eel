@@ -23,14 +23,14 @@ th    	{color:white; font-family:verdana; text-align: left}
 <td>
 {{if eq .Active false}}
 {{if eq .RestartOk true}}
-<form action="/plugins" method="POST"><input type="hidden" name="name" value="{{.Name}}"/><input type="submit" name="operation" value="Start"/></form>
+<form action="/v1/plugins" method="POST"><input type="hidden" name="name" value="{{.Name}}"/><input type="submit" name="operation" value="Start"/></form>
 {{end}}   	
 {{end}}   	
 </td>
 <td>
 {{if eq .Active true}}
 {{if eq .RestartOk true}}
-<form action="/plugins" method="POST"><input type="hidden" name="name" value="{{.Name}}"/><input type="submit" name="operation" value="Stop"/></form>
+<form action="/v1/plugins" method="POST"><input type="hidden" name="name" value="{{.Name}}"/><input type="submit" name="operation" value="Stop"/></form>
 {{end}}   	
 {{end}}   	
 </td>

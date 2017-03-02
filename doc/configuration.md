@@ -1,6 +1,6 @@
 ## EEL Configuration
 
-All global configuration settings are done in [../config-eel/config.json](../config-eel/config.json).
+Most global configuration settings can be found in [../config-eel/config.json](../config-eel/config.json).
 
 ```
 {
@@ -42,3 +42,29 @@ will be disabled.
 * `LogStats` - Boolean to turn stats logging (typically once a minute) on or off.
 * `DuplicateTimeout` - If > 0 will de-duplicated events with a TTL of `DuplicateTimeout` ms.
 * `CustomProperties` - Custom properties, can be accessed using the `{{prop('key')}}` function.
+
+Plugins for consuming events from different event sources are configured in [../config-eel/plugins.json](../config-eel/plugins.json).
+By default EEL comes with a web hook plugin and a stdin plugin but it is easy to provide your own plugin for any other source of JSON events.
+
+```
+[
+	{
+		"Type" : "WEBHOOK",
+		"Name" : "WEBHOOK",
+		"Active" : true,
+		"RestartOk": false,
+		"Parameters" : {
+		    "EventPort": 8080,
+		    "EventProxyPath": "/v1/proxy",
+		    "EventProcPath": "/v1/proc"
+		}
+	},
+	{
+		"Type" : "STDIN",
+		"Name" : "STDIN",
+		"Active" : false,
+		"RestartOk": false,
+		"Parameters" : {}
+	}
+]
+```

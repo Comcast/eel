@@ -19,7 +19,7 @@ p.error		{color: red;}
 <!--<p><img src="/img/eel.png" width="250"/></p>-->
 <p class="error">{{.ErrorMessage}}</p>
 <p>
-<form action="/test/handlers" method="POST" id="select">
+<form action="/v1/test/handlers" method="POST" id="select">
 <input type="hidden" name="newhandlerselected" value="true">
 <select onchange="this.form.submit()" name="handler">
 {{range .AllHandlerNames}}
@@ -51,7 +51,7 @@ p.error		{color: red;}
 <td>Protocol</td><td>{{.CurrentHandler.Protocol}}</td>
 </tr>
 </table>
-<form action="/test/handlers" method="POST" id="transform">
+<form action="/v1/test/handlers" method="POST" id="transform">
 <div><input type="submit" value="Transform"></div>
 <input type="hidden" name="handler" value="{{.SelectedHandler}}">
 <p></p>
