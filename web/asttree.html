@@ -51,7 +51,7 @@ var svg = d3.select("body").append("svg")
   .append("g")
  .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-d3.json('/test/astjson/0/{{.Expression}}', update);
+d3.json('/v1/test/astjson/0/{{.Expression}}', update);
 
 document.onkeydown=onArrowKey
 
@@ -64,7 +64,7 @@ function onArrowKey(e) {
     // right arrow
     currStep = currStep + 1;
   }
-  d3.json('/test/astjson/'.concat(currStep.toString(),'/{{.Expression}}'), update);
+  d3.json('/v1/test/astjson/'.concat(currStep.toString(),'/{{.Expression}}'), update);
 }
 
 function update(source) {
