@@ -45,6 +45,7 @@ func (p *StdinPlugin) StartPlugin(ctx Context) {
 }
 
 func (p *StdinPlugin) StartStdInConsumer(ctx Context, r io.Reader) {
+	defer ctx.HandlePanic()
 	p.ShuttingDown = false
 	p.Settings.Active = true
 	//scanner := bufio.NewScanner(r)
