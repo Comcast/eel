@@ -20,7 +20,6 @@ import (
 	"fmt"
 	"strings"
 	"unicode/utf8"
-	"github.com/Comcast/eel/util"
 )
 
 // lexer and parser for EEL based on http://cuddle.googlecode.com/hg/talk/lex.html#title-slide
