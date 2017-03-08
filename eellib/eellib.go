@@ -159,6 +159,7 @@ func EELGetPublishersConcurrent(ctx Context, event interface{}, eelHandlerFactor
 		wg.Add(1)
 		go func(h *HandlerConfiguration) {
 			sctx := ctx.SubContext()
+			defer ctx.HandlePanic()
 			d, _ := NewJDocFromInterface(event)
 			pp, err := h.ProcessEvent(sctx, d)
 			if err != nil {

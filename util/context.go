@@ -35,6 +35,7 @@ type Context interface {
 	Log() Logger
 	DisableLogging()
 	EnableLogging()
+	HandlePanic()
 }
 
 // Logger is the interface for logging.

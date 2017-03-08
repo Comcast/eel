@@ -73,6 +73,7 @@ func TraceLogConfigHandler(w http.ResponseWriter, r *http.Request) {
 func (t *TraceLogger) processTraceLogLoop(ctx Context) {
 	go func() {
 		ctx.Log().Info("action", "launching_trace_logger", "file", t.Settings.FileName)
+		defer ctx.HandlePanic()
 		for {
 			event := <-t.EventChannel
 			if t.Writer != nil && t.Settings.LogParams != nil {

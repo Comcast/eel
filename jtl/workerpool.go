@@ -66,6 +66,7 @@ func GetWorkDispatcher(ctx Context) *WorkDispatcher {
 // Start starts a worker which will then listen on its private channel for work requests
 func (w *Worker) Start() {
 	go func() {
+                defer Gctx.HandlePanic()
 		for {
 			w.WorkerQueue <- w.work
 			select {
@@ -85,6 +86,7 @@ func (w *Worker) Start() {
 // Stop stops a worker via quit channel
 func (w *Worker) Stop() {
 	go func() {
+		defer Gctx.HandlePanic()
 		w.quitChan <- true
 	}()
 }
@@ -107,6 +109,7 @@ func (disp *WorkDispatcher) Start(ctx Context) {
 		disp.workers[i].Start()
 	}
 	go func() {
+		defer ctx.HandlePanic()
 		for {
 			select {
 			case work := <-disp.WorkQueue:

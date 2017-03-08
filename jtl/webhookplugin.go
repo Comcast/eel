@@ -47,6 +47,7 @@ func (p *WebhookPlugin) StartWebhookConsumer(ctx Context) {
 }
 
 func (p *WebhookPlugin) startWebhookServices(ctx Context) {
+	defer ctx.HandlePanic()
 	p.ShuttingDown = false
 	p.Settings.Active = true
 	eventProxyPort := int(p.GetSettings().Parameters["EventPort"].(float64))

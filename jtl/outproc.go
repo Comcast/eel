@@ -126,6 +126,7 @@ func handleEvent(ctx Context, stats *ServiceStats, event *JDoc, raw string, debu
 				wg.Add(1)
 				go func(c Context, p EventPublisher) {
 					defer wg.Done()
+					defer c.HandlePanic()
 					_, err := p.Publish()
 					AddLatencyLog(c, stats, "stat.eel.time")
 					//c.AddLogValue("trace.out.endpoint", p.GetEndpoint())

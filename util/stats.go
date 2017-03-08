@@ -122,6 +122,7 @@ type propFunc func() int
 // If iterations is negative, the loop is endless.  Otherwise the loop
 // terminates after the specified number of iterations.
 func (stats *ServiceStats) StatsLoop(ctx Context, interval time.Duration, iterations int, label string, getWorkQueueFillLevel propFunc, getNumWorkersIdle propFunc) {
+	defer ctx.HandlePanic()
 	backup := new(ServiceStats)
 	for i := 0; iterations < 0 || i < iterations; i++ {
 		clone := stats.Clone()
