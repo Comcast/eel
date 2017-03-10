@@ -810,7 +810,7 @@ func fnLen(ctx Context, doc *JDoc, params []string) interface{} {
 	return 0
 }
 
-// fnString functions returns string of array.
+// fnString function converts object to string. Currently, we support []string. ie. convert ["d1", "d2"] to "d1, d2"
 func fnString(ctx Context, doc *JDoc, params []string) interface{} {
 	stats := ctx.Value(EelTotalStats).(*ServiceStats)
 	if params == nil || len(params) != 2 {
