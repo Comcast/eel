@@ -28,6 +28,8 @@ import (
 
 	. "github.com/Comcast/eel/eel/jtl"
 	. "github.com/Comcast/eel/eel/util"
+
+    _ "net/http/pprof"
 )
 
 // build hint: go build -ldflags "-X main.Version 2.0"
@@ -59,6 +61,45 @@ func useCores(ctx Context) {
 		cores = strconv.Itoa(n)
 	} else {
 		ctx.Log().Info("action", "use_cores_from_env", "cores", cores)
+	}
+}
+
+// startProxyServices starts service and registers all http handlers.
+func startProxyServices(ctx Context) {
+    eventProxyPort := GetConfig(ctx).EventPort
+	      if eventProxyPort == 0 {
+		        eventProxyPort = 8080
+}
+  
+	eventProxyPath := GetConfig(ctx).EventProxyPath
+	eventProcPath := GetConfig(ctx).EventProcPath
+	ctx.Log().Info("action", "registering_event_proxy", "path", "http://localhost:"+strconv.Itoa(eventProxyPort)+eventProxyPath)
+	http.HandleFunc(eventProxyPath, EventHandler)
+	http.HandleFunc(eventProcPath, EventHandler)
+	http.HandleFunc("/health/shallow", NilHandler)
+	http.HandleFunc("/health/deep", StatusHandler)
+	http.HandleFunc("/health", StatusHandler)
+	http.HandleFunc("/status", StatusHandler)
+	http.HandleFunc("/reload", ReloadConfigHandler)
+	http.HandleFunc("/vet", VetHandler)
+	http.HandleFunc("/test", TopicTestHandler)
+	http.HandleFunc("/test/handlers", HandlersTestHandler)
+	http.HandleFunc("/test/process/", ProcessExpressionHandler)
+	http.HandleFunc("/test/ast", ParserDebugHandler)
+	http.HandleFunc("/test/astjson/", GetASTJsonHandler)
+	http.HandleFunc("/test/asttree/", ParserDebugVizHandler)
+	http.HandleFunc("/event/dummy", DummyEventHandler)
+	http.Handle("/img/", http.StripPrefix("/img/", http.FileServer(http.Dir(filepath.Join(BasePath, "mascot")))))
+	ctx.Log().Info("action", "listening_for_events", "port", eventProxyPort, "proxy_path", eventProxyPath, "proc_path", eventProcPath)
+
+  // refer to https://golang.org/pkg/net/http/pprof
+  go func() {
+      ctx.Log().Error(http.ListenAndServe("localhost:6060", nil))
+  }()
+
+	err := http.ListenAndServe(":"+strconv.Itoa(eventProxyPort), nil)
+	if err != nil {
+		ctx.Log().Error("error_type", "eel_service", "error", err.Error())
 	}
 }
 
