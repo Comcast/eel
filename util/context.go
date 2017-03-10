@@ -19,6 +19,7 @@ package util
 import (
 	"fmt"
 	"time"
+	"net/http"
 )
 
 // Context is the interface for a request context and logging.
@@ -36,6 +37,7 @@ type Context interface {
 	DisableLogging()
 	EnableLogging()
 	HandlePanic()
+	WrapPanicHttpHandler(func(http.ResponseWriter, *http.Request)) http.HandlerFunc
 }
 
 // Logger is the interface for logging.

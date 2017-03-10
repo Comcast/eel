@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"runtime/debug"
 	"bytes"
+	"net/http"
 )
 
 // DefaultContext simple implementation of the Context interface.
@@ -124,12 +125,20 @@ func (c *DefaultContext) EnableLogging() {
 	c.log.dfw.enabled = true
 }
 
-func (c *DefaultContext)HandlePanic(){
+func (c *DefaultContext) HandlePanic(){
 	if x := recover(); x != nil {
 		panicError := fmt.Sprintf("%#v", x)
 		debug.SetMaxStack(16*1024) //limit the stack track to 16k in case crash ES
 		trace := bytes.NewBuffer(debug.Stack()).String()
 		c.Log().Error("panicError", panicError,"stackTrace",trace)
 		return
+	}
+}
+
+
+func (c *DefaultContext) WrapPanicHttpHandler(fn func(w http.ResponseWriter, r *http.Request)) http.HandlerFunc{
+	return func(w http.ResponseWriter, r *http.Request) {
+		defer c.HandlePanic()
+		fn(w,r)
 	}
 }
