@@ -166,6 +166,9 @@ func NewFunction(fn string) *JFunction {
 	case "len":
 		// returns length of object (string, array, map)
 		return &JFunction{fnLen, 1, 1}
+	case "string":
+		// returns length of object (string, array, map)
+		return &JFunction{fnString, 2, 2}
 	case "exists":
 		// returns true if path exists in document
 		return &JFunction{fnExists, 1, 2}
@@ -805,6 +808,25 @@ func fnLen(ctx Context, doc *JDoc, params []string) interface{} {
 		return len(obj.(map[string]interface{}))
 	}
 	return 0
+}
+
+// fnString functions returns string of array.
+func fnString(ctx Context, doc *JDoc, params []string) interface{} {
+	stats := ctx.Value(EelTotalStats).(*ServiceStats)
+	if params == nil || len(params) != 2 {
+		ctx.Log().Error("error_type", "func_string", "op", "string", "cause", "wrong_number_of_parameters", "params", params)
+		stats.IncErrors()
+		AddError(ctx, SyntaxError{fmt.Sprintf("wrong number of parameters in call to string function"), "string", params})
+		return nil
+	}
+	var obj []string
+	err := json.Unmarshal([]byte(extractStringParam(params[0])), &obj)
+	if err != nil {
+		return extractStringParam(params[0])
+	}
+
+	return strings.Join(obj, extractStringParam(params[1])+" ")
+
 }
 
 // fnJoin functions joins two JSON documents given as parameters and returns results.
