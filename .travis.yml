@@ -5,4 +5,5 @@ go:
   - 1.7.x
   - master
 
-script: go test ./test
+install: go get
+script: go test ./test -v
