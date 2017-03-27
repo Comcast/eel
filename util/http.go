@@ -78,6 +78,7 @@ func InitHttpTransportWithDial(ctx Context, dial func(network, addr string) (net
 	}
 	if GetConfig(ctx).CloseIdleConnectionIntervalSec > 0 && !GetConfig(ctx).CloseIdleConnectionsStarted {
 		go func() {
+			defer ctx.HandlePanic()
 			GetConfig(ctx).CloseIdleConnectionsStarted = true
 			for {
 				time.Sleep(time.Duration(GetConfig(ctx).CloseIdleConnectionIntervalSec) * time.Second)
