@@ -45,7 +45,14 @@ type PluginSettings struct {
 	Name       string
 	Active     bool
 	RestartOk  bool
+	AutoStart  bool
+	ExitOnErr  bool
 	Parameters map[string]interface{}
+	Stats      PluginStats
+}
+
+type PluginStats struct {
+	MessageCount uint64
 }
 
 type NewInboundPlugin func(*PluginSettings) InboundPlugin
@@ -250,7 +257,7 @@ func LoadInboundPlugins(ctx Context) {
 	}
 	// launch plugins
 	for k, v := range inboundPluginMap {
-		if v.GetSettings().Active {
+		if v.GetSettings().AutoStart {
 			ctx.Log().Info("action", "launching_inbound_plugin", "plugin_name", k, "pugin_type", v.GetSettings().Type)
 			v.StartPlugin(ctx)
 		} else {
