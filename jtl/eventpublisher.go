@@ -44,6 +44,8 @@ type (
 		SetPayloadParsed(event *JDoc)
 		GetPayloadParsed() *JDoc
 		GetErrors() []error
+		SetHandler(handler *HandlerConfiguration)
+		GetHandler() *HandlerConfiguration
 	}
 )
 

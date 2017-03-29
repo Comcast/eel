@@ -96,6 +96,7 @@ func EventHandler(w http.ResponseWriter, r *http.Request) {
 		stats.IncErrors()
 		return
 	}
+	// we don't have a handler yet, so we will dedup no matter what on incoming events provided deduping is turned on in config.json
 	dc := ctx.Value(EelDuplicateChecker).(DuplicateChecker)
 	if dc.GetTtl() > 0 && dc.IsDuplicate(ctx, body) {
 		ctx.Log().Info("status", "200", "action", "dropping_duplicate")
