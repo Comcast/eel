@@ -55,7 +55,7 @@ type PluginStats struct {
 	MessageCount      uint64
 	MessagesPerSecond uint64
 	MessagesPerMinute uint64
-	MessageLag        uint64
+	Misc              map[string]interface{}
 }
 
 type NewInboundPlugin func(*PluginSettings) InboundPlugin
