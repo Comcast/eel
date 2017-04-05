@@ -57,8 +57,8 @@ func TestEELLibrary(t *testing.T) {
 
 func TestEELLibrary2(t *testing.T) {
 	// initialize context
-	EELInit()
-	ctx := Gctx.SubContext()
+	ctx := NewDefaultContext(L_InfoLevel)
+	EELInit(ctx)
 	// load handlers from folder: note parameter is an array of one or more folders
 	eelHandlerFactory, warnings := NewHandlerFactory(ctx, []string{"../config-handlers"})
 	// check if parsing handlers caused warnings
@@ -107,8 +107,8 @@ func TestEELLibrary2(t *testing.T) {
 
 func TestEELLibrary3Sequential(t *testing.T) {
 	// initialize context
-	EELInit()
-	ctx := Gctx.SubContext()
+	ctx := NewDefaultContext(L_InfoLevel)
+	EELInit(ctx)
 	// load handlers from folder: note parameter is an array of one or more folders
 	eelHandlerFactory, warnings := EELNewHandlerFactory(ctx, "../config-handlers")
 	// check if parsing handlers caused warnings
@@ -134,8 +134,8 @@ func TestEELLibrary3Sequential(t *testing.T) {
 
 func TestEELLibrary3Concurrent(t *testing.T) {
 	// initialize context
-	EELInit()
-	ctx := Gctx.SubContext()
+	ctx := NewDefaultContext(L_InfoLevel)
+	EELInit(ctx)
 	// load handlers from folder: note parameter is an array of one or more folders
 	eelHandlerFactory, warnings := EELNewHandlerFactory(ctx, "../config-handlers")
 	// check if parsing handlers caused warnings
@@ -160,8 +160,8 @@ func TestEELLibrary3Concurrent(t *testing.T) {
 }
 
 func TestEELLibrary4(t *testing.T) {
-	EELInit()
-	ctx := Gctx.SubContext()
+	ctx := NewDefaultContext(L_InfoLevel)
+	EELInit(ctx)
 	in := `{ "message" : "hello world!!!" }`
 	expected, err := NewJDocFromString(`{ "event" : { "message" : "hello world!!!" }}`)
 	if err != nil {
@@ -182,8 +182,8 @@ func TestEELLibrary4(t *testing.T) {
 }
 
 func TestEELLibrary5(t *testing.T) {
-	EELInit()
-	ctx := Gctx.SubContext()
+	ctx := NewDefaultContext(L_InfoLevel)
+	EELInit(ctx)
 	//in := `{ "message" : "hello world!!!" }`
 	in := ``
 	// note: results of type string are surrounded by double quotes
@@ -199,8 +199,8 @@ func TestEELLibrary5(t *testing.T) {
 }
 
 func TestEELLibraryError(t *testing.T) {
-	EELInit()
-	ctx := Gctx.SubContext()
+	ctx := NewDefaultContext(L_InfoLevel)
+	EELInit(ctx)
 	in := `{}`
 	transformation := `{ "{{/event}}" : "{{curl('GET','http://x.y.z')}}" }`
 	eelSettings, err := EELGetSettings(ctx)

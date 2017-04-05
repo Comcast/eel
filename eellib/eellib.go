@@ -26,8 +26,8 @@ import (
 )
 
 // EELInit initalize environment for EEL API use
-func EELInit() {
-	Once.Do(InitGctx)
+func EELInit(ctx Context) {
+	Gctx = ctx
 	eelSettings := new(EelSettings)
 	eelSettings.MaxAttempts = 3
 	eelSettings.InitialDelay = 125
