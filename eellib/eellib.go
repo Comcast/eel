@@ -26,8 +26,8 @@ import (
 )
 
 // EELInit initalize environment for EEL API use
-func EELInit(ctx Context) {
-	Gctx = ctx
+func EELInit() {
+	Once.Do(InitGctx)
 	eelSettings := new(EelSettings)
 	eelSettings.MaxAttempts = 3
 	eelSettings.InitialDelay = 125
@@ -41,10 +41,10 @@ func EELInit(ctx Context) {
 	eelSettings.AppName = "eellib"
 	eelSettings.Name = "eellib"
 	eelSettings.Version = "1.0"
-	ctx.AddConfigValue(EelConfig, eelSettings)
+	Gctx.AddConfigValue(EelConfig, eelSettings)
 	eelServiceStats := new(ServiceStats)
-	ctx.AddValue(EelTotalStats, eelServiceStats)
-	InitHttpTransport(ctx)
+	Gctx.AddValue(EelTotalStats, eelServiceStats)
+	InitHttpTransport(Gctx)
 }
 
 // EELGetSettings get current settings for read / write

@@ -2,8 +2,9 @@
 	{
 		"Type" : "WEBHOOK",
 		"Name" : "WEBHOOK",
-		"Active" : true,
+		"AutoStart" : true,
 		"RestartOk": false,
+		"ExitOnErr": true,
 		"Parameters" : {
 		    "EventPort": 8080,
 		    "EventProxyPath": "/v1/events",
@@ -13,8 +14,9 @@
 	{
 		"Type" : "STDIN",
 		"Name" : "STDIN",
-		"Active" : false,
+		"AutoStart" : false,
 		"RestartOk": false,
+		"ExitOnErr": false,
 		"Parameters" : {}
 	}
 ]

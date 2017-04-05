@@ -57,14 +57,8 @@ func TestEELLibrary(t *testing.T) {
 
 func TestEELLibrary2(t *testing.T) {
 	// initialize context
-	ctx := NewDefaultContext(L_InfoLevel)
-	Gctx = ctx
-	ctx.AddLogValue("app.id", "myapp")
-	eelSettings := new(EelSettings)
-	ctx.AddConfigValue(EelConfig, eelSettings)
-	eelServiceStats := new(ServiceStats)
-	ctx.AddValue(EelTotalStats, eelServiceStats)
-	InitHttpTransport(ctx)
+	EELInit()
+	ctx := Gctx.SubContext()
 	// load handlers from folder: note parameter is an array of one or more folders
 	eelHandlerFactory, warnings := NewHandlerFactory(ctx, []string{"../config-handlers"})
 	// check if parsing handlers caused warnings
@@ -113,8 +107,8 @@ func TestEELLibrary2(t *testing.T) {
 
 func TestEELLibrary3Sequential(t *testing.T) {
 	// initialize context
-	ctx := NewDefaultContext(L_InfoLevel)
-	EELInit(ctx)
+	EELInit()
+	ctx := Gctx.SubContext()
 	// load handlers from folder: note parameter is an array of one or more folders
 	eelHandlerFactory, warnings := EELNewHandlerFactory(ctx, "../config-handlers")
 	// check if parsing handlers caused warnings
@@ -140,8 +134,8 @@ func TestEELLibrary3Sequential(t *testing.T) {
 
 func TestEELLibrary3Concurrent(t *testing.T) {
 	// initialize context
-	ctx := NewDefaultContext(L_InfoLevel)
-	EELInit(ctx)
+	EELInit()
+	ctx := Gctx.SubContext()
 	// load handlers from folder: note parameter is an array of one or more folders
 	eelHandlerFactory, warnings := EELNewHandlerFactory(ctx, "../config-handlers")
 	// check if parsing handlers caused warnings
@@ -166,14 +160,14 @@ func TestEELLibrary3Concurrent(t *testing.T) {
 }
 
 func TestEELLibrary4(t *testing.T) {
-	ctx := NewDefaultContext(L_InfoLevel)
+	EELInit()
+	ctx := Gctx.SubContext()
 	in := `{ "message" : "hello world!!!" }`
 	expected, err := NewJDocFromString(`{ "event" : { "message" : "hello world!!!" }}`)
 	if err != nil {
 		t.Fatalf("could not parse expected event: %s\n", err.Error())
 	}
 	transformation := `{ "{{/event}}" : "{{/}}" }`
-	EELInit(ctx)
 	out, errs := EELSimpleTransform(ctx, in, transformation, false)
 	if errs != nil {
 		t.Fatalf("bad tranformation: %v\n", errs)
@@ -188,13 +182,13 @@ func TestEELLibrary4(t *testing.T) {
 }
 
 func TestEELLibrary5(t *testing.T) {
-	ctx := NewDefaultContext(L_InfoLevel)
+	EELInit()
+	ctx := Gctx.SubContext()
 	//in := `{ "message" : "hello world!!!" }`
 	in := ``
 	// note: results of type string are surrounded by double quotes
 	expected := `"xyz"`
 	expr := `{{ident('xyz')}}`
-	EELInit(ctx)
 	out, errs := EELSimpleEvalExpression(ctx, in, expr)
 	if errs != nil {
 		t.Fatalf("bad tranformation: %v\n", errs)
@@ -205,10 +199,10 @@ func TestEELLibrary5(t *testing.T) {
 }
 
 func TestEELLibraryError(t *testing.T) {
-	ctx := NewDefaultContext(L_InfoLevel)
+	EELInit()
+	ctx := Gctx.SubContext()
 	in := `{}`
 	transformation := `{ "{{/event}}" : "{{curl('GET','http://x.y.z')}}" }`
-	EELInit(ctx)
 	eelSettings, err := EELGetSettings(ctx)
 	if err != nil {
 		t.Fatalf("error getting settings: %s\n", err.Error())

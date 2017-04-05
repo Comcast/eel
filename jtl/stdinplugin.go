@@ -20,6 +20,7 @@ import (
 	"bufio"
 	"io"
 	"os"
+	"sync/atomic"
 	"time"
 
 	. "github.com/Comcast/eel/util"
@@ -65,16 +66,14 @@ func (p *StdinPlugin) StartStdInConsumer(ctx Context, r io.Reader) {
 		line, isPrefix, err := stdinreader.ReadLine()
 		if err != nil {
 			ctx.Log().Error("error_type", "stdin_consumer_error", "cause", "read_line", "error", err.Error(), "action", "exiting_with_error_code", "expect", "restart_by_supervisord")
-			// exit here banking on supervisord to restart a healthy system
-			os.Exit(1)
+			break
 		}
 		body := string(line)
 		for isPrefix {
 			line, isPrefix, err = stdinreader.ReadLine()
 			if err != nil {
 				ctx.Log().Error("error_type", "stdin_consumer_error", "cause", "read_line_continuation", "error", err.Error(), "action", "exiting_with_error_code", "expect", "restart_by_supervisord")
-				// exit here banking on supervisord to restart a healthy system
-				os.Exit(1)
+				break
 			}
 			ctx.Log().Info("action", "read_continuation", "op", "stdin")
 			body += string(line)
@@ -105,11 +104,16 @@ func (p *StdinPlugin) StartStdInConsumer(ctx Context, r io.Reader) {
 		select {
 		case dp.WorkQueue <- &work:
 			sctx.Log().Info("action", "accepted", "op", "stdin")
+			atomic.AddUint64(&p.Settings.Stats.MessageCount, 1)
 		case <-time.After(time.Millisecond * timeOutMS):
 			sctx.Log().Error("error_type", "rejected", "action", "rejected", "op", "stdin", "cause", "queue_full")
 		}
 	}
+	p.Settings.Active = false
 	ctx.Log().Info("action", "stopping_plugin", "op", "stdin")
+	if p.Settings.ExitOnErr {
+		os.Exit(1)
+	}
 }
 
 func (p *StdinPlugin) StopPlugin(ctx Context) {

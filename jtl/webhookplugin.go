@@ -17,6 +17,7 @@ package jtl
 
 import (
 	"net/http"
+	"os"
 	"strconv"
 
 	. "github.com/Comcast/eel/util"
@@ -65,7 +66,11 @@ func (p *WebhookPlugin) startWebhookServices(ctx Context) {
 	if err != nil {
 		ctx.Log().Error("error_type", "eel_service", "error", err.Error())
 	}
+	p.Settings.Active = false
 	ctx.Log().Info("action", "stopping_plugin", "op", "webhook")
+	if p.Settings.ExitOnErr {
+		os.Exit(1)
+	}
 }
 
 func (p *WebhookPlugin) StopPlugin(ctx Context) {
