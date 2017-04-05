@@ -74,9 +74,8 @@ func initLogging() {
 	} else {
 		ConfigPath = filepath.Join(BasePath, EelConfigFile)
 	}
-	Mutex.Lock()
-	Gctx = NewDefaultContext(*logLevel)
-	Mutex.Unlock()
+	LogLevel = *logLevel
+	Once.Do(InitGctx)
 	config := GetConfigFromFile(Gctx)
 	if *handlerPath != "" {
 		HandlerPath = *handlerPath
