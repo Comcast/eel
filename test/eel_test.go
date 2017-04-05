@@ -58,13 +58,7 @@ func TestEELLibrary(t *testing.T) {
 func TestEELLibrary2(t *testing.T) {
 	// initialize context
 	ctx := NewDefaultContext(L_InfoLevel)
-	Gctx = ctx
-	ctx.AddLogValue("app.id", "myapp")
-	eelSettings := new(EelSettings)
-	ctx.AddConfigValue(EelConfig, eelSettings)
-	eelServiceStats := new(ServiceStats)
-	ctx.AddValue(EelTotalStats, eelServiceStats)
-	InitHttpTransport(ctx)
+	EELInit(ctx)
 	// load handlers from folder: note parameter is an array of one or more folders
 	eelHandlerFactory, warnings := NewHandlerFactory(ctx, []string{"../config-handlers"})
 	// check if parsing handlers caused warnings
