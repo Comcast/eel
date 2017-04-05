@@ -127,6 +127,7 @@ const (
 
 var (
 	Gctx         Context
+	Mutex        = &sync.Mutex{}
 	BasePath     = ""
 	ConfigPath   = ""
 	HandlerPath  = ""
