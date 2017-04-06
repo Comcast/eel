@@ -139,9 +139,9 @@ var (
 	AppId        = "eel"
 )
 
-func InitGctx() {
+func InitGctx(logLevel string) {
 	Mutex.Lock()
-	Gctx = NewDefaultContext(LogLevel)
+	Gctx = NewDefaultContext(logLevel)
 	Mutex.Unlock()
 }
 
