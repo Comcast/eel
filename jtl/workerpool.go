@@ -66,7 +66,11 @@ func GetWorkDispatcher(ctx Context) *WorkDispatcher {
 // Start starts a worker which will then listen on its private channel for work requests
 func (w *Worker) Start() {
 	go func() {
-		defer Gctx.HandlePanic()
+		defer func() {
+			Mutex.RLock()
+			Gctx.HandlePanic()
+			Mutex.RUnlock()
+		}()
 		for {
 			w.WorkerQueue <- w.work
 			select {

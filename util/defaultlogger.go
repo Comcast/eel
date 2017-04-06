@@ -85,11 +85,11 @@ func NewDefaultLogger(ctx *DefaultContext, level string) *DefaultLogger {
 }
 
 func (l *DefaultLogWriter) log(level string, id string, vals map[string]interface{}, args ...interface{}) error {
+	l.Lock()
+	defer l.Unlock()
 	if !l.enabled {
 		return nil
 	}
-	l.Lock()
-	defer l.Unlock()
 	d := make(map[string]interface{}, 0)
 	for k, v := range vals {
 		d[k] = v

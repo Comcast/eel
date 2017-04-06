@@ -27,7 +27,9 @@ import (
 
 // EELInit initalize environment for EEL API use
 func EELInit(ctx Context) {
+	Mutex.Lock()
 	Gctx = ctx
+	Mutex.Unlock()
 	eelSettings := new(EelSettings)
 	eelSettings.MaxAttempts = 3
 	eelSettings.InitialDelay = 125
