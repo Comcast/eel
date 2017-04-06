@@ -75,7 +75,7 @@ func initLogging() {
 		ConfigPath = filepath.Join(BasePath, EelConfigFile)
 	}
 	LogLevel = *logLevel
-	Once.Do(InitGctx)
+	InitGctx(*logLevel)
 	config := GetConfigFromFile(Gctx)
 	if *handlerPath != "" {
 		HandlerPath = *handlerPath

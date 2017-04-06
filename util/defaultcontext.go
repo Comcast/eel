@@ -118,14 +118,14 @@ func (c *DefaultContext) ConfigValue(key interface{}) interface{} {
 }
 
 func (c *DefaultContext) DisableLogging() {
-	c.Lock()
-	defer c.Unlock()
+	c.log.dfw.Lock()
+	defer c.log.dfw.Unlock()
 	c.log.dfw.enabled = false
 }
 
 func (c *DefaultContext) EnableLogging() {
-	c.Lock()
-	defer c.Unlock()
+	c.log.dfw.Lock()
+	defer c.log.dfw.Unlock()
 	c.log.dfw.enabled = true
 }
 
