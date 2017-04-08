@@ -28,6 +28,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 	"time"
 
 	. "github.com/Comcast/eel/util"
@@ -56,6 +57,7 @@ type PluginStats struct {
 	MessagesPerSecond uint64
 	MessagesPerMinute uint64
 	Misc              map[string]interface{}
+	sync.RWMutex
 }
 
 type NewInboundPlugin func(*PluginSettings) InboundPlugin
