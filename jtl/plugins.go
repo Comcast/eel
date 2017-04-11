@@ -177,10 +177,10 @@ func ManagePluginsHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		if p.GetSettings().Active == false {
-			ctx.Log().Error("error_type", "manage_plugins", "cause", "plugin_stopped", "error", "plugin stopped "+pName)
+			ctx.Log().Error("error_type", "manage_plugins", "cause", "plugin_stopped", "error", "plugin already stopped "+pName)
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Fprintf(w, `{"error":"%s"}`, "plugin stopped "+pName)
+			fmt.Fprintf(w, `{"error":"%s"}`, "plugin already stopped "+pName)
 			return
 		}
 		p.StopPlugin(ctx)
