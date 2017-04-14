@@ -29,7 +29,7 @@ func initTests(handlers string) {
 	BasePath = ""
 	ConfigPath = "../" + EelConfigFile
 	HandlerPath = handlers
-	Gctx = NewDefaultContext(L_InfoLevel)
+	InitGctx(L_InfoLevel)
 	Gctx.AddLogValue("app.id", "eel")
 	Gctx.AddValue("Eel.StartTime", time.Now().Local().Format("2006-01-02 15:04:05 +0800"))
 	if LogsOn != "on" && LogsOn != "true" {

@@ -126,7 +126,10 @@ const (
 )
 
 var (
+	LogLevel     = L_InfoLevel
 	Gctx         Context
+	Mutex        = &sync.RWMutex{}
+	Once         sync.Once
 	BasePath     = ""
 	ConfigPath   = ""
 	HandlerPath  = ""
@@ -135,6 +138,12 @@ var (
 	EnvName      = "default"
 	AppId        = "eel"
 )
+
+func InitGctx(logLevel string) {
+	Mutex.Lock()
+	Gctx = NewDefaultContext(logLevel)
+	Mutex.Unlock()
+}
 
 // GetConfig is a helper function to obtain the global config from the context.
 func GetConfig(ctx Context) *EelSettings {

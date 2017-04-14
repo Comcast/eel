@@ -28,6 +28,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 	"time"
 
 	. "github.com/Comcast/eel/util"
@@ -45,7 +46,18 @@ type PluginSettings struct {
 	Name       string
 	Active     bool
 	RestartOk  bool
+	AutoStart  bool
+	ExitOnErr  bool
 	Parameters map[string]interface{}
+	Stats      PluginStats
+}
+
+type PluginStats struct {
+	MessageCount      uint64
+	MessagesPerSecond uint64
+	MessagesPerMinute uint64
+	Misc              map[string]interface{}
+	sync.RWMutex
 }
 
 type NewInboundPlugin func(*PluginSettings) InboundPlugin
@@ -165,10 +177,10 @@ func ManagePluginsHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		if p.GetSettings().Active == false {
-			ctx.Log().Error("error_type", "manage_plugins", "cause", "plugin_stopped", "error", "plugin stopped "+pName)
+			ctx.Log().Error("error_type", "manage_plugins", "cause", "plugin_stopped", "error", "plugin already stopped "+pName)
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Fprintf(w, `{"error":"%s"}`, "plugin stopped "+pName)
+			fmt.Fprintf(w, `{"error":"%s"}`, "plugin already stopped "+pName)
 			return
 		}
 		p.StopPlugin(ctx)
@@ -250,7 +262,7 @@ func LoadInboundPlugins(ctx Context) {
 	}
 	// launch plugins
 	for k, v := range inboundPluginMap {
-		if v.GetSettings().Active {
+		if v.GetSettings().AutoStart {
 			ctx.Log().Info("action", "launching_inbound_plugin", "plugin_name", k, "pugin_type", v.GetSettings().Type)
 			v.StartPlugin(ctx)
 		} else {

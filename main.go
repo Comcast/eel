@@ -74,7 +74,8 @@ func initLogging() {
 	} else {
 		ConfigPath = filepath.Join(BasePath, EelConfigFile)
 	}
-	Gctx = NewDefaultContext(*logLevel)
+	LogLevel = *logLevel
+	InitGctx(*logLevel)
 	config := GetConfigFromFile(Gctx)
 	if *handlerPath != "" {
 		HandlerPath = *handlerPath
@@ -139,13 +140,13 @@ func registerAdminServices() {
 	http.HandleFunc("/vet", c.WrapPanicHttpHandler(VetHandler))
 	http.HandleFunc("/test", c.WrapPanicHttpHandler(TopicTestHandler))
 	http.HandleFunc("/test/handlers", c.WrapPanicHttpHandler(HandlersTestHandler))
-	http.HandleFunc("/test/process/",c.WrapPanicHttpHandler( ProcessExpressionHandler))
+	http.HandleFunc("/test/process/", c.WrapPanicHttpHandler(ProcessExpressionHandler))
 	http.HandleFunc("/test/ast", c.WrapPanicHttpHandler(ParserDebugHandler))
 	http.HandleFunc("/test/astjson/", c.WrapPanicHttpHandler(GetASTJsonHandler))
 	http.HandleFunc("/test/asttree/", c.WrapPanicHttpHandler(ParserDebugVizHandler))
 	http.HandleFunc("/event/dummy", c.WrapPanicHttpHandler(DummyEventHandler))
 	// v1 handlers
-	http.HandleFunc("/v1/health/shallow",c.WrapPanicHttpHandler( NilHandler))
+	http.HandleFunc("/v1/health/shallow", c.WrapPanicHttpHandler(NilHandler))
 	http.HandleFunc("/v1/health/deep", c.WrapPanicHttpHandler(StatusHandler))
 	http.HandleFunc("/v1/health", c.WrapPanicHttpHandler(StatusHandler))
 	http.HandleFunc("/v1/status", c.WrapPanicHttpHandler(StatusHandler))
@@ -162,7 +163,7 @@ func registerAdminServices() {
 	http.HandleFunc("/v1/test/astjson/", c.WrapPanicHttpHandler(GetASTJsonHandler))
 	http.HandleFunc("/v1/test/asttree/", c.WrapPanicHttpHandler(ParserDebugVizHandler))
 	http.HandleFunc("/v1/event/dummy", c.WrapPanicHttpHandler(DummyEventHandler))
-	http.HandleFunc("/v1/event/panic",c.WrapPanicHttpHandler(PanicEventHandler))
+	http.HandleFunc("/v1/event/panic", c.WrapPanicHttpHandler(PanicEventHandler))
 	//
 	http.Handle("/img/", http.StripPrefix("/img/", http.FileServer(http.Dir(filepath.Join(BasePath, "mascot")))))
 }
@@ -194,11 +195,9 @@ func main() {
 	}
 }
 
-
 //used to test  HttpHandlerFunc panic can be removed later
 func PanicEventHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := Gctx.SubContext()
-	ctx.Log().Info("op","PanicEventNoHandler")
+	ctx.Log().Info("op", "PanicEventNoHandler")
 	panic("I am panic now and Nobody care!")
 }
-
