@@ -34,6 +34,7 @@ type (
 		auth     map[string]string
 		headers  map[string]string
 		event    *JDoc
+		handler  *HandlerConfiguration
 		debug    bool
 		ctx      Context
 	}
@@ -151,4 +152,12 @@ func (p *HttpPublisher) SetPayloadParsed(event *JDoc) {
 
 func (p *HttpPublisher) GetPayloadParsed() *JDoc {
 	return p.event
+}
+
+func (p *HttpPublisher) SetHandler(handler *HandlerConfiguration) {
+	p.handler = handler
+}
+
+func (p *HttpPublisher) GetHandler() *HandlerConfiguration {
+	return p.handler
 }

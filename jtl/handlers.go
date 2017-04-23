@@ -61,12 +61,13 @@ type (
 		// several filters if desired
 		Filters []*Filter
 		// outgoing HTTP config
-		Path        interface{}       // relative path added to endpoint URL, if array of multiple paths, event will be fanned out to endpoint/path1, endpoint/path2 etc.
-		Verb        string            // otpional - HTTP verb like PUT, POST
-		AuthInfo    map[string]string // optional - to overwrite default auth info, example: {"type":"basic","username":"foo","password":"bar"}
-		Protocol    string            // optional - if omitted defaults to http, other valid values: x1, emo, email, sms (the protocol in the match section, if present, is just a meaningless custom match value!)
-		Endpoint    interface{}       // optional - overwrite default endpoint from config.json, if array of multiple endpoints, event will be fanned out to endpoint1, endpoint2 etc.
-		HttpHeaders map[string]string // optional - http headers
+		Path                  interface{}       // relative path added to endpoint URL, if array of multiple paths, event will be fanned out to endpoint/path1, endpoint/path2 etc.
+		Verb                  string            // otpional - HTTP verb like PUT, POST
+		AuthInfo              map[string]string // optional - to overwrite default auth info, example: {"type":"basic","username":"foo","password":"bar"}
+		Protocol              string            // optional - if omitted defaults to http, other valid values: x1, emo, email, sms (the protocol in the match section, if present, is just a meaningless custom match value!)
+		Endpoint              interface{}       // optional - overwrite default endpoint from config.json, if array of multiple endpoints, event will be fanned out to endpoint1, endpoint2 etc.
+		HttpHeaders           map[string]string // optional - http headers
+		AllowFilterDuplicates bool              // must be set to true in order for post-transformation-deduplication to take place, provided DuplicateTimeout > 0 in config.json
 		// internal pre-compiled configs
 		t *JDoc // transformation
 		f *JDoc // filter
@@ -891,6 +892,7 @@ func (h *HandlerConfiguration) ProcessEvent(ctx Context, event *JDoc) ([]EventPu
 			publisher.SetPath(rp)
 			publisher.SetPayloadParsed(tfd)
 			publisher.SetDebug(debug)
+			publisher.SetHandler(h)
 			publishers = append(publishers, publisher)
 		}
 	}
