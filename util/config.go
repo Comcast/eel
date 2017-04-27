@@ -115,6 +115,7 @@ const (
 	EelErrors               = "Eel.Errors"
 	EelSyncPath             = "Eel.SyncPath"
 	EelTraceLogger          = "Eel.TraceLogger"
+	EelCache                = "Eel.Cache"
 )
 
 const (
