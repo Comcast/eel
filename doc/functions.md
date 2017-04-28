@@ -793,13 +793,15 @@ Syntax:
 {{string('<doc>','<separator>')}}
 ```
 
+Example:
+
 Input:
 
 ```
 ["d1", "d2"]
 ```
 
-Example:
+Expression:
 
 ```
 {{string('{{/}}', '-')}}
