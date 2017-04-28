@@ -314,7 +314,7 @@ Parameters:
 
 * ms - timestamp in milliseconds
 * layout - time format by example following go conventions (https://golang.org/src/time/format.go)
-* timezone - valid timezone in tz format, for example US/Pacific, US/Mountain, US/Central, US/Eastern 
+* timezone - valid timezone in tz format, for example US/Pacific, US/Mountain, US/Central, US/Eastern
 
 Example:
 
@@ -543,7 +543,7 @@ Example:
 ### itransform
 
 Same as transform() but applies named transformation iteratively if document is an array: In this case the transformation,
-pattern and join parameters will all be applied to each element in the array. 
+pattern and join parameters will all be applied to each element in the array.
 
 Syntax:
 
@@ -783,4 +783,30 @@ Example:
 {{header('X-B3-TraceId')}}
 ```
 
+### string
 
+Convert an array of strings into a string using an optional separator between elements.
+
+Syntax:
+
+```
+{{string('<doc>','<separator>')}}
+```
+
+Input:
+
+```
+["d1", "d2"]
+```
+
+Example:
+
+```
+{{string('{{/}}', '-')}}
+```
+
+Output:
+
+```
+d1 - d2
+```
