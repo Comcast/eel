@@ -136,11 +136,11 @@ func handleEvent(ctx Context, stats *ServiceStats, event *JDoc, raw string, debu
 						c.Log().Metric("publish_failed", M_Namespace, "xrs", M_Metric, "publish_failed", M_Unit, "Count", M_Dims, "app="+AppId+"&env="+EnvName+"&instance="+InstanceName+"&destination="+ctx.LogValue("destination").(string), M_Val, 1.0)
 						stats.IncErrors()
 					} else {
-						if p.GetProtocol() != "null" {
-							c.Log().Info("action", "published_event")
-							c.Log().Metric("published_event", M_Namespace, "xrs", M_Metric, "published_event", M_Unit, "Count", M_Dims, "app="+AppId+"&env="+EnvName+"&instance="+InstanceName+"&destination="+ctx.LogValue("destination").(string), M_Val, 1.0)
-							stats.IncOutCount()
-						}
+						//if p.GetProtocol() != "null" {
+						c.Log().Info("action", "published_event")
+						c.Log().Metric("published_event", M_Namespace, "xrs", M_Metric, "published_event", M_Unit, "Count", M_Dims, "app="+AppId+"&env="+EnvName+"&instance="+InstanceName+"&destination="+ctx.LogValue("destination").(string), M_Val, 1.0)
+						stats.IncOutCount()
+						//}
 					}
 				}(ctx.SubContext(), publisher)
 			}
