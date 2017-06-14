@@ -24,6 +24,8 @@ import (
 	"sync"
 )
 
+const maxStackSize = 16 * 1024
+
 // DefaultContext simple implementation of the Context interface.
 type DefaultContext struct {
 	lvals map[string]interface{}
@@ -132,8 +134,11 @@ func (c *DefaultContext) EnableLogging() {
 func (c *DefaultContext) HandlePanic() {
 	if x := recover(); x != nil {
 		panicError := fmt.Sprintf("%#v", x)
-		debug.SetMaxStack(16 * 1024) //limit the stack track to 16k in case crash ES
 		trace := bytes.NewBuffer(debug.Stack()).String()
+		//limit the stack track to 16k
+		if maxStackSize < len(trace) {
+			trace = trace[:maxStackSize]
+		}
 		c.Log().Error("panicError", panicError, "stackTrace", trace)
 		return
 	}
