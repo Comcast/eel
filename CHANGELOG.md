@@ -6,6 +6,9 @@ This `CHANGELOG.md` implements the spirit of http://keepachangelog.com/.
 
 ## [1.12](https://github.comcast.com/VariousArtists/common/compare/v1.11...dev) - [Unreleased]
 
+### Fixed
+XRULES-8923: erroneous metric on published events 
+
 ## [1.11](https://github.comcast.com/VariousArtists/common/compare/v1.10...v1.11) - 2017-06-19
 
 ### Added
