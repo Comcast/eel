@@ -6,6 +6,9 @@ This `CHANGELOG.md` implements the spirit of http://keepachangelog.com/.
 
 ## [1.13](https://github.comcast.com/VariousArtists/common/compare/v1.12...dev) - [Unreleased]
 
+### Changed
+* add tenantId in logs
+
 ## [1.12](https://github.comcast.com/VariousArtists/common/compare/v1.11...v1.12) - [2017-07-28]
 
 ### Fixed
