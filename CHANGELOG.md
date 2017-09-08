@@ -6,6 +6,9 @@ This `CHANGELOG.md` implements the spirit of http://keepachangelog.com/.
 
 ## [1.13](https://github.com/Comcast/eel/compare/v1.12...dev) - [Unreleased]
 
+### Fixed
+* Fixed bad urls in `CHANGELOG.md`
+
 ### Changed
 * add tenantId in logs
 
