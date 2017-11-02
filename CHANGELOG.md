@@ -11,13 +11,14 @@ This `CHANGELOG.md` implements the spirit of http://keepachangelog.com/.
 
 ### Changed
 * add tenantId in logs
+* Commented out array_length_error log to address XRULES-9749
 
 ## [1.12](https://github.com/Comcast/eel/compare/v1.11...v1.12) - [2017-07-28]
 
 ### Fixed
-XRULES-8923: erroneous metric on published events 
+* XRULES-8923: erroneous metric on published events
 
-## [1.11](https://github.com/Comcast/eel/compare/v1.10...v1.11) - 2017-06-19
+## [1.11](https://github.com/Comcast/eel/compare/v1.10...v1.11) - [2017-06-19]
 
 ### Added
 * This `CHANGELOG.md` file
