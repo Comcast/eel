@@ -192,10 +192,26 @@ func (a *JExprItem) getDeepestConditional(cond **JExprItem) *JExprItem {
 	return *cond
 }
 
+// getHighestConditional gets the highest level conditional (ifte(), case(), alt()) for AST optimization
+func (a *JExprItem) getHighestConditional() *JExprItem {
+	if a.typ == astFunction && (a.val == "ifte" || a.val == "alt" || a.val == "case") {
+		return a
+	}
+	for _, k := range a.kids {
+		c := k.getHighestConditional()
+		if c != nil {
+			return c
+		}
+	}
+	return nil
+}
+
 // optimizeAllConditionals oprtstrd on the entire AST to optimize all conditional sub trees bottom up
 func (a *JExprItem) optimizeAllConditionals(ctx Context, doc *JDoc) error {
 	a.updateLevels(0)
 	for {
+		// unfortunately we cannot use getHigestConditional() to go top-down here because eel
+		// allows expressions like "if ( if (a==a) then a else b ) == c then d"
 		cond := a.getDeepestConditional(nil)
 		if cond == nil {
 			break
