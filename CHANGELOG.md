@@ -4,14 +4,18 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 This `CHANGELOG.md` implements the spirit of http://keepachangelog.com/.
 
-## [1.13](https://github.com/Comcast/eel/compare/v1.12...dev) - [Unreleased]
+## [1.14](https://github.com/Comcast/eel/compare/v1.13...dev) - [Unreleased]
 
 ### Fixed
 * Fixed bad urls in `CHANGELOG.md`
 
 ### Changed
-* add tenantId in logs
 * Commented out array_length_error log to address XRULES-9749
+
+## [1.13](https://github.com/Comcast/eel/compare/v1.12...v1.13) - [2017-09-08]
+
+### Changed
+* add tenantId in logs
 
 ## [1.12](https://github.com/Comcast/eel/compare/v1.11...v1.12) - [2017-07-28]
 
