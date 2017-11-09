@@ -178,7 +178,7 @@ func TestHttpPublisher(t *testing.T) {
 		t.Fatal("wrong number of publishers")
 	}
 	if publishers[0].GetHeaders()["X-Tenant-Id"] != "tenant1" {
-		t.Fatal("bad tenant id %s expected %s\n", publishers[0].GetHeaders()["X-Tenant-Id"], "tenant1")
+		t.Fatalf("bad tenant id %s expected %s\n", publishers[0].GetHeaders()["X-Tenant-Id"], "tenant1")
 	}
 	if publishers[0].GetUrl() != "http://localhost:8088" {
 		t.Fatalf("bad url %s expected %s\n", publishers[0].GetUrl(), "http://localhost:8088")
