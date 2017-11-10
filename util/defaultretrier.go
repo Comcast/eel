@@ -37,7 +37,7 @@ func (*DefaultRetrier) Retry(ctx Context, url string, payload string, verb strin
 start:
 	ctx.AddLogValue("attempt", attempt)
 	resp, status, err := f(ctx, url, payload, verb, headers, auth)
-	if err != nil || status < 200 || status > 299 {
+	if err != nil || status < 200 || status > 499 {
 		if attempt < GetConfig(ctx).MaxAttempts {
 			if attempt == 1 {
 				time.Sleep(initialDelayMs)
