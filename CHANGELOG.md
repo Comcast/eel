@@ -6,6 +6,9 @@ This `CHANGELOG.md` implements the spirit of http://keepachangelog.com/.
 
 ## [1.15](https://github.com/Comcast/eel/compare/v1.14...dev) - [Unreleased]
 
+### Fixed
+* Update retry to not retry for 300 and 400 
+
 ## [1.14](https://github.com/Comcast/eel/compare/v1.13...v1.14) - 2017-11-08
 
 ### Fixed
