@@ -722,7 +722,7 @@ func (j *JDoc) getChildElement(ctx Context, curr interface{}, segment string, pa
 						return nil
 					}
 					if idx >= len(curr.(map[string]interface{})[key].([]interface{})) {
-						ctx.Log().Error("error_type", "parser", "cause", "array_length_error", "path", path)
+						//ctx.Log().Error("error_type", "parser", "cause", "array_length_error", "path", path)
 						return nil
 					}
 					return curr.(map[string]interface{})[key].([]interface{})[idx]
@@ -755,7 +755,7 @@ func (j *JDoc) getChildElement(ctx Context, curr interface{}, segment string, pa
 					return nil
 				}
 				if idx >= len(curr.([]interface{})) {
-					ctx.Log().Error("error_type", "parser", "cause", "array_length_error", "path", path)
+					//ctx.Log().Error("error_type", "parser", "cause", "array_length_error", "path", path)
 					return nil
 				}
 				return curr.([]interface{})[idx]

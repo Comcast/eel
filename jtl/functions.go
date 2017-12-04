@@ -302,6 +302,9 @@ func fnAnd(ctx Context, doc *JDoc, params []string) interface{} {
 			return nil
 		}
 		result = result && b
+		/*if result == false {
+			return result
+		}*/
 	}
 	return result
 }
@@ -325,6 +328,9 @@ func fnOr(ctx Context, doc *JDoc, params []string) interface{} {
 			return nil
 		}
 		result = result || b
+		/*if result == true {
+			return result
+		}*/
 	}
 	return result
 }
