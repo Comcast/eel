@@ -1389,9 +1389,9 @@ func fnHashMod(ctx Context, doc *JDoc, params []string) interface{} {
 	str := extractStringParam(params[0])
 	d, err := strconv.Atoi(extractStringParam(params[1]))
 	if err != nil {
-		ctx.Log().Error("error_type", "func_hashmod", "op", "hashmod", "cause", "invalid divider", "params", params, "error", err)
+		ctx.Log().Error("error_type", "func_hashmod", "op", "hashmod", "cause", "invalid divisor", "params", params, "error", err)
 		stats.IncErrors()
-		AddError(ctx, SyntaxError{fmt.Sprintf("Invalid divider parameter"), "hashmod", params})
+		AddError(ctx, SyntaxError{fmt.Sprintf("Invalid divisor parameter"), "hashmod", params})
 		return ""
 	}
 
