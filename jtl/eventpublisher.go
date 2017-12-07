@@ -45,6 +45,14 @@ type (
 		GetPayloadParsed() *JDoc
 		GetErrors() []error
 	}
+
+	KafkaEventPublisher interface {
+		EventPublisher
+		SetTopic(topic string)
+		GetTopic() string
+		SetPartition(partition int32)
+		GetPartition() int32
+	}
 )
 
 var publisherMap = make(map[string]NewPublisher, 0)
