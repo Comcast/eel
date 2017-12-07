@@ -903,6 +903,7 @@ func (h *HandlerConfiguration) ProcessEvent(ctx Context, event *JDoc) ([]EventPu
 					ctx.Log().Error("error_type", "process_event", "cause", "kafka_type_cast_failure", "protocol", h.Protocol, "event", event.String(), "handler", h.Name, "type", reflect.TypeOf(publisher))
 					continue
 				}
+				kt := event.GetStringValueForExpression(ctx, h.KafkaTopic)
 				ep := event.GetStringValueForExpression(ctx, h.Partition)
 
 				partition, err := strconv.Atoi(ep)
@@ -911,7 +912,7 @@ func (h *HandlerConfiguration) ProcessEvent(ctx Context, event *JDoc) ([]EventPu
 					continue
 				}
 
-				kp.SetTopic(h.KafkaTopic)
+				kp.SetTopic(kt)
 				kp.SetPartition(int32(partition))
 			}
 
