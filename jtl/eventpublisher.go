@@ -44,6 +44,8 @@ type (
 		SetPayloadParsed(event *JDoc)
 		GetPayloadParsed() *JDoc
 		GetErrors() []error
+		SetAsyncReplyTo(replyTo map[string]string)
+		GetAsyncReplyTo() map[string]string
 	}
 
 	KafkaEventPublisher interface {

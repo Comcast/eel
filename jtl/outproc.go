@@ -128,6 +128,11 @@ func handleEvent(ctx Context, stats *ServiceStats, event *JDoc, raw string, debu
 					defer wg.Done()
 					defer c.HandlePanic()
 					_, err := p.Publish()
+
+					if p.GetAsyncReplyTo() != nil {
+						sendAsyncResponse(c, p.GetAsyncReplyTo(), err)
+					}
+
 					AddLatencyLog(c, stats, "stat.eel.time")
 					//c.AddLogValue("trace.out.endpoint", p.GetEndpoint())
 					c.AddLogValue("trace.out.url", p.GetUrl())
@@ -148,4 +153,62 @@ func handleEvent(ctx Context, stats *ServiceStats, event *JDoc, raw string, debu
 	}
 	wg.Wait()
 	return debuginfo
+}
+
+func sendAsyncResponse(c Context, replyTo map[string]string, err error) {
+	c.Log().Debug("op", "sendAsyncResponse", "replyTo", replyTo, "error", err)
+
+	t, ok := replyTo["type"]
+	if !ok {
+		c.Log().Error("op", "sendAsyncResponse", "action", "getReplyType", "error", "reply_type_not_found")
+		return
+	}
+	switch t {
+	case "eel":
+		sendAsyncResponseToEEL(c, replyTo, err)
+	default:
+		c.Log().Error("op", "sendAsyncResponse", "error", "unsupported_type", "type", t)
+	}
+}
+
+func sendAsyncResponseToEEL(c Context, replyTo map[string]string, err error) {
+	location, ok := replyTo["location"]
+	if !ok {
+		c.Log().Error("op", "sendAsyncResponseToEEL", "action", "getLocation", "error", "location_not_found", "replyTo", replyTo)
+		return
+	}
+	endpoint, ok := replyTo["endpoint"]
+	if !ok {
+		c.Log().Error("op", "sendAsyncResponseToEEL", "action", "getEndpoint", "error", "endpoint_not_found", "replyTo", replyTo)
+		return
+	}
+
+	body := make(map[string]string)
+	if err != nil {
+		body["status"] = "fail"
+		body["message"] = err.Error()
+	} else {
+		body["status"] = "success"
+	}
+	body["location"] = location
+
+	payload := make(map[string]interface{})
+	payload["traceId"] = c.Value("tx.traceId")
+	payload["body"] = body
+
+	payloadData, err := json.Marshal(payload)
+	if err != nil {
+		c.Log().Error("op", "sendAsyncResponseToEEL", "action", "marshalPayload", "error", err, "replyTo", replyTo, "payload", payload)
+		return
+	}
+
+	resp, status, err := GetRetrier(c).RetryEndpoint(c, endpoint, string(payloadData), "POST", nil, nil)
+	if err != nil {
+		c.Log().Error("op", "sendAsyncResponseToEEL", "action", "postEndpoint", "error", err, "replyTo", replyTo, "resp", resp)
+		return
+	}
+	if status < 200 || status >= 300 {
+		c.Log().Error("op", "sendAsyncResponseToEEL", "action", "postEndpoint", "statusCode", status, "replyTo", replyTo, "resp", resp)
+		return
+	}
 }

@@ -71,6 +71,8 @@ type (
 		// outgoing Kafka config
 		KafkaTopic string // kafka topic to send the message to
 		Partition  string // kafka partition to send the message to
+		// asyncReplyTo
+		AsyncReplyTo string
 		// internal pre-compiled configs
 		t *JDoc // transformation
 		f *JDoc // filter
@@ -895,6 +897,8 @@ func (h *HandlerConfiguration) ProcessEvent(ctx Context, event *JDoc) ([]EventPu
 			publisher.SetPath(rp)
 			publisher.SetPayloadParsed(tfd)
 			publisher.SetDebug(debug)
+
+			publisher.SetAsyncReplyTo(event.GetStringMapValue(h.AsyncReplyTo))
 
 			if publisher.GetProtocol() == "kafka" {
 				//Setting kafka fields

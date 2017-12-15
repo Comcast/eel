@@ -877,6 +877,22 @@ func (j *JDoc) GetValueForExpression(ctx Context, expr string) interface{} {
 	return j.ParseExpression(ctx, expr)
 }
 
+func (j *JDoc) GetStringMapValue(path string) map[string]string {
+	mapVal := j.GetMapValue(path)
+	if mapVal == nil {
+		return nil
+	}
+
+	retVal := make(map[string]string)
+	for k, v := range mapVal {
+		switch val := v.(type) {
+		case string:
+			retVal[k] = val
+		}
+	}
+	return retVal
+}
+
 func (j *JDoc) GetMapValue(path string) map[string]interface{} {
 	if j.pmap == nil || j.orig == nil {
 		return nil
