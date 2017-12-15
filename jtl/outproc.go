@@ -81,8 +81,8 @@ func handleEvent(ctx Context, stats *ServiceStats, event *JDoc, raw string, debu
 				// sequential execution to collect debug info
 				_, err := publisher.Publish()
 
-				if p.GetAsyncReplyTo() != nil {
-					sendAsyncResponse(c, p.GetAsyncReplyTo(), err)
+				if publisher.GetAsyncReplyTo() != nil {
+					sendAsyncResponse(ctx, publisher.GetAsyncReplyTo(), err)
 				}
 
 				AddLatencyLog(ctx, stats, "stat.eel.time")
