@@ -80,6 +80,11 @@ func handleEvent(ctx Context, stats *ServiceStats, event *JDoc, raw string, debu
 			} else if debug {
 				// sequential execution to collect debug info
 				_, err := publisher.Publish()
+
+				if p.GetAsyncReplyTo() != nil {
+					sendAsyncResponse(c, p.GetAsyncReplyTo(), err)
+				}
+
 				AddLatencyLog(ctx, stats, "stat.eel.time")
 				ctx.AddLogValue("trace.out.endpoint", publisher.GetEndpoint())
 				ctx.AddLogValue("trace.out.url", publisher.GetUrl())
