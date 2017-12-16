@@ -877,8 +877,8 @@ func (j *JDoc) GetValueForExpression(ctx Context, expr string) interface{} {
 	return j.ParseExpression(ctx, expr)
 }
 
-func (j *JDoc) GetStringMapValue(path string) map[string]string {
-	mapVal := j.GetMapValue(path)
+func (j *JDoc) GetStringMapValueForExpression(ctx Context, path string) map[string]string {
+	mapVal := j.GetMapValueForExpression(ctx, path)
 	if mapVal == nil {
 		return nil
 	}

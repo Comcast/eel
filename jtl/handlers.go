@@ -898,7 +898,7 @@ func (h *HandlerConfiguration) ProcessEvent(ctx Context, event *JDoc) ([]EventPu
 			publisher.SetPayloadParsed(tfd)
 			publisher.SetDebug(debug)
 
-			publisher.SetAsyncReplyTo(event.GetStringMapValue(h.AsyncReplyTo))
+			publisher.SetAsyncReplyTo(event.GetStringMapValueForExpression(ctx, h.AsyncReplyTo))
 
 			if publisher.GetProtocol() == "kafka" {
 				//Setting kafka fields
