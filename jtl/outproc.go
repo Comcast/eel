@@ -199,6 +199,7 @@ func sendAsyncResponseToEEL(c Context, replyTo map[string]string, err error) {
 
 	payload := make(map[string]interface{})
 	payload["traceId"] = c.Value("tx.traceId")
+	payload["messageType"] = "AsyncResponse"
 	payload["body"] = body
 
 	payloadData, err := json.Marshal(payload)
