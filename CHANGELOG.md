@@ -5,6 +5,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 This `CHANGELOG.md` implements the spirit of http://keepachangelog.com/.
 
 ## [1.16](https://github.com/Comcast/eel/compare/v1.15...dev) - [Unreleased]
+* Added a new config parameter: ElementsAuth
 
 ## [1.15](https://github.com/Comcast/eel/compare/v1.14...v1.15) - 2017-12-01
 
