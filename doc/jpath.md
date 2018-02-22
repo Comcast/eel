@@ -109,3 +109,12 @@ Output event:
 ```
 { "message" : "User email is {{email}}" }
 ```
+
+To escape individual characters such as single quote inside of a function parameter, use the 
+backslash character.
+
+Example:
+
+```
+{{ident('this wasn\'t working in earlier versions')}}
+```

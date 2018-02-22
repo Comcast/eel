@@ -7,6 +7,9 @@ This `CHANGELOG.md` implements the spirit of http://keepachangelog.com/.
 ## [1.16](https://github.com/Comcast/eel/compare/v1.15...dev) - [Unreleased]
 * Added a new config parameter: ElementsAuth
 
+### Fixed
+* XRULES-10493: support escape character in function parameters
+
 ## [1.15](https://github.com/Comcast/eel/compare/v1.14...v1.15) - 2017-12-01
 
 ### Fixed
