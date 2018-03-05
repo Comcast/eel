@@ -243,8 +243,15 @@ func lexParam(l *lexer) stateFn {
 			return l.errorf("unclosed param at %d: %s\n", l.pos, l.input)
 		case r == '{':
 			bc++
+			break
 		case r == '}':
 			bc--
+			break
+		case r == '\\':
+			// skip over character following escape character
+			l.next()
+			l.next()
+			break
 		case r == '\'' && bc == 0:
 			l.emit(lexItemParam)
 			return lexParamList
@@ -268,11 +275,18 @@ func lexParamList(l *lexer) stateFn {
 			return l.errorf("unclosed function at %d: %s\n", l.pos, l.input)
 		case isWhitespace(r):
 			l.ignore()
+			break
 		case r == ')':
 			l.emit(lexItemRightBracket)
 			return lexRightMeta
 		case r == ',':
 			l.ignore()
+			break
+		case r == '\\':
+			// skip over character following escape character
+			l.next()
+			l.next()
+			break
 		case r == '\'':
 			return lexParam
 		}
