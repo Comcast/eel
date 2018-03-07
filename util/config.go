@@ -31,6 +31,7 @@ type EelSettings struct {
 	AppName                        string
 	ElementsPublishEndpoint        string
 	ElementsWebhookEndpoint        string
+	ElementsAuth                   string
 	EelWebhook                     string
 	Brokers                        string
 	FunctionalMonitoringPort       int
