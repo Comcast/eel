@@ -6,7 +6,12 @@ This `CHANGELOG.md` implements the spirit of http://keepachangelog.com/.
 
 ## [1.17](https://github.com/Comcast/eel/compare/v1.16...dev) - [Unreleased]
 
+### Added
+* Gears suppport
+
 ## [1.16](https://github.com/Comcast/eel/compare/v1.15...v1.16) - 2018-03-05
+
+### Added
 * Added a new config parameter: ElementsAuth
 
 ### Fixed
