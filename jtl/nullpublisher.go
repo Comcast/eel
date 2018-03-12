@@ -125,3 +125,11 @@ func (p *NullPublisher) SetPayloadParsed(event *JDoc) {
 func (p *NullPublisher) GetPayloadParsed() *JDoc {
 	return p.event
 }
+
+func (p *NullPublisher) SetAsyncReplyTo(replyTo map[string]string) {
+	//no-op
+}
+
+func (p *NullPublisher) GetAsyncReplyTo() map[string]string {
+	return nil
+}
