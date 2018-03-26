@@ -33,6 +33,7 @@ type EelSettings struct {
 	ElementsWebhookEndpoint        string
 	ElementsAuth                   string
 	EelWebhook                     string
+	Brokers                        string
 	FunctionalMonitoringPort       int
 	Endpoint                       interface{}
 	MaxAttempts                    int
