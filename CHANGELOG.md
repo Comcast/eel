@@ -4,9 +4,16 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 This `CHANGELOG.md` implements the spirit of http://keepachangelog.com/.
 
-## [1.17](https://github.com/Comcast/eel/compare/v1.16...dev) - [Unreleased]
+## [1.18](https://github.com/Comcast/eel/compare/v1.17...dev) - [Unreleased]
+
+## [1.17](https://github.com/Comcast/eel/compare/v1.16...v1.17) - 2018-03-26
+
+### Added
+* Gears suppport
 
 ## [1.16](https://github.com/Comcast/eel/compare/v1.15...v1.16) - 2018-03-05
+
+### Added
 * Added a new config parameter: ElementsAuth
 
 ### Fixed
