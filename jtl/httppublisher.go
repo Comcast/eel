@@ -36,7 +36,6 @@ type (
 		event    *JDoc
 		debug    bool
 		ctx      Context
-		replyTo  map[string]string
 	}
 )
 
@@ -152,12 +151,4 @@ func (p *HttpPublisher) SetPayloadParsed(event *JDoc) {
 
 func (p *HttpPublisher) GetPayloadParsed() *JDoc {
 	return p.event
-}
-
-func (p *HttpPublisher) SetAsyncReplyTo(replyTo map[string]string) {
-	p.replyTo = replyTo
-}
-
-func (p *HttpPublisher) GetAsyncReplyTo() map[string]string {
-	return p.replyTo
 }

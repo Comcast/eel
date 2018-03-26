@@ -19,7 +19,6 @@ package jtl
 import (
 	"encoding/json"
 	"fmt"
-	"hash/fnv"
 	"net/http"
 	"net/url"
 	"regexp"
@@ -176,9 +175,6 @@ func NewFunction(fn string) *JFunction {
 	case "calc":
 		// evalutaes simple arithmetic expressions in native go and returns result
 		return &JFunction{fnCalc, 1, 1}
-	case "hashmod":
-		// hash a given string and then mod it by the given divider
-		return &JFunction{fnHashMod, 2, 2}
 	default:
 		//gctx.Log.Error("error_type", "func_", "op", fn, "cause", "not_implemented")
 		//stats.IncErrors()
@@ -1373,31 +1369,4 @@ func extractStringParam(param string) string {
 // ExecuteFunction executes a function on a given JSON document with given parameters.
 func (f *JFunction) ExecuteFunction(ctx Context, doc *JDoc, params []string) interface{} {
 	return f.fn(ctx, doc, params)
-}
-
-func fnHashMod(ctx Context, doc *JDoc, params []string) interface{} {
-	stats := ctx.Value(EelTotalStats).(*ServiceStats)
-	if params == nil || len(params) != 2 {
-		ctx.Log().Error("error_type", "func_hashmod", "op", "hashmod", "cause", "wrong_number_of_parameters", "params", params)
-		stats.IncErrors()
-		AddError(ctx, SyntaxError{fmt.Sprintf("wrong number of parameters in call to hashmod function"), "hashmod", params})
-		return ""
-	}
-
-	ctx.Log().Debug("op", "hashmod", "params", params)
-
-	str := extractStringParam(params[0])
-	d, err := strconv.Atoi(extractStringParam(params[1]))
-	if err != nil {
-		ctx.Log().Error("error_type", "func_hashmod", "op", "hashmod", "cause", "invalid divisor", "params", params, "error", err)
-		stats.IncErrors()
-		AddError(ctx, SyntaxError{fmt.Sprintf("Invalid divisor parameter"), "hashmod", params})
-		return ""
-	}
-
-	h := fnv.New32a()
-	h.Write([]byte(str))
-	partition := h.Sum32() % uint32(d)
-
-	return fmt.Sprintf("%d", partition)
 }
