@@ -102,7 +102,7 @@ func (a *JExprItem) GetD3Json(cur *JExprD3Node) *JExprD3Node {
 	return cur
 }
 
-// parse parses a single lebel of a jpath expression. Returns an error (if any) or nil.
+// parse parses a single jpath expression. Returns an error (if any) or nil.
 func (a *JExprItem) parse(expr string) error {
 	_, c := lex("", expr)
 	var f *JExprItem
@@ -121,7 +121,7 @@ func (a *JExprItem) parse(expr string) error {
 			a.kids = append(a.kids, t)
 		case lexItemParam:
 			if f != nil {
-				p := newJExprItem(astParam, item.val, f)
+				p := newJExprItem(astParam, item.val, f) //strings.Replace(item.val, "\\", "", -1), f)
 				f.kids = append(f.kids, p)
 			} else {
 				return errors.New("param without function")
@@ -270,7 +270,7 @@ func (a *JExprItem) optimizeConditional(ctx Context, doc *JDoc) (*JExprItem, err
 		if len(a.kids) != 3 {
 			ctx.Log().Error("error_type", "parser", "cause", "wrong_number_of_parameters", "type", a.typ, "val", a.val, "num_params", len(a.kids), "error", "wrong number of parameters")
 			stats.IncErrors()
-			AddError(ctx, RuntimeError{fmt.Sprintf("iwrong number of parameters"), "ifte", nil})
+			AddError(ctx, RuntimeError{fmt.Sprintf("wrong number of parameters"), "ifte", nil})
 			return nil, errors.New("ifte has wrong number of parameters")
 		}
 		if a.mom == nil {
@@ -667,6 +667,11 @@ func (a *JExprItem) Execute(ctx Context, doc *JDoc) interface{} {
 		}
 	}
 	a.print(0, "AST")
+	// remove escape indicators in final step
+	switch a.val.(type) {
+	case string:
+		a.val = strings.Replace(a.val.(string), "\\", "", -1)
+	}
 	return a.val
 }
 
@@ -682,5 +687,10 @@ func (a *JExprItem) ExecuteDebug(ctx Context, doc *JDoc) (interface{}, [][][]str
 		}
 	}
 	a.print(0, "AST")
+	// remove escape indicators in final step
+	switch a.val.(type) {
+	case string:
+		a.val = strings.Replace(a.val.(string), "\\", "", -1)
+	}
 	return a.val, trees
 }

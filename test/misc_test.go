@@ -1219,6 +1219,24 @@ func TestParserWhiteSpace(t *testing.T) {
 	}
 }
 
+func TestEscapingSingleQuotes(t *testing.T) {
+	initTests("../config-handlers")
+	e1, err := NewJDocFromString(event1)
+	if err != nil {
+		t.Fatal("could not get event1")
+	}
+	test := `{{ident('{{ident('{{ident('this isn\'t breaking any more')}}')}}')}}`
+	jexpr, err := NewJExpr(test)
+	if err != nil {
+		t.Errorf("parsing error: %s\n", err.Error())
+	}
+	result := jexpr.Execute(Gctx, e1)
+	expected := `this isn't breaking any more`
+	if result.(string) != expected {
+		t.Errorf("wrong parsing result: %v expected: %s\n", result, expected)
+	}
+}
+
 func TestParserDeepNesting(t *testing.T) {
 	initTests("../config-handlers")
 	e1, err := NewJDocFromString(event1)
