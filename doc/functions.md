@@ -812,3 +812,27 @@ Output:
 ```
 d1 - d2
 ```
+
+### calc
+
+Calc evaluates simple arithmetic calculations or boolean expressions.
+
+Syntax:
+
+```
+{{calc('<formula>')}}
+```
+
+Example:
+
+Expression:
+
+```
+{{calc('40+2')}}
+```
+
+Output:
+
+```
+42
+```
