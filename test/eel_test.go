@@ -604,7 +604,7 @@ func transformEvent(t *testing.T, folder string, headers map[string]string) {
 	if err != nil {
 		t.Fatalf("couldn't read event response: %s\n", err.Error())
 	}
-	// give post hanlder a chance to store event
+	// give post handlder a chance to store event
 	delayMS := 100
 	iter := 0
 	for {
@@ -688,7 +688,7 @@ func fanoutEvent(t *testing.T, folder string, numExpectedResults int, recursive 
 	if err != nil {
 		t.Fatalf("couldn't read event response: %s\n", err.Error())
 	}
-	// give post hanlder a chance to store event
+	// give post handler a chance to store event
 	delayMS := 100
 	iter := 0
 	for {
