@@ -261,7 +261,7 @@ func GetASTJsonHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// ParserDebugVizHandler http handler for D3 vizualization of jpath expression AST
+// ParserDebugVizHandler http handler for D3 visualization of jpath expression AST
 func ParserDebugVizHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := Gctx.SubContext()
 	expression := r.URL.Path[strings.Index(r.URL.Path, "/test/asttree/")+len("/test/asttree/"):]

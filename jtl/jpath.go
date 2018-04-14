@@ -163,7 +163,7 @@ func (j *JDoc) StringPretty() string {
 	return string(buf)
 }
 
-// convertFloat2Int is a helper function to convert floats to ints whereever possible without rounding in the internal document representation.
+// convertFloat2Int is a helper function to convert floats to ints wherever possible without rounding in the internal document representation.
 // Apparently in JSON all numbers are floats which can cause trouble. This is
 // a hack to make things look good. Otherwise, "timestamp": 1416505007395 turns
 // into "timestamp": 1.416505007395e+12.

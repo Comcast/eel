@@ -84,7 +84,7 @@ func benchmarkSingleEvent(b *testing.B, folder string, headers map[string]string
 		var eel interface{}
 		iter := 0
 		for {
-			// give post hanlder a chance to store event
+			// give post handler a chance to store event
 			time.Sleep(time.Duration(1) * time.Millisecond)
 			// read and compare received event
 			eel = Gctx.Value("debug_post_body")

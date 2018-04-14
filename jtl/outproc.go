@@ -23,7 +23,7 @@ import (
 	. "github.com/Comcast/eel/util"
 )
 
-// handleEvent processes an event (usually from the work queue) by selecting the correct handlers, applying the appropriate transformations and then sending off the tranformed event via appropriate publisher(s).
+// handleEvent processes an event (usually from the work queue) by selecting the correct handlers, applying the appropriate transformations and then sending off the transformed event via appropriate publisher(s).
 func handleEvent(ctx Context, stats *ServiceStats, event *JDoc, raw string, debug bool, syncExec bool) interface{} {
 	debuginfo := make([]interface{}, 0)
 	ctx.AddLogValue("destination", "unknown")
