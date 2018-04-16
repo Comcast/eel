@@ -584,6 +584,12 @@ func (j *JDoc) contains(a interface{}, b interface{}, strength int) (bool, int) 
 		return false, strength
 	}
 	switch b.(type) {
+	case string:
+		if b.(string) == "*" && a != nil {
+			return true, strength
+		}
+	}
+	switch b.(type) {
 	case map[string]interface{}:
 		switch a.(type) {
 		case map[string]interface{}:
