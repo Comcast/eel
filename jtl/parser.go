@@ -497,7 +497,7 @@ func (a *JExprItem) isRoot() bool {
 	return false
 }
 
-// collapseLeaf collapes a single leaf of the AST
+// collapseLeaf collapses a single leaf of the AST
 func (a *JExprItem) collapseLeaf(ctx Context, doc *JDoc) bool {
 	if !a.isLeaf() {
 		return false
@@ -560,7 +560,7 @@ func (a *JExprItem) collapseLeaf(ctx Context, doc *JDoc) bool {
 			return false
 		}
 		params := make([]string, 0)
-		for _, k := range a.mom.kids { // only execute if all paramters are ready
+		for _, k := range a.mom.kids { // only execute if all parameters are ready
 			if k.typ != astParam {
 				return false
 			}

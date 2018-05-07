@@ -247,40 +247,40 @@ curl -X POST --data @test/data/test01/in.json http://localhost:8080/v1/sync/even
 
 No | Name | Test Name | Description
 --- |--- | --- | ---
-0 | Identity Transformation | [TestDontTouchEvent](eel/test/data/test00) | Doesn't apply any transformation and forwards everything unchanged.
-1 | Canonicalize | [TestCanonicalizeEvent](eel/test/data/test01) | Simple structural changes and array path selectors.
-2 | External Lookup | [TestInjectExternalServiceResponse](eel/test/data/test02) | Get JSON data from external service and inject into payload.
-3 | Transformation By Example | [TestTransformationByExample](eel/test/data/test03) | Describe transformation using by-example syntax rather than using by-path syntax.
-4 | Named Transformations | [TestNamedTransformations](eel/test/data/test04) | Choose from several named transformations based on input data.
-5 | Conditional Message Generation | [TestMessageGeneration](eel/test/data/test05) | Assemble message string with ifte() and equals().
-6 | Handler Matching 1 | [TestTerminateOnMatchTrue](eel/test/data/test06) | Pick best matching handler and forward single event.
-7 | Handler Matching 2 | [TestTerminateOnMatchFalse](eel/test/data/test07) | Pick all matching handlers and forward multiple events.
-8 | Multi Tenancy | [TestMultiTenancy](eel/test/data/test08) | Handlers for different tenants or apps.
-9 | Cascade | [TestSequentialHandlerCascade](eel/test/data/test09) | Cascade of multiple handlers which will be executed sequentially by using EEL recursively.
-10 | Java Script For Everything Else | [TestJavaScript](eel/test/data/test10) | If you really can't avoid it, resort to Java Script.
-11 | Handler Matching 3 | [TestMatchByExample](eel/test/data/test11) | Matching handlers using by-example syntax.
-12 | Convert Headers To Payload | [TestHeaders](eel/test/data/test12) | Inject HTTP headers from upstream service into JSON event for downstream service.
-13 | Custom Properties | [TestCustomProperties](eel/test/data/test13) | Custom properties in handlers for sharing data.
-14 | Fan Out | [TestFanOut](eel/test/data/test14) | Send incoming event to several downstream services.
-15 | Basic String Operations | [TestStringOps](eel/test/data/test15) | Uppercase, lowercase, substring.
-16 | Named Transformations 2 | [TestNamedTransformations2](eel/test/data/test16) | Perform named transformation on external document.
-17 | Contains | [TestContains](eel/test/data/test17) | Check if one JSON event is contained in another.
-18 | Tenant Id Header | [TestMultiTenency2](eel/test/data/test18) | Pass in tenant id as HTTP header.
-19 | Conditional Message Generation 2 | [TestMessageGeneration2](eel/test/data/test19) | Use case() function to simplify conditional string generation.
-20 | Regex | [TestRegex](eel/test/data/test20) | Use regex() to evaluate regular expressions.
-22 | Filter By Path | [TestFilterByPath](eel/test/data/test22) | Filter event after transformation using by-path syntax.
-23 | Filter By Example | [TestFilterByExample](eel/test/data/test23) | Filter event after transformation using by-example syntax.
-25 | Array Path Selector | [TestArrayPathSelector](eel/test/data/test25) | Select elements from arrays by index or by path.
-27 | Iterate Over Array | [NamedTransformationsAndArrays](eel/test/data/test27) | Iterate over array and apply named transformation.
-32 | Simple Types | [NamedTransformationsAndSimpleTypes](eel/test/data/test32) | Apply named transformation to a simple type.
-34 | Join | [Join](eel/test/data/test34) | Merge two JSON documents.
-41 | Partial Matching | [MatchPartialArrays3](eel/test/data/test41) | Match event against partial pattern.
-46 | Filter Cascade | [FilterCascade](eel/test/data/test46) | Apply multiple filters.
-47 | Choose From Array | [ChooseFromArray](eel/test/data/test47) | Choose elements from array by pattern.
-48 | Named Transformation With Array And Pattern | [NamedTransformationWithArrayAndPattern](eel/test/data/test48) | Apply named transformation by pattern.
-49 | Named Transformation With Array And Join | [NamedTransformationWithArrayAndJoin](eel/test/data/test49) | Apply named transformation with join.
-51 | Complex Example | [ComplexExample](eel/test/data/test51) | A real world example.
-53 | Crush | [Crush](eel/test/data/test53) | Flatten a deeply nested array.
+0 | Identity Transformation | [TestDontTouchEvent](test/data/test00) | Doesn't apply any transformation and forwards everything unchanged.
+1 | Canonicalize | [TestCanonicalizeEvent](test/data/test01) | Simple structural changes and array path selectors.
+2 | External Lookup | [TestInjectExternalServiceResponse](test/data/test02) | Get JSON data from external service and inject into payload.
+3 | Transformation By Example | [TestTransformationByExample](test/data/test03) | Describe transformation using by-example syntax rather than using by-path syntax.
+4 | Named Transformations | [TestNamedTransformations](test/data/test04) | Choose from several named transformations based on input data.
+5 | Conditional Message Generation | [TestMessageGeneration](test/data/test05) | Assemble message string with ifte() and equals().
+6 | Handler Matching 1 | [TestTerminateOnMatchTrue](test/data/test06) | Pick best matching handler and forward single event.
+7 | Handler Matching 2 | [TestTerminateOnMatchFalse](test/data/test07) | Pick all matching handlers and forward multiple events.
+8 | Multi Tenancy | [TestMultiTenancy](test/data/test08) | Handlers for different tenants or apps.
+9 | Cascade | [TestSequentialHandlerCascade](test/data/test09) | Cascade of multiple handlers which will be executed sequentially by using EEL recursively.
+10 | Java Script For Everything Else | [TestJavaScript](test/data/test10) | If you really can't avoid it, resort to Java Script.
+11 | Handler Matching 3 | [TestMatchByExample](test/data/test11) | Matching handlers using by-example syntax.
+12 | Convert Headers To Payload | [TestHeaders](test/data/test12) | Inject HTTP headers from upstream service into JSON event for downstream service.
+13 | Custom Properties | [TestCustomProperties](test/data/test13) | Custom properties in handlers for sharing data.
+14 | Fan Out | [TestFanOut](test/data/test14) | Send incoming event to several downstream services.
+15 | Basic String Operations | [TestStringOps](test/data/test15) | Uppercase, lowercase, substring.
+16 | Named Transformations 2 | [TestNamedTransformations2](test/data/test16) | Perform named transformation on external document.
+17 | Contains | [TestContains](test/data/test17) | Check if one JSON event is contained in another.
+18 | Tenant Id Header | [TestMultiTenency2](test/data/test18) | Pass in tenant id as HTTP header.
+19 | Conditional Message Generation 2 | [TestMessageGeneration2](test/data/test19) | Use case() function to simplify conditional string generation.
+20 | Regex | [TestRegex](test/data/test20) | Use regex() to evaluate regular expressions.
+22 | Filter By Path | [TestFilterByPath](test/data/test22) | Filter event after transformation using by-path syntax.
+23 | Filter By Example | [TestFilterByExample](test/data/test23) | Filter event after transformation using by-example syntax.
+25 | Array Path Selector | [TestArrayPathSelector](test/data/test25) | Select elements from arrays by index or by path.
+27 | Iterate Over Array | [NamedTransformationsAndArrays](test/data/test27) | Iterate over array and apply named transformation.
+32 | Simple Types | [NamedTransformationsAndSimpleTypes](test/data/test32) | Apply named transformation to a simple type.
+34 | Join | [Join](test/data/test34) | Merge two JSON documents.
+41 | Partial Matching | [MatchPartialArrays3](test/data/test41) | Match event against partial pattern.
+46 | Filter Cascade | [FilterCascade](test/data/test46) | Apply multiple filters.
+47 | Choose From Array | [ChooseFromArray](test/data/test47) | Choose elements from array by pattern.
+48 | Named Transformation With Array And Pattern | [NamedTransformationWithArrayAndPattern](test/data/test48) | Apply named transformation by pattern.
+49 | Named Transformation With Array And Join | [NamedTransformationWithArrayAndJoin](test/data/test49) | Apply named transformation with join.
+51 | Complex Example | [ComplexExample](test/data/test51) | A real world example.
+53 | Crush | [Crush](test/data/test53) | Flatten a deeply nested array.
 
 ## Further Reading
 

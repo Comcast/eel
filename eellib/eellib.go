@@ -25,7 +25,7 @@ import (
 	. "github.com/Comcast/eel/util"
 )
 
-// EELInit initalize environment for EEL API use
+// EELInit initialize environment for EEL API use
 func EELInit(ctx Context) {
 	Mutex.Lock()
 	Gctx = ctx

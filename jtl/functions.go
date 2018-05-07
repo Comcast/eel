@@ -713,7 +713,7 @@ func fnTime(ctx Context, doc *JDoc, params []string) interface{} {
 	return time.Now().UnixNano() / 1e6
 }
 
-// fnIdent is a function that does nothing. Somtimes interesting for debugging.
+// fnIdent is a function that does nothing. Sometimes interesting for debugging.
 func fnIdent(ctx Context, doc *JDoc, params []string) interface{} {
 	stats := ctx.Value(EelTotalStats).(*ServiceStats)
 	if params == nil || len(params) != 1 {
@@ -775,7 +775,7 @@ func fnSubstr(ctx Context, doc *JDoc, params []string) interface{} {
 	return extractStringParam(params[0])[i:j]
 }
 
-// fnEval function to exaluate a jpath expression agains current document or against a document passed in as parameter. Often useful in combination with fnCurl.
+// fnEval function to evaluate a jpath expression against the current document or against a document passed in as parameter. Often useful in combination with fnCurl.
 func fnEval(ctx Context, doc *JDoc, params []string) interface{} {
 	stats := ctx.Value(EelTotalStats).(*ServiceStats)
 	if params == nil || len(params) == 0 || len(params) > 2 {
