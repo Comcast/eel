@@ -56,6 +56,9 @@ func NewFunction(fn string) *JFunction {
 		// curl('<method>','<url>',['<payload>'],['<header-map>'],['<retries>'])
 		// example curl('POST', 'http://foo.com/bar/json', 'foo-{{/content/bar}}')
 		return &JFunction{fnCurl, 2, 5}
+	case "curlOAuth1":
+		// curlOAuth1('<method>','<url>',['<payload>'],['<header-map>'],['<retries>'],['<oauth1-provider>'])
+		return &JFunction{fnCurlOAuth1, 2, 6}
 	case "uuid":
 		// returns UUID string
 		// uuid()
@@ -637,6 +640,36 @@ func fnCurl(ctx Context, doc *JDoc, params []string) interface{} {
 	} else {
 		return res
 	}
+}
+
+// fnCurlOAuth1 provides curl-like functionality to reach out to helper web services, with oauth 1.0 authenication
+func fnCurlOAuth1(ctx Context, doc *JDoc, params []string) interface{} {
+	stats := ctx.Value(EelTotalStats).(*ServiceStats)
+	if params == nil || len(params) < 2 || len(params) > 6 {
+		ctx.Log().Error("error_type", "func_curlOAuth1", "op", "curlOAuth1", "cause", "wrong_number_of_parameters", "params", params)
+		stats.IncErrors()
+		AddError(ctx, SyntaxError{fmt.Sprintf("wrong number of parameters in call to curlOAuth1 function"), "curl", params})
+		return nil
+	}
+
+	if len(params) >= 6 {
+		method := extractStringParam(params[0])
+		endpoint := extractStringParam(params[1])
+		headers := extractStringParam(params[3])
+		oauthProvider := extractStringParam(params[5])
+
+		//add Authorization header by oauthProvider
+		res := make(map[string]string)
+		json.Unmarshal([]byte(headers), &res)
+		oauthConsumer := NewOAuthConsumer(oauthProvider)
+		res["Authorization"], _ = oauthConsumer.GetOAuth1Header(ctx, method, endpoint)
+		newHeaders, _ := json.Marshal(res)
+		params[3] = "'" + string(newHeaders) + "'"
+
+		//unset oauthProvider for fnCurl
+		params = params[:5]
+	}
+	return fnCurl(ctx, doc, params)
 }
 
 // fnmHeader function to obtain http header value from incoming event by key.
