@@ -660,10 +660,22 @@ func fnCurlOAuth1(ctx Context, doc *JDoc, params []string) interface{} {
 
 		//add Authorization header by oauthProvider
 		res := make(map[string]string)
-		json.Unmarshal([]byte(headers), &res)
+		err := json.Unmarshal([]byte(headers), &res)
+		if nil != err {
+			ctx.Log().Error("error_type", "func_curlOAuth1", "op", "curlOAuth1", "cause", "invalid_header_passed_in", "params", params)
+			return nil
+		}
 		oauthConsumer := NewOAuthConsumer(oauthProvider)
-		res["Authorization"], _ = oauthConsumer.GetOAuth1Header(ctx, method, endpoint)
-		newHeaders, _ := json.Marshal(res)
+		res["Authorization"], err = oauthConsumer.GetOAuth1Header(ctx, method, endpoint)
+		if nil != err {
+			ctx.Log().Error("error_type", "func_curlOAuth1", "op", "curlOAuth1", "cause", "no_valid_oauth_header", "params", params)
+			return nil
+		}
+		newHeaders, err := json.Marshal(res)
+		if nil != err {
+			ctx.Log().Error("error_type", "func_curlOAuth1", "op", "curlOAuth1", "cause", "error_when_create_new_header", "params", params)
+			return nil
+		}
 		params[3] = "'" + string(newHeaders) + "'"
 
 		//unset oauthProvider for fnCurl
