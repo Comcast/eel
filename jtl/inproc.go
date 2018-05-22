@@ -61,7 +61,7 @@ func EventHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Content-Type", "application/json")
 	if r.ContentLength > GetConfig(ctx).MaxMessageSize {
-		ctx.Log().Error("status", "413", "action", "rejected", "error_type", "rejected", "cause", "message_too_large", "msg.length", r.ContentLength, "error", "message too large")
+		ctx.Log().Error("status", "413", "action", "rejected", "error_type", "rejected", "cause", "message_too_large", "msg_length", r.ContentLength, "error", "message too large")
 		ctx.Log().Metric("rejected", M_Namespace, "xrs", M_Metric, "rejected", M_Unit, "Count", M_Dims, "app="+AppId+"&env="+EnvName+"&instance="+InstanceName, M_Val, 1.0)
 		w.WriteHeader(http.StatusRequestEntityTooLarge)
 		w.Write(GetResponse(ctx, StatusRequestTooLarge))

@@ -76,7 +76,7 @@ func DummyEventHandler(w http.ResponseWriter, r *http.Request) {
 	ctx.AddLogValue("delta", delta/1e6)
 	w.Header().Set("Content-Type", "application/json")
 	if r.ContentLength > GetConfig(ctx).MaxMessageSize {
-		ctx.Log().Error("comp", "debug", "status", "413", "action", "rejected", "error_type", "rejected", "cause", "message_too_large", "msg.length", r.ContentLength, "msg.max.length", GetConfig(ctx).MaxMessageSize)
+		ctx.Log().Error("comp", "debug", "status", "413", "action", "rejected", "error_type", "rejected", "cause", "message_too_large", "msg_length", r.ContentLength, "msg_max_length", GetConfig(ctx).MaxMessageSize)
 		http.Error(w, string(GetResponse(ctx, StatusRequestTooLarge)), http.StatusRequestEntityTooLarge)
 		return
 	}
