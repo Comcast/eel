@@ -57,11 +57,11 @@ func NewWorker(id int, workerQueue chan chan *WorkRequest) *Worker {
 	return &worker
 }
 
-func GetWorkDispatcher(ctx Context, tenentId string) *WorkDispatcher {
-	//ctx.Log().Debug("tenentId", tenentId)
-	if (tenentId == "" || tenentId == "xh") && ctx.Value(EelDispatcher) != nil {
+func GetWorkDispatcher(ctx Context, tenantId string) *WorkDispatcher {
+	//ctx.Log().Debug("tenantId", tenantId)
+	if (tenantId == "" || tenantId == "xh") && ctx.Value(EelDispatcher) != nil {
 		return ctx.Value(EelDispatcher).(*WorkDispatcher)
-	} else if tenentId == "sport" && ctx.Value(EelSportDispatcher) != nil {
+	} else if tenantId == "sport" && ctx.Value(EelSportDispatcher) != nil {
 		return ctx.Value(EelSportDispatcher).(*WorkDispatcher)
 	}
 	return nil

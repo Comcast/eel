@@ -52,9 +52,9 @@ func (p *StdinPlugin) StartStdInConsumer(ctx Context, r io.Reader) {
 	//scanner := bufio.NewScanner(r)
 	stdinreader := bufio.NewReader(r)
 	ctx.Log().Info("action", "starting_plugin", "op", "stdin")
-	tenentId := ""
+	tenantId := ""
 	if ctx.Value(EelTenantId) != nil {
-		tenentId = ctx.Value(EelTenantId).(string)
+		tenantId = ctx.Value(EelTenantId).(string)
 	}
 	dp := GetWorkDispatcher(ctx, tenantId)
 	if dp == nil {
