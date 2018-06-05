@@ -37,8 +37,8 @@ func StatusHandler(w http.ResponseWriter, r *http.Request) {
 	state["Config"] = GetConfig(ctx)
 	callstats := make(map[string]interface{}, 0)
 	if ctx.Value(EelDispatcher) != nil {
-		callstats["WorkQueueFillLevel"] = len(GetWorkDispatcher(ctx).WorkQueue)
-		callstats["WorkersIdle"] = len(GetWorkDispatcher(ctx).WorkerQueue)
+		callstats["WorkQueueFillLevel"] = len(GetWorkDispatcher(ctx, "").WorkQueue)
+		callstats["WorkersIdle"] = len(GetWorkDispatcher(ctx, "").WorkerQueue)
 	}
 	if ctx.Value(EelTotalStats) != nil {
 		callstats["TotalStats"] = ctx.Value(EelTotalStats)
@@ -116,7 +116,7 @@ func ReloadConfigHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	ReloadConfig()
 	InitHttpTransport(Gctx)
-	dp := NewWorkDispatcher(GetConfig(Gctx).WorkerPoolSize, GetConfig(Gctx).MessageQueueDepth)
+	dp := NewWorkDispatcher(GetConfig(Gctx).WorkerPoolSize, GetConfig(Gctx).MessageQueueDepth, "xh")
 	dp.Start(Gctx)
 	Gctx.AddValue(EelDispatcher, dp)
 	dc := NewLocalInMemoryDupChecker(GetConfig(Gctx).DuplicateTimeout, 10000)

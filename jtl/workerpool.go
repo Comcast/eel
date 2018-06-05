@@ -43,6 +43,7 @@ type WorkDispatcher struct {
 	WorkerQueue chan chan *WorkRequest
 	workers     []*Worker
 	quitChan    chan bool
+	tenant      string
 }
 
 // NewWorker creates a new worker
@@ -56,9 +57,12 @@ func NewWorker(id int, workerQueue chan chan *WorkRequest) *Worker {
 	return &worker
 }
 
-func GetWorkDispatcher(ctx Context) *WorkDispatcher {
-	if ctx.Value(EelDispatcher) != nil {
+func GetWorkDispatcher(ctx Context, tenentId string) *WorkDispatcher {
+	//ctx.Log().Debug("tenentId", tenentId)
+	if (tenentId == "" || tenentId == "xh") && ctx.Value(EelDispatcher) != nil {
 		return ctx.Value(EelDispatcher).(*WorkDispatcher)
+	} else if tenentId == "sport" && ctx.Value(EelSportDispatcher) != nil {
+		return ctx.Value(EelSportDispatcher).(*WorkDispatcher)
 	}
 	return nil
 }
@@ -96,12 +100,13 @@ func (w *Worker) Stop() {
 }
 
 // NewWorkDispatcher creates a new worker pool with nworkers workers and a work queue depth of queueDepth
-func NewWorkDispatcher(nworkers int, queueDepth int) *WorkDispatcher {
+func NewWorkDispatcher(nworkers int, queueDepth int, tenant string) *WorkDispatcher {
 	disp := new(WorkDispatcher)
 	disp.WorkQueue = make(chan *WorkRequest, queueDepth)
 	disp.WorkerQueue = make(chan chan *WorkRequest, nworkers)
 	disp.workers = make([]*Worker, nworkers)
 	disp.quitChan = make(chan bool)
+	disp.tenant = tenant
 	return disp
 }
 
@@ -117,7 +122,7 @@ func (disp *WorkDispatcher) Start(ctx Context) {
 		for {
 			select {
 			case work := <-disp.WorkQueue:
-				//ctx.Log.Info("action", "received_work_request")
+				ctx.Log().Info("action", "received_work_request", "tenant", disp.tenant)
 				//go func() {
 				worker := <-disp.WorkerQueue
 				//ctx.Log.Info("action", "dispatched_work_request")

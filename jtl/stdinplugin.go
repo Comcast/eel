@@ -52,7 +52,11 @@ func (p *StdinPlugin) StartStdInConsumer(ctx Context, r io.Reader) {
 	//scanner := bufio.NewScanner(r)
 	stdinreader := bufio.NewReader(r)
 	ctx.Log().Info("action", "starting_plugin", "op", "stdin")
-	dp := GetWorkDispatcher(ctx)
+	tenentId := ""
+	if ctx.Value(EelTenantId) != nil {
+		tenentId = ctx.Value(EelTenantId).(string)
+	}
+	dp := GetWorkDispatcher(ctx, tenantId)
 	if dp == nil {
 		ctx.Log().Error("error_type", "stdin_consumer_error", "cause", "no_work_dispatcher", "op", "stdin")
 		return
