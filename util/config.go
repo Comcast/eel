@@ -102,7 +102,6 @@ const (
 	EelTotalStats           = "Eel.TotalStats"
 	EelPathWhiteList        = "Eel.PathWhiteList"
 	EelDispatcher           = "Eel.Dispatcher"
-	EelSportDispatcher      = "Eel.SportDispatcher"
 	EelDuplicateChecker     = "Eel.DuplicateChecker"
 	EelStartTime            = "StartTime"
 	EelConfig               = "Eel.Settings"

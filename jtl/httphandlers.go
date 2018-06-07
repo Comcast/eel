@@ -36,9 +36,13 @@ func StatusHandler(w http.ResponseWriter, r *http.Request) {
 	state["Version"] = GetConfig(ctx).Version
 	state["Config"] = GetConfig(ctx)
 	callstats := make(map[string]interface{}, 0)
-	if ctx.Value(EelDispatcher) != nil {
-		callstats["WorkQueueFillLevel"] = len(GetWorkDispatcher(ctx, "").WorkQueue)
-		callstats["WorkersIdle"] = len(GetWorkDispatcher(ctx, "").WorkerQueue)
+	tenantId := ""
+	if ctx.Value(EelTenantId) != nil {
+		tenantId = Gctx.Value(EelTenantId).(string)
+	}
+	if ctx.Value(EelDispatcher+"_"+tenantId) != nil {
+		callstats["WorkQueueFillLevel"] = len(GetWorkDispatcher(ctx, tenantId).WorkQueue)
+		callstats["WorkersIdle"] = len(GetWorkDispatcher(ctx, tenantId).WorkerQueue)
 	}
 	if ctx.Value(EelTotalStats) != nil {
 		callstats["TotalStats"] = ctx.Value(EelTotalStats)
@@ -110,15 +114,19 @@ func NilHandler(w http.ResponseWriter, r *http.Request) {
 
 // ReloadConfigHandler http handler to relaod all configs from disk. Response is similar to StatusHandler.
 func ReloadConfigHandler(w http.ResponseWriter, r *http.Request) {
-	if Gctx.Value(EelDispatcher) != nil {
-		dp := Gctx.Value(EelDispatcher).(*WorkDispatcher)
+	tenantId := ""
+	if Gctx.Value(EelTenantId) != nil {
+		tenantId = Gctx.Value(EelTenantId).(string)
+	}
+	if Gctx.Value(EelDispatcher+"_"+tenantId) != nil {
+		dp := Gctx.Value(EelDispatcher + "_" + tenantId).(*WorkDispatcher)
 		dp.Stop(Gctx)
 	}
 	ReloadConfig()
 	InitHttpTransport(Gctx)
-	dp := NewWorkDispatcher(GetConfig(Gctx).WorkerPoolSize, GetConfig(Gctx).MessageQueueDepth, "xh")
+	dp := NewWorkDispatcher(GetConfig(Gctx).WorkerPoolSize, GetConfig(Gctx).MessageQueueDepth, tenantId)
 	dp.Start(Gctx)
-	Gctx.AddValue(EelDispatcher, dp)
+	Gctx.AddValue(EelDispatcher+"_"+tenantId, dp)
 	dc := NewLocalInMemoryDupChecker(GetConfig(Gctx).DuplicateTimeout, 10000)
 	Gctx.AddValue(EelDuplicateChecker, dc)
 	StatusHandler(w, r)

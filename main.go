@@ -100,8 +100,13 @@ func initLogging() {
 
 	Gctx.AddConfigValue(EelTraceLogger, NewTraceLogger(Gctx, config))
 
+	tenantId := ""
+	if ctx.Value(EelTenantId) != nil {
+		tenantId = Gctx.Value(EelTenantId).(string)
+	}
+
 	getWorkQueueFillLevel := func() int {
-		wd := GetWorkDispatcher(Gctx)
+		wd := GetWorkDispatcher(Gctx, tenantId)
 		if wd != nil {
 			return len(wd.WorkQueue)
 		}
@@ -109,7 +114,7 @@ func initLogging() {
 	}
 
 	getNumWorkersIdle := func() int {
-		wd := GetWorkDispatcher(Gctx)
+		wd := GetWorkDispatcher(Gctx, tenantId)
 		if wd != nil {
 			return len(wd.WorkerQueue)
 		}
@@ -182,9 +187,10 @@ func main() {
 		useCores(ctx)
 		dc := NewLocalInMemoryDupChecker(GetConfig(ctx).DuplicateTimeout, 10000)
 		Gctx.AddValue(EelDuplicateChecker, dc)
-		dp := NewWorkDispatcher(GetConfig(ctx).WorkerPoolSize, GetConfig(ctx).MessageQueueDepth)
+		tenantId := ""
+		dp := NewWorkDispatcher(GetConfig(ctx).WorkerPoolSize, GetConfig(ctx).MessageQueueDepth, tenantId)
 		dp.Start(ctx)
-		Gctx.AddValue(EelDispatcher, dp)
+		Gctx.AddValue(EelDispatcher+"_"+tenantId, dp)
 		registerAdminServices()
 		// register inbound plugins
 		RegisterInboundPluginType(NewStdinPlugin, "STDIN")

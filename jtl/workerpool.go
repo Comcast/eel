@@ -59,10 +59,8 @@ func NewWorker(id int, workerQueue chan chan *WorkRequest) *Worker {
 
 func GetWorkDispatcher(ctx Context, tenantId string) *WorkDispatcher {
 	//ctx.Log().Debug("tenantId", tenantId)
-	if (tenantId == "" || tenantId == "xh") && ctx.Value(EelDispatcher) != nil {
-		return ctx.Value(EelDispatcher).(*WorkDispatcher)
-	} else if tenantId == "sport" && ctx.Value(EelSportDispatcher) != nil {
-		return ctx.Value(EelSportDispatcher).(*WorkDispatcher)
+	if ctx.Value(EelDispatcher+"_"+tenantId) != nil {
+		return ctx.Value(EelDispatcher + "_" + tenantId).(*WorkDispatcher)
 	}
 	return nil
 }

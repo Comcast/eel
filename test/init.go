@@ -39,9 +39,10 @@ func initTests(handlers string) {
 	Gctx.AddValue(Eel5MinStats, new(ServiceStats))
 	ReloadConfig()
 	InitHttpTransport(Gctx)
-	dp := NewWorkDispatcher(GetConfig(Gctx).WorkerPoolSize, GetConfig(Gctx).MessageQueueDepth)
+	tenantId := "tenant1"
+	dp := NewWorkDispatcher(GetConfig(Gctx).WorkerPoolSize, GetConfig(Gctx).MessageQueueDepth, tenantId)
 	dp.Start(Gctx)
-	Gctx.AddValue(EelDispatcher, dp)
+	Gctx.AddValue(EelDispatcher+"_"+tenantId, dp)
 	dc := NewLocalInMemoryDupChecker(GetConfig(Gctx).DuplicateTimeout, 10000)
 	Gctx.AddValue(EelDuplicateChecker, dc)
 	Gctx.AddConfigValue(EelSyncPath, "/proc")
