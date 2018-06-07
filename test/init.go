@@ -39,10 +39,24 @@ func initTests(handlers string) {
 	Gctx.AddValue(Eel5MinStats, new(ServiceStats))
 	ReloadConfig()
 	InitHttpTransport(Gctx)
-	tenantId := "tenant1"
-	dp := NewWorkDispatcher(GetConfig(Gctx).WorkerPoolSize, GetConfig(Gctx).MessageQueueDepth, tenantId)
-	dp.Start(Gctx)
-	Gctx.AddValue(EelDispatcher+"_"+tenantId, dp)
+
+	tenantId := ""
+	Gctx.AddValue(EelTenantId, tenantId)
+	dp0 := NewWorkDispatcher(GetConfig(Gctx).WorkerPoolSize, GetConfig(Gctx).MessageQueueDepth, tenantId)
+	dp0.Start(Gctx)
+	Gctx.AddValue(EelDispatcher+"_"+tenantId, dp0)
+	tenantId = "tenant1"
+	dp1 := NewWorkDispatcher(GetConfig(Gctx).WorkerPoolSize, GetConfig(Gctx).MessageQueueDepth, tenantId)
+	dp1.Start(Gctx)
+	Gctx.AddValue(EelDispatcher+"_"+tenantId, dp1)
+	tenantId = "tenant2"
+	dp2 := NewWorkDispatcher(GetConfig(Gctx).WorkerPoolSize, GetConfig(Gctx).MessageQueueDepth, tenantId)
+	dp2.Start(Gctx)
+	Gctx.AddValue(EelDispatcher+"_"+tenantId, dp2)
+
+	//The majority of test cases are under tenant1 only
+	Gctx.AddValue(EelTenantId, "tenant1")
+
 	dc := NewLocalInMemoryDupChecker(GetConfig(Gctx).DuplicateTimeout, 10000)
 	Gctx.AddValue(EelDuplicateChecker, dc)
 	Gctx.AddConfigValue(EelSyncPath, "/proc")

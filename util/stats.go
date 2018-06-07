@@ -121,7 +121,7 @@ type propFunc func() int
 // StatsLoop logs some basic stats at pre-defined interval.
 // If iterations is negative, the loop is endless.  Otherwise the loop
 // terminates after the specified number of iterations.
-func (stats *ServiceStats) StatsLoop(ctx Context, interval time.Duration, iterations int, label string, getWorkQueueFillLevel propFunc, getNumWorkersIdle propFunc) {
+func (stats *ServiceStats) StatsLoop(ctx Context, interval time.Duration, iterations int, label string, getWorkQueueFillLevel propFunc, getNumWorkersIdle propFunc, tenantId string) {
 	defer ctx.HandlePanic()
 	backup := new(ServiceStats)
 	for i := 0; iterations < 0 || i < iterations; i++ {
@@ -137,7 +137,8 @@ func (stats *ServiceStats) StatsLoop(ctx Context, interval time.Duration, iterat
 			"TotalBytesIn", clone.TotalBytesIn,
 			"TotalBytesOut", clone.TotalBytesOut,
 			"MessageQueueFillLevel", getWorkQueueFillLevel(),
-			"WorkersIdle", getNumWorkersIdle())
+			"WorkersIdle", getNumWorkersIdle(),
+			"TenantId", tenantId)
 		backup = clone2
 		time.Sleep(interval)
 	}

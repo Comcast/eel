@@ -101,7 +101,7 @@ func initLogging() {
 	Gctx.AddConfigValue(EelTraceLogger, NewTraceLogger(Gctx, config))
 
 	tenantId := ""
-	if ctx.Value(EelTenantId) != nil {
+	if Gctx.Value(EelTenantId) != nil {
 		tenantId = Gctx.Value(EelTenantId).(string)
 	}
 
@@ -123,10 +123,10 @@ func initLogging() {
 
 	if config.LogStats {
 		go Gctx.Log().RuntimeLogLoop(time.Duration(60)*time.Second, -1)
-		go stats.StatsLoop(Gctx, 300*time.Second, -1, Eel5MinStats, getWorkQueueFillLevel, getNumWorkersIdle)
-		go stats.StatsLoop(Gctx, 60*time.Second, -1, Eel1MinStats, getWorkQueueFillLevel, getNumWorkersIdle)
-		go stats.StatsLoop(Gctx, 60*time.Minute, -1, Eel1hrStats, getWorkQueueFillLevel, getNumWorkersIdle)
-		go stats.StatsLoop(Gctx, 24*time.Hour, -1, Eel24hrStats, getWorkQueueFillLevel, getNumWorkersIdle)
+		go stats.StatsLoop(Gctx, 300*time.Second, -1, Eel5MinStats, getWorkQueueFillLevel, getNumWorkersIdle, tenantId)
+		go stats.StatsLoop(Gctx, 60*time.Second, -1, Eel1MinStats, getWorkQueueFillLevel, getNumWorkersIdle, tenantId)
+		go stats.StatsLoop(Gctx, 60*time.Minute, -1, Eel1hrStats, getWorkQueueFillLevel, getNumWorkersIdle, tenantId)
+		go stats.StatsLoop(Gctx, 24*time.Hour, -1, Eel24hrStats, getWorkQueueFillLevel, getNumWorkersIdle, tenantId)
 	}
 }
 
