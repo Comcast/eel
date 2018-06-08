@@ -105,7 +105,7 @@ func initLogging() {
 		tenantId = Gctx.Value(EelTenantId).(string)
 	}
 
-	getWorkQueueFillLevel := func() int {
+	getWorkQueueFillLevel := func(tenantId string) int {
 		wd := GetWorkDispatcher(Gctx, tenantId)
 		if wd != nil {
 			return len(wd.WorkQueue)
@@ -113,7 +113,7 @@ func initLogging() {
 		return -1
 	}
 
-	getNumWorkersIdle := func() int {
+	getNumWorkersIdle := func(tenantId string) int {
 		wd := GetWorkDispatcher(Gctx, tenantId)
 		if wd != nil {
 			return len(wd.WorkerQueue)

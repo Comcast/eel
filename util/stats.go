@@ -116,7 +116,7 @@ func (stats *ServiceStats) IncBytesOut(size int) {
 	atomic.AddUint64(&stats.TotalBytesOut, uint64(size))
 }
 
-type propFunc func() int
+type propFunc func(string) int
 
 // StatsLoop logs some basic stats at pre-defined interval.
 // If iterations is negative, the loop is endless.  Otherwise the loop
@@ -136,8 +136,8 @@ func (stats *ServiceStats) StatsLoop(ctx Context, interval time.Duration, iterat
 			"TotalTimeExternal", clone.TotalTimeExternal,
 			"TotalBytesIn", clone.TotalBytesIn,
 			"TotalBytesOut", clone.TotalBytesOut,
-			"MessageQueueFillLevel", getWorkQueueFillLevel(),
-			"WorkersIdle", getNumWorkersIdle(),
+			"MessageQueueFillLevel", getWorkQueueFillLevel(tenantId),
+			"WorkersIdle", getNumWorkersIdle(tenantId),
 			"TenantId", tenantId)
 		backup = clone2
 		time.Sleep(interval)
