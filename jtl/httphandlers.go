@@ -138,11 +138,11 @@ func ReloadConfigHandler(w http.ResponseWriter, r *http.Request) {
 	dp.Start(Gctx)
 	Gctx.AddValue(EelDispatcher+"_"+tenantId, dp)
 	tenantId = "xh"
-	dpXH := NewWorkDispatcher(GetConfig(Gctx).WorkerPoolSize, GetConfig(Gctx).MessageQueueDepth, tenantId)
+	dpXH := NewWorkDispatcher(GetConfig(Gctx).XHWorkerPoolSize, GetConfig(Gctx).MessageQueueDepth, tenantId)
 	dpXH.Start(Gctx)
 	Gctx.AddValue(EelDispatcher+"_"+tenantId, dpXH)
 	tenantId = "sport"
-	dpSport := NewWorkDispatcher(GetConfig(Gctx).WorkerPoolSize, GetConfig(Gctx).MessageQueueDepth, tenantId)
+	dpSport := NewWorkDispatcher(GetConfig(Gctx).SportWorkerPoolSize, GetConfig(Gctx).MessageQueueDepth, tenantId)
 	dpSport.Start(Gctx)
 	Gctx.AddValue(EelDispatcher+"_"+tenantId, dpSport)
 
