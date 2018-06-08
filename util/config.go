@@ -57,6 +57,8 @@ type EelSettings struct {
 	DebugLogParams                 *EelDebugLogParams
 	TraceLogParams                 *EelTraceLogParams
 	WorkerPoolSize                 int
+	XHWorkerPoolSize               int
+	SportWorkerPoolSize            int
 	MessageQueueTimeout            int
 	MessageQueueDepth              int
 	TopicPath                      string
