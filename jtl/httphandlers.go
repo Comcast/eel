@@ -115,18 +115,37 @@ func NilHandler(w http.ResponseWriter, r *http.Request) {
 // ReloadConfigHandler http handler to relaod all configs from disk. Response is similar to StatusHandler.
 func ReloadConfigHandler(w http.ResponseWriter, r *http.Request) {
 	tenantId := ""
-	if Gctx.Value(EelTenantId) != nil {
-		tenantId = Gctx.Value(EelTenantId).(string)
-	}
 	if Gctx.Value(EelDispatcher+"_"+tenantId) != nil {
 		dp := Gctx.Value(EelDispatcher + "_" + tenantId).(*WorkDispatcher)
 		dp.Stop(Gctx)
 	}
+	tenantId = "xh"
+	if Gctx.Value(EelDispatcher+"_"+tenantId) != nil {
+		dp := Gctx.Value(EelDispatcher + "_" + tenantId).(*WorkDispatcher)
+		dp.Stop(Gctx)
+	}
+	tenantId = "sport"
+	if Gctx.Value(EelDispatcher+"_"+tenantId) != nil {
+		dp := Gctx.Value(EelDispatcher + "_" + tenantId).(*WorkDispatcher)
+		dp.Stop(Gctx)
+	}
+
 	ReloadConfig()
 	InitHttpTransport(Gctx)
+
+	tenantId = ""
 	dp := NewWorkDispatcher(GetConfig(Gctx).WorkerPoolSize, GetConfig(Gctx).MessageQueueDepth, tenantId)
 	dp.Start(Gctx)
 	Gctx.AddValue(EelDispatcher+"_"+tenantId, dp)
+	tenantId = "xh"
+	dpXH := NewWorkDispatcher(GetConfig(Gctx).WorkerPoolSize, GetConfig(Gctx).MessageQueueDepth, tenantId)
+	dpXH.Start(Gctx)
+	Gctx.AddValue(EelDispatcher+"_"+tenantId, dpXH)
+	tenantId = "sport"
+	dpSport := NewWorkDispatcher(GetConfig(Gctx).WorkerPoolSize, GetConfig(Gctx).MessageQueueDepth, tenantId)
+	dpSport.Start(Gctx)
+	Gctx.AddValue(EelDispatcher+"_"+tenantId, dpSport)
+
 	dc := NewLocalInMemoryDupChecker(GetConfig(Gctx).DuplicateTimeout, 10000)
 	Gctx.AddValue(EelDuplicateChecker, dc)
 	StatusHandler(w, r)
