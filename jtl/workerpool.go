@@ -110,7 +110,7 @@ func NewWorkDispatcher(nworkers int, queueDepth int, tenant string) *WorkDispatc
 
 // Start starts the event loop of a new work dispatcher
 func (disp *WorkDispatcher) Start(ctx Context) {
-	ctx.Log().Info("action", "starting_workers", "count", len(disp.workers))
+	ctx.Log().Info("action", "starting_workers", "count", len(disp.workers), "tenant", disp.tenant)
 	for i := 0; i < len(disp.workers); i++ {
 		disp.workers[i] = NewWorker(i, disp.WorkerQueue)
 		disp.workers[i].Start()
@@ -136,7 +136,7 @@ func (disp *WorkDispatcher) Start(ctx Context) {
 // Stop stops the worker pool
 func (disp *WorkDispatcher) Stop(ctx Context) {
 	if disp.workers != nil && disp.quitChan != nil {
-		ctx.Log().Info("action", "stopping_workers", "count", len(disp.workers))
+		ctx.Log().Info("action", "stopping_workers", "count", len(disp.workers), "tenant", disp.tenant)
 		for _, w := range disp.workers {
 			w.Stop()
 		}

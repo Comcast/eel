@@ -36,13 +36,19 @@ func StatusHandler(w http.ResponseWriter, r *http.Request) {
 	state["Version"] = GetConfig(ctx).Version
 	state["Config"] = GetConfig(ctx)
 	callstats := make(map[string]interface{}, 0)
-	tenantId := ""
-	if ctx.Value(EelTenantId) != nil {
-		tenantId = Gctx.Value(EelTenantId).(string)
+
+	tenantIds := make([]string, 0, len(GetConfig(ctx).WorkerPoolSize))
+	for k := range GetConfig(ctx).WorkerPoolSize {
+		tenantIds = append(tenantIds, k)
 	}
-	if ctx.Value(EelDispatcher+"_"+tenantId) != nil {
-		callstats["WorkQueueFillLevel"] = len(GetWorkDispatcher(ctx, tenantId).WorkQueue)
-		callstats["WorkersIdle"] = len(GetWorkDispatcher(ctx, tenantId).WorkerQueue)
+	//Gctx.Log().Debug("tenantIds", tenantIds)
+	Gctx.AddValue(EelTenantIds, tenantIds)
+
+	for _, tenantId := range tenantIds {
+		if ctx.Value(EelDispatcher+"_"+tenantId) != nil {
+			callstats["WorkQueueFillLevel"+"_"+tenantId] = len(GetWorkDispatcher(ctx, tenantId).WorkQueue)
+			callstats["WorkersIdle"+"_"+tenantId] = len(GetWorkDispatcher(ctx, tenantId).WorkerQueue)
+		}
 	}
 	if ctx.Value(EelTotalStats) != nil {
 		callstats["TotalStats"] = ctx.Value(EelTotalStats)
