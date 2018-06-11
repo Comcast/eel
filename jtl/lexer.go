@@ -145,10 +145,10 @@ func (l *lexer) run() {
 
 // emit passes an item back to the client.
 func (l *lexer) emit(t lexItemType) {
-	// only trim tab and newline (formattings) but retain plain old white space
+	// leave the original text in its own flavor, and don't trim tab and newline and white space
 	token := l.input[l.start:l.pos]
-	token = strings.TrimLeft(token, "\t\n")
-	token = strings.TrimRight(token, "\t\n")
+	//token = strings.TrimLeft(token, "\t\n")
+	//token = strings.TrimRight(token, "\t\n")
 	// handle escapes
 	if token == escapedLeftMeta {
 		token = leftMeta
