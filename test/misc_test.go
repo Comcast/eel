@@ -1195,26 +1195,30 @@ func TestParserWhiteSpace(t *testing.T) {
 	props := GetConfig(Gctx).CustomProperties
 	props["ServiceUrl"] = ts.URL
 	test = `foo-
-					{{eval(
-						'/accountId',
-						'{{curl(
-							'POST',
-							'{{prop(
-								'ServiceUrl'
-							)}}'
-						)}}'
-					)}}
-					-
-					{{ident(
-						'bar'
-					)}}
-					-bar`
+          {{eval(
+          	'/accountId',
+          	'{{curl(
+          		'POST',
+          		'{{prop(
+          			'ServiceUrl'
+          		)}}'
+          	)}}'
+          )}}
+          -
+          {{ident(
+          	'bar'
+          )}}
+          -bar`
 	jexpr, err := NewJExpr(test)
 	if err != nil {
 		t.Errorf("error: %s\n", err.Error())
 	}
 	result := jexpr.Execute(Gctx, e1)
-	expected := "foo-42-bar-bar"
+	expected := `foo-
+          42
+          -
+          bar
+          -bar`
 	if result.(string) != expected {
 		t.Errorf("wrong parsing result: %v expected: %s\n", result, expected)
 	}
