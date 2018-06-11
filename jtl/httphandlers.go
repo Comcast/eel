@@ -114,8 +114,8 @@ func NilHandler(w http.ResponseWriter, r *http.Request) {
 
 // ReloadConfigHandler http handler to relaod all configs from disk. Response is similar to StatusHandler.
 func ReloadConfigHandler(w http.ResponseWriter, r *http.Request) {
-	TenantIds := Gctx.Value(EelTenantIds).([]string)
-	for _, tenantId := range TenantIds {
+	tenantIds := Gctx.Value(EelTenantIds).([]string)
+	for _, tenantId := range tenantIds {
 		if Gctx.Value(EelDispatcher+"_"+tenantId) != nil {
 			dp := Gctx.Value(EelDispatcher + "_" + tenantId).(*WorkDispatcher)
 			dp.Stop(Gctx)
@@ -125,7 +125,7 @@ func ReloadConfigHandler(w http.ResponseWriter, r *http.Request) {
 	ReloadConfig()
 	InitHttpTransport(Gctx)
 
-	for _, tenantId := range TenantIds {
+	for _, tenantId := range tenantIds {
 		dp := NewWorkDispatcher(GetConfig(Gctx).WorkerPoolSize[tenantId], GetConfig(Gctx).MessageQueueDepth, tenantId)
 		dp.Start(Gctx)
 		Gctx.AddValue(EelDispatcher+"_"+tenantId, dp)

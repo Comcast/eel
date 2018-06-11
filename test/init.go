@@ -24,8 +24,6 @@ import (
 	. "github.com/Comcast/eel/util"
 )
 
-var TenantIds = []string{"", "tenant1", "tenant2"}
-
 func initTests(handlers string) {
 	LogsOn := os.Getenv("LOGS_ON")
 	BasePath = ""
@@ -42,8 +40,9 @@ func initTests(handlers string) {
 	ReloadConfig()
 	InitHttpTransport(Gctx)
 
-	Gctx.AddValue(EelTenantIds, TenantIds)
-	for _, tenantId := range TenantIds {
+	tenantIds := []string{"", "tenant1", "tenant2"}
+	Gctx.AddValue(EelTenantIds, tenantIds)
+	for _, tenantId := range tenantIds {
 		dp := NewWorkDispatcher(GetConfig(Gctx).WorkerPoolSize[""], GetConfig(Gctx).MessageQueueDepth, tenantId)
 		dp.Start(Gctx)
 		Gctx.AddValue(EelDispatcher+"_"+tenantId, dp)

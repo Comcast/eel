@@ -51,8 +51,6 @@ var (
 	istbe = flag.Bool("istbe", true, "is template by example flag")
 )
 
-var TenantIds = []string{""}
-
 // useCores if GOMAXPROCS not set use all cores you got.
 func useCores(ctx Context) {
 	cores := os.Getenv("GOMAXPROCS")
@@ -117,6 +115,13 @@ func initLogging() {
 		}
 		return -1
 	}
+
+	tenantIds := make([]string, 0, len(config.WorkerPoolSize))
+	for k := range config.WorkerPoolSize {
+		tenantIds = append(tenantIds, k)
+	}
+	//Gctx.Log().Debug("tenantIds", tenantIds)
+	Gctx.AddValue(EelTenantIds, tenantIds)
 
 	if config.LogStats {
 		go Gctx.Log().RuntimeLogLoop(time.Duration(60)*time.Second, -1)
@@ -186,8 +191,9 @@ func main() {
 		useCores(ctx)
 		dc := NewLocalInMemoryDupChecker(GetConfig(ctx).DuplicateTimeout, 10000)
 		Gctx.AddValue(EelDuplicateChecker, dc)
-		Gctx.AddValue(EelTenantIds, TenantIds)
-		for _, tenantId := range TenantIds {
+
+		tenantIds := Gctx.Value(EelTenantIds).([]string)
+		for _, tenantId := range tenantIds {
 			dp := NewWorkDispatcher(GetConfig(ctx).WorkerPoolSize[tenantId], GetConfig(ctx).MessageQueueDepth, tenantId)
 			dp.Start(ctx)
 			Gctx.AddValue(EelDispatcher+"_"+tenantId, dp)
