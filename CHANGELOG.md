@@ -4,7 +4,9 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 This `CHANGELOG.md` implements the spirit of http://keepachangelog.com/.
 
-## [1.19](https://github.com/Comcast/eel/compare/v1.18...dev) - [Unreleased]
+## [1.20](https://github.com/Comcast/eel/compare/v1.19...dev) - [Unreleased]
+
+## [1.19](https://github.com/Comcast/eel/compare/v1.18...v1.19) - 2018-05-24
 
 ## [1.18](https://github.com/Comcast/eel/compare/v1.17...v1.18) - 2018-05-07
 

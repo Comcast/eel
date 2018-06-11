@@ -18,6 +18,7 @@ package test
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -1232,6 +1233,24 @@ func TestEscapingSingleQuotes(t *testing.T) {
 	}
 	result := jexpr.Execute(Gctx, e1)
 	expected := `this isn't breaking any more`
+	if result.(string) != expected {
+		t.Errorf("wrong parsing result: %v expected: %s\n", result, expected)
+	}
+}
+
+func TestEscapingSingleQuotes2(t *testing.T) {
+	initTests("../config-handlers")
+	e1, err := NewJDocFromString(event1)
+	if err != nil {
+		t.Fatal("could not get event1")
+	}
+	test := fmt.Sprintf("foo\n{{ident('{{ident('{{ident('this isn\\'t breaking any more')}}')}}')}}\nfoo")
+	jexpr, err := NewJExpr(test)
+	if err != nil {
+		t.Errorf("parsing error: %s\n", err.Error())
+	}
+	result := jexpr.Execute(Gctx, e1)
+	expected := "foo\nthis isn't breaking any more\nfoo"
 	if result.(string) != expected {
 		t.Errorf("wrong parsing result: %v expected: %s\n", result, expected)
 	}
