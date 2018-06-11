@@ -51,6 +51,8 @@ var (
 	istbe = flag.Bool("istbe", true, "is template by example flag")
 )
 
+var TenantIds = []string{""}
+
 // useCores if GOMAXPROCS not set use all cores you got.
 func useCores(ctx Context) {
 	cores := os.Getenv("GOMAXPROCS")
@@ -100,11 +102,6 @@ func initLogging() {
 
 	Gctx.AddConfigValue(EelTraceLogger, NewTraceLogger(Gctx, config))
 
-	tenantId := ""
-	if Gctx.Value(EelTenantId) != nil {
-		tenantId = Gctx.Value(EelTenantId).(string)
-	}
-
 	getWorkQueueFillLevel := func(tenantId string) int {
 		wd := GetWorkDispatcher(Gctx, tenantId)
 		if wd != nil {
@@ -123,10 +120,12 @@ func initLogging() {
 
 	if config.LogStats {
 		go Gctx.Log().RuntimeLogLoop(time.Duration(60)*time.Second, -1)
-		go stats.StatsLoop(Gctx, 300*time.Second, -1, Eel5MinStats, getWorkQueueFillLevel, getNumWorkersIdle, tenantId)
-		go stats.StatsLoop(Gctx, 60*time.Second, -1, Eel1MinStats, getWorkQueueFillLevel, getNumWorkersIdle, tenantId)
-		go stats.StatsLoop(Gctx, 60*time.Minute, -1, Eel1hrStats, getWorkQueueFillLevel, getNumWorkersIdle, tenantId)
-		go stats.StatsLoop(Gctx, 24*time.Hour, -1, Eel24hrStats, getWorkQueueFillLevel, getNumWorkersIdle, tenantId)
+		for _, tenantId := range TenantIds {
+			go stats.StatsLoop(Gctx, 300*time.Second, -1, Eel5MinStats, getWorkQueueFillLevel, getNumWorkersIdle, tenantId)
+			go stats.StatsLoop(Gctx, 60*time.Second, -1, Eel1MinStats, getWorkQueueFillLevel, getNumWorkersIdle, tenantId)
+			go stats.StatsLoop(Gctx, 60*time.Minute, -1, Eel1hrStats, getWorkQueueFillLevel, getNumWorkersIdle, tenantId)
+			go stats.StatsLoop(Gctx, 24*time.Hour, -1, Eel24hrStats, getWorkQueueFillLevel, getNumWorkersIdle, tenantId)
+		}
 	}
 }
 
@@ -187,10 +186,12 @@ func main() {
 		useCores(ctx)
 		dc := NewLocalInMemoryDupChecker(GetConfig(ctx).DuplicateTimeout, 10000)
 		Gctx.AddValue(EelDuplicateChecker, dc)
-		tenantId := ""
-		dp := NewWorkDispatcher(GetConfig(ctx).WorkerPoolSize, GetConfig(ctx).MessageQueueDepth, tenantId)
-		dp.Start(ctx)
-		Gctx.AddValue(EelDispatcher+"_"+tenantId, dp)
+		Gctx.AddValue(EelTenantIds, TenantIds)
+		for _, tenantId := range TenantIds {
+			dp := NewWorkDispatcher(GetConfig(ctx).WorkerPoolSize[tenantId], GetConfig(ctx).MessageQueueDepth, tenantId)
+			dp.Start(ctx)
+			Gctx.AddValue(EelDispatcher+"_"+tenantId, dp)
+		}
 		registerAdminServices()
 		// register inbound plugins
 		RegisterInboundPluginType(NewStdinPlugin, "STDIN")
