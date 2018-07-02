@@ -56,7 +56,7 @@ type EelSettings struct {
 	LogParams                      map[string]string
 	DebugLogParams                 *EelDebugLogParams
 	TraceLogParams                 *EelTraceLogParams
-	WorkerPoolSize                 int
+	WorkerPoolSize                 map[string]int
 	MessageQueueTimeout            int
 	MessageQueueDepth              int
 	TopicPath                      string
@@ -118,6 +118,7 @@ const (
 	EelSyncPath             = "Eel.SyncPath"
 	EelTraceLogger          = "Eel.TraceLogger"
 	EelCache                = "Eel.Cache"
+	EelTenantIds            = "Eel.TenantIds"
 )
 
 const (
