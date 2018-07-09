@@ -148,8 +148,12 @@ func EventHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		AddLatencyLog(ctx, stats, "stat.eel.time")
 	} else {
-		if ctx.Value(EelDispatcher) != nil {
-			dp := GetWorkDispatcher(ctx)
+		tenantId := ""
+		if ctx.Value(EelTenantId) != nil {
+			tenantId = ctx.Value(EelTenantId).(string)
+		}
+		if ctx.Value(EelDispatcher+"_"+tenantId) != nil {
+			dp := GetWorkDispatcher(ctx, tenantId)
 			work := WorkRequest{Raw: string(body), Event: evt, Ctx: ctx}
 			select {
 			case dp.WorkQueue <- &work:

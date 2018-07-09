@@ -100,28 +100,37 @@ func initLogging() {
 
 	Gctx.AddConfigValue(EelTraceLogger, NewTraceLogger(Gctx, config))
 
-	getWorkQueueFillLevel := func() int {
-		wd := GetWorkDispatcher(Gctx)
+	getWorkQueueFillLevel := func(tenantId string) int {
+		wd := GetWorkDispatcher(Gctx, tenantId)
 		if wd != nil {
 			return len(wd.WorkQueue)
 		}
 		return -1
 	}
 
-	getNumWorkersIdle := func() int {
-		wd := GetWorkDispatcher(Gctx)
+	getNumWorkersIdle := func(tenantId string) int {
+		wd := GetWorkDispatcher(Gctx, tenantId)
 		if wd != nil {
 			return len(wd.WorkerQueue)
 		}
 		return -1
 	}
 
+	tenantIds := make([]string, 0, len(config.WorkerPoolSize))
+	for k := range config.WorkerPoolSize {
+		tenantIds = append(tenantIds, k)
+	}
+	//Gctx.Log().Debug("tenantIds", tenantIds)
+	Gctx.AddValue(EelTenantIds, tenantIds)
+
 	if config.LogStats {
 		go Gctx.Log().RuntimeLogLoop(time.Duration(60)*time.Second, -1)
-		go stats.StatsLoop(Gctx, 300*time.Second, -1, Eel5MinStats, getWorkQueueFillLevel, getNumWorkersIdle)
-		go stats.StatsLoop(Gctx, 60*time.Second, -1, Eel1MinStats, getWorkQueueFillLevel, getNumWorkersIdle)
-		go stats.StatsLoop(Gctx, 60*time.Minute, -1, Eel1hrStats, getWorkQueueFillLevel, getNumWorkersIdle)
-		go stats.StatsLoop(Gctx, 24*time.Hour, -1, Eel24hrStats, getWorkQueueFillLevel, getNumWorkersIdle)
+		for _, tenantId := range tenantIds {
+			go stats.StatsLoop(Gctx, 300*time.Second, -1, Eel5MinStats, getWorkQueueFillLevel, getNumWorkersIdle, tenantId)
+			go stats.StatsLoop(Gctx, 60*time.Second, -1, Eel1MinStats, getWorkQueueFillLevel, getNumWorkersIdle, tenantId)
+			go stats.StatsLoop(Gctx, 60*time.Minute, -1, Eel1hrStats, getWorkQueueFillLevel, getNumWorkersIdle, tenantId)
+			go stats.StatsLoop(Gctx, 24*time.Hour, -1, Eel24hrStats, getWorkQueueFillLevel, getNumWorkersIdle, tenantId)
+		}
 	}
 }
 
@@ -182,9 +191,13 @@ func main() {
 		useCores(ctx)
 		dc := NewLocalInMemoryDupChecker(GetConfig(ctx).DuplicateTimeout, 10000)
 		Gctx.AddValue(EelDuplicateChecker, dc)
-		dp := NewWorkDispatcher(GetConfig(ctx).WorkerPoolSize, GetConfig(ctx).MessageQueueDepth)
-		dp.Start(ctx)
-		Gctx.AddValue(EelDispatcher, dp)
+
+		tenantIds := Gctx.Value(EelTenantIds).([]string)
+		for _, tenantId := range tenantIds {
+			dp := NewWorkDispatcher(GetConfig(ctx).WorkerPoolSize[tenantId], GetConfig(ctx).MessageQueueDepth, tenantId)
+			dp.Start(ctx)
+			Gctx.AddValue(EelDispatcher+"_"+tenantId, dp)
+		}
 		registerAdminServices()
 		// register inbound plugins
 		RegisterInboundPluginType(NewStdinPlugin, "STDIN")

@@ -281,7 +281,12 @@ func TestTerminateOnMatchFalse(t *testing.T) {
 }
 
 func TestMultiTenancy(t *testing.T) {
+	ctx := NewDefaultContext(L_InfoLevel)
+	EELInit(ctx)
+
 	initTests("data/test08/handlers")
+	//mutiple handlers will be matched for multiple tenant, if Event doesn't have Tenant information
+	Gctx.AddValue(EelTenantId, "")
 	fanoutEvent(t, "data/test08/", 2, false, nil)
 }
 

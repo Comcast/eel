@@ -10,7 +10,9 @@
     "MaxMessageSize": 51200,
     "MessageQueueTimeout": 1000,
     "MessageQueueDepth": 100,
-    "WorkerPoolSize": 1,
+    "WorkerPoolSize": {
+      "": 1
+    },
     "HttpTimeout": 1000,
     "ResponseHeaderTimeout": 1000,
     "MaxIdleConnsPerHost": 100,

@@ -36,9 +36,19 @@ func StatusHandler(w http.ResponseWriter, r *http.Request) {
 	state["Version"] = GetConfig(ctx).Version
 	state["Config"] = GetConfig(ctx)
 	callstats := make(map[string]interface{}, 0)
-	if ctx.Value(EelDispatcher) != nil {
-		callstats["WorkQueueFillLevel"] = len(GetWorkDispatcher(ctx).WorkQueue)
-		callstats["WorkersIdle"] = len(GetWorkDispatcher(ctx).WorkerQueue)
+
+	tenantIds := make([]string, 0, len(GetConfig(ctx).WorkerPoolSize))
+	for k := range GetConfig(ctx).WorkerPoolSize {
+		tenantIds = append(tenantIds, k)
+	}
+	//Gctx.Log().Debug("tenantIds", tenantIds)
+	Gctx.AddValue(EelTenantIds, tenantIds)
+
+	for _, tenantId := range tenantIds {
+		if ctx.Value(EelDispatcher+"_"+tenantId) != nil {
+			callstats["WorkQueueFillLevel"+"_"+tenantId] = len(GetWorkDispatcher(ctx, tenantId).WorkQueue)
+			callstats["WorkersIdle"+"_"+tenantId] = len(GetWorkDispatcher(ctx, tenantId).WorkerQueue)
+		}
 	}
 	if ctx.Value(EelTotalStats) != nil {
 		callstats["TotalStats"] = ctx.Value(EelTotalStats)
@@ -110,15 +120,23 @@ func NilHandler(w http.ResponseWriter, r *http.Request) {
 
 // ReloadConfigHandler http handler to relaod all configs from disk. Response is similar to StatusHandler.
 func ReloadConfigHandler(w http.ResponseWriter, r *http.Request) {
-	if Gctx.Value(EelDispatcher) != nil {
-		dp := Gctx.Value(EelDispatcher).(*WorkDispatcher)
-		dp.Stop(Gctx)
+	tenantIds := Gctx.Value(EelTenantIds).([]string)
+	for _, tenantId := range tenantIds {
+		if Gctx.Value(EelDispatcher+"_"+tenantId) != nil {
+			dp := Gctx.Value(EelDispatcher + "_" + tenantId).(*WorkDispatcher)
+			dp.Stop(Gctx)
+		}
 	}
+
 	ReloadConfig()
 	InitHttpTransport(Gctx)
-	dp := NewWorkDispatcher(GetConfig(Gctx).WorkerPoolSize, GetConfig(Gctx).MessageQueueDepth)
-	dp.Start(Gctx)
-	Gctx.AddValue(EelDispatcher, dp)
+
+	for _, tenantId := range tenantIds {
+		dp := NewWorkDispatcher(GetConfig(Gctx).WorkerPoolSize[tenantId], GetConfig(Gctx).MessageQueueDepth, tenantId)
+		dp.Start(Gctx)
+		Gctx.AddValue(EelDispatcher+"_"+tenantId, dp)
+	}
+
 	dc := NewLocalInMemoryDupChecker(GetConfig(Gctx).DuplicateTimeout, 10000)
 	Gctx.AddValue(EelDuplicateChecker, dc)
 	StatusHandler(w, r)
