@@ -6,6 +6,9 @@ This `CHANGELOG.md` implements the spirit of http://keepachangelog.com/.
 
 ## [1.22](https://github.com/Comcast/eel/compare/v1.21...dev) - [Unreleased]
 
+### Added
+* Add function base64decode
+
 ## [1.21](https://github.com/Comcast/eel/compare/v1.20...v1.21) - 2018-07-09
 
 ## [1.20](https://github.com/Comcast/eel/compare/v1.19...v1.20) - 2018-06-18
