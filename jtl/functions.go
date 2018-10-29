@@ -17,6 +17,7 @@
 package jtl
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"hash/fnv"
@@ -77,6 +78,9 @@ func NewFunction(fn string) *JFunction {
 	case "lower":
 		// lower case input string, example lower('foo')
 		return &JFunction{fnLower, 1, 1}
+	case "base64decode":
+		// base64 decode input string, example base64decode('foo')
+		return &JFunction{fnBase64Decode, 1, 1}
 	case "substr":
 		// substring by start and end index, example substr('foo', 0, 1)
 		return &JFunction{fnSubstr, 3, 3}
@@ -790,6 +794,27 @@ func fnLower(ctx Context, doc *JDoc, params []string) interface{} {
 		return ""
 	}
 	return strings.ToLower(extractStringParam(params[0]))
+}
+
+// fnBase64Decode function to decode a base64 string.
+func fnBase64Decode(ctx Context, doc *JDoc, params []string) interface{} {
+	stats := ctx.Value(EelTotalStats).(*ServiceStats)
+	if params == nil || len(params) != 1 {
+		ctx.Log().Error("error_type", "func_base64decode", "op", "base64decode", "cause", "wrong_number_of_parameters", "params", params)
+		stats.IncErrors()
+		AddError(ctx, SyntaxError{fmt.Sprintf("wrong number of parameters in call to base64decode function"), "base64decode", params})
+		return ""
+	}
+
+	bs, err := base64.StdEncoding.DecodeString(extractStringParam(params[0]))
+	if err != nil {
+		ctx.Log().Error("error_type", "func_base64decode", "op", "base64decode", "cause", "error_decode", "params", params, "error", err.Error())
+		stats.IncErrors()
+		AddError(ctx, RuntimeError{err.Error(), "base64decode", params})
+		return ""
+	}
+
+	return string(bs)
 }
 
 // fnSubstr function to lowercase a string.
