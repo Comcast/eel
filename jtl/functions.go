@@ -60,6 +60,9 @@ func NewFunction(fn string) *JFunction {
 	case "curlOAuth1":
 		// curlOAuth1('<method>','<url>',['<payload>'],['<header-map>'],['<retries>'],['<oauth1-provider>'])
 		return &JFunction{fnCurlOAuth1, 2, 6}
+	case "psHeader":
+		// Profile Service Cloud EP has its unique authentication header
+		return &JFunction{fnPSHeader, 1, 1}
 	case "uuid":
 		// returns UUID string
 		// uuid()
@@ -686,7 +689,31 @@ func fnCurlOAuth1(ctx Context, doc *JDoc, params []string) interface{} {
 	return fnCurl(ctx, doc, params)
 }
 
-// fnmHeader function to obtain http header value from incoming event by key.
+// fnPSHeader generate a unique auth header for profile service cloud services
+func fnPSHeader(ctx Context, doc *JDoc, params []string) interface{} {
+	stats := ctx.Value(EelTotalStats).(*ServiceStats)
+	if params == nil || len(params) != 1 || params[0] == "" {
+		ctx.Log().Error("error_type", "func_psHeader", "op", "psHeader", "cause", "wrong_number_of_parameters", "params", params)
+		stats.IncErrors()
+		AddError(ctx, SyntaxError{fmt.Sprintf("wrong number of parameters in call to psHeader function"), "curl", params})
+		return nil
+	} else {
+		accountNumber := extractStringParam(params[0])
+
+		headers := make(map[string]string)
+
+		profileServiceClient, err := NewProfileServiceClient(ctx)
+		if nil != err {
+			ctx.Log().Error("error_type", "func_psHeader", "op", "psHeader", "cause", "error_when_init_ps", "error", err, "params", params)
+			return nil
+		}
+		profileServiceClient.GetAuthHeaderByAccountNumber(accountNumber, headers)
+
+		return headers
+	}
+}
+
+// fnHeader function to obtain http header value from incoming event by key.
 func fnHeader(ctx Context, doc *JDoc, params []string) interface{} {
 	stats := ctx.Value(EelTotalStats).(*ServiceStats)
 	if params == nil || len(params) > 1 {
