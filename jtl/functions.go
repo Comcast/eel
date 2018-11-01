@@ -67,8 +67,8 @@ func NewFunction(fn string) *JFunction {
 	case "hmac":
 		// hmac("<hashFunc>", '<input>', '<key>')
 		return &JFunction{fnHmac, 3, 3}
-	case "loadFile":
-		// loadFile("<filename>')
+	case "loadfile":
+		// loadfile("<filename>')
 		return &JFunction{fnLoadFile, 1, 1}
 	case "uuid":
 		// returns UUID string
