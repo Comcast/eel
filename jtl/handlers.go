@@ -69,8 +69,8 @@ type (
 		Endpoint    interface{}       // optional - overwrite default endpoint from config.json, if array of multiple endpoints, event will be fanned out to endpoint1, endpoint2 etc.
 		HttpHeaders map[string]string // optional - http headers
 		// outgoing Kafka config
-		KafkaTopic string // kafka topic to send the message to
-		Partition  string // kafka partition to send the message to
+		KafkaTopic string      // kafka topic to send the message to
+		Partition  interface{} // kafka partition to send the message to
 		// asyncReplyTo
 		AsyncReplyTo string
 		// internal pre-compiled configs
@@ -897,29 +897,43 @@ func (h *HandlerConfiguration) ProcessEvent(ctx Context, event *JDoc) ([]EventPu
 			publisher.SetPath(rp)
 			publisher.SetPayloadParsed(tfd)
 			publisher.SetDebug(debug)
-
 			publisher.SetAsyncReplyTo(event.GetStringMapValueForExpression(ctx, h.AsyncReplyTo))
-
 			if publisher.GetProtocol() == "kafka" {
-				//Setting kafka fields
+				// setting kafka fields
 				kp, ok := publisher.(KafkaEventPublisher)
 				if !ok {
 					ctx.Log().Error("error_type", "process_event", "cause", "kafka_type_cast_failure", "protocol", h.Protocol, "event", event.String(), "handler", h.Name, "type", reflect.TypeOf(publisher))
 					continue
 				}
 				kt := event.GetStringValueForExpression(ctx, h.KafkaTopic)
-				ep := event.GetStringValueForExpression(ctx, h.Partition)
-
-				partition, err := strconv.Atoi(ep)
-				if err != nil {
-					ctx.Log().Error("error_type", "process_event", "cause", "invalid_parition", "protocol", h.Protocol, "event", event.String(), "handler", h.Name, "partition", h.Partition)
-					continue
+				partitionStrings := make([]string, 0)
+				switch h.Partition.(type) {
+				case string:
+					partitionStrings = append(partitionStrings, h.Partition.(string))
+				case []string:
+					for _, pstr := range h.Partition.([]string) {
+						partitionStrings = append(partitionStrings, pstr)
+					}
+				case []interface{}:
+					for _, pstr := range h.Partition.([]interface{}) {
+						partitionStrings = append(partitionStrings, pstr.(string))
+					}
+				default:
+					ctx.Log().Error("error_type", "process_event", "cause", "unknown_partition_type", "partition", h.Partition)
 				}
-
+				partitions := make([]int32, 0)
+				for _, pstr := range partitionStrings {
+					ep := event.GetStringValueForExpression(ctx, pstr)
+					partition, err := strconv.Atoi(ep)
+					if err != nil {
+						ctx.Log().Error("error_type", "process_event", "cause", "non_int_parition", "protocol", h.Protocol, "event", event.String(), "handler", h.Name, "partition", h.Partition)
+						continue
+					}
+					partitions = append(partitions, int32(partition))
+				}
+				kp.SetPartition(partitions)
 				kp.SetTopic(kt)
-				kp.SetPartition(int32(partition))
 			}
-
 			publishers = append(publishers, publisher)
 		}
 	}
