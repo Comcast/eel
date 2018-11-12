@@ -17,12 +17,16 @@
 package jtl
 
 import (
+	"crypto/hmac"
+	"crypto/sha1"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"hash/fnv"
+	"io/ioutil"
 	"net/http"
 	"net/url"
+	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -60,6 +64,12 @@ func NewFunction(fn string) *JFunction {
 	case "curlOAuth1":
 		// curlOAuth1('<method>','<url>',['<payload>'],['<header-map>'],['<retries>'],['<oauth1-provider>'])
 		return &JFunction{fnCurlOAuth1, 2, 6}
+	case "hmac":
+		// hmac("<hashFunc>", '<input>', '<key>')
+		return &JFunction{fnHmac, 3, 3}
+	case "loadfile":
+		// loadfile("<filename>')
+		return &JFunction{fnLoadFile, 1, 1}
 	case "uuid":
 		// returns UUID string
 		// uuid()
@@ -686,7 +696,7 @@ func fnCurlOAuth1(ctx Context, doc *JDoc, params []string) interface{} {
 	return fnCurl(ctx, doc, params)
 }
 
-// fnmHeader function to obtain http header value from incoming event by key.
+// fnHeader function to obtain http header value from incoming event by key.
 func fnHeader(ctx Context, doc *JDoc, params []string) interface{} {
 	stats := ctx.Value(EelTotalStats).(*ServiceStats)
 	if params == nil || len(params) > 1 {
@@ -1468,4 +1478,58 @@ func fnHashMod(ctx Context, doc *JDoc, params []string) interface{} {
 	partition := h.Sum32() % uint32(d)
 
 	return fmt.Sprintf("%d", partition)
+}
+
+// fnHmac uses specified hash function to hash input with key
+func fnHmac(ctx Context, doc *JDoc, params []string) interface{} {
+	stats := ctx.Value(EelTotalStats).(*ServiceStats)
+	if params == nil || len(params) != 3 {
+		ctx.Log().Error("error_type", "func_hmac", "op", "hmac", "cause", "wrong_number_of_parameters", "params", params)
+		stats.IncErrors()
+		AddError(ctx, SyntaxError{fmt.Sprintf("wrong number of parameters in call to hmac function"), "curl", params})
+		return nil
+	} else {
+		hashFunc := extractStringParam(params[0])
+		input := extractStringParam(params[1])
+		key := extractStringParam(params[2])
+
+		if hashFunc == "SHA1" {
+			key_for_sign := []byte(key)
+			h := hmac.New(sha1.New, key_for_sign)
+			h.Write([]byte(input))
+			return base64.StdEncoding.EncodeToString(h.Sum(nil))
+		} else {
+			ctx.Log().Error("error_type", "func_hmac", "op", "hmac", "cause", "hash_func_not_yet_support", "params", params)
+			return nil
+		}
+	}
+
+	return nil
+}
+
+// fnLoadFile reads file, and returns the content as string
+func fnLoadFile(ctx Context, doc *JDoc, params []string) interface{} {
+	stats := ctx.Value(EelTotalStats).(*ServiceStats)
+	if params == nil || len(params) != 1 || params[0] == "" {
+		ctx.Log().Error("error_type", "func_lloadFile", "op", "loadFile", "cause", "wrong_number_of_parameters", "params", params)
+		stats.IncErrors()
+		AddError(ctx, SyntaxError{fmt.Sprintf("wrong number of parameters in call to loadFile function"), "curl", params})
+		return nil
+	} else {
+		filename := extractStringParam(params[0])
+
+		if _, err := os.Stat(filename); nil != err {
+			ctx.Log().Error("error_type", "func_loadJson", "op", "loadFile", "cause", "error_access_file", "errror", err, "params", params)
+			return nil
+		}
+
+		bs, err := ioutil.ReadFile(filename)
+		if nil != err {
+			ctx.Log().Error("error_type", "func_loadJson", "op", "loadFile", "cause", "error_read_file", "errror", err, "params", params)
+			return nil
+		}
+		return string(bs)
+	}
+
+	return nil
 }
