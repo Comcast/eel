@@ -4,7 +4,9 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 This `CHANGELOG.md` implements the spirit of http://keepachangelog.com/.
 
-## [1.22](https://github.com/Comcast/eel/compare/v1.21...dev) - [Unreleased]
+## [1.23](https://github.com/Comcast/eel/compare/v1.22...dev) - [Unreleased]
+
+## [1.22](https://github.com/Comcast/eel/compare/v1.21...v1.22) - 2018-11-12
 
 ### Added
 * Add function base64decode
