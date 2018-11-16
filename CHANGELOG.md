@@ -6,6 +6,9 @@ This `CHANGELOG.md` implements the spirit of http://keepachangelog.com/.
 
 ## [1.23](https://github.com/Comcast/eel/compare/v1.22...dev) - [Unreleased]
 
+### Updated
+* reduce log lines
+
 ## [1.22](https://github.com/Comcast/eel/compare/v1.21...v1.22) - 2018-11-12
 
 ### Added

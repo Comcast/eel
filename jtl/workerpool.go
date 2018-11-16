@@ -120,7 +120,7 @@ func (disp *WorkDispatcher) Start(ctx Context) {
 		for {
 			select {
 			case work := <-disp.WorkQueue:
-				ctx.Log().Info("action", "received_work_request", "tenant", disp.tenant)
+				//ctx.Log().Info("action", "received_work_request", "tenant", disp.tenant)
 				//go func() {
 				worker := <-disp.WorkerQueue
 				//ctx.Log.Info("action", "dispatched_work_request")
