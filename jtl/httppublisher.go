@@ -161,3 +161,17 @@ func (p *HttpPublisher) SetAsyncReplyTo(replyTo map[string]string) {
 func (p *HttpPublisher) GetAsyncReplyTo() map[string]string {
 	return p.replyTo
 }
+
+func (p *HttpPublisher) SetTopic(topic string) {
+}
+
+func (p *HttpPublisher) GetTopic() string {
+	return ""
+}
+
+func (p *HttpPublisher) SetPartition(partition int32) {
+}
+
+func (p *HttpPublisher) GetPartition() int32 {
+	return 0
+}
