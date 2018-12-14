@@ -133,3 +133,17 @@ func (p *NullPublisher) SetAsyncReplyTo(replyTo map[string]string) {
 func (p *NullPublisher) GetAsyncReplyTo() map[string]string {
 	return nil
 }
+
+func (p *NullPublisher) SetTopic(topic string) {
+}
+
+func (p *NullPublisher) GetTopic() string {
+	return ""
+}
+
+func (p *NullPublisher) SetPartition(partition int32) {
+}
+
+func (p *NullPublisher) GetPartition() int32 {
+	return 0
+}

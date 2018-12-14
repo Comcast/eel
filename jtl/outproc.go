@@ -29,7 +29,7 @@ func handleEvent(ctx Context, stats *ServiceStats, event *JDoc, raw string, debu
 	ctx.AddLogValue("destination", "unknown")
 	handlers := GetHandlerFactory(ctx).GetHandlersForEvent(ctx, event)
 	if len(handlers) == 0 {
-		ctx.Log().Info("action", "no_matching_handlers")
+		// ctx.Log().Info("action", "no_matching_handlers")
 		ctx.Log().Debug("debug_action", "no_matching_handlers", "payload", event.GetOriginalObject())
 	}
 	initialCtx := ctx
@@ -71,9 +71,12 @@ func handleEvent(ctx Context, stats *ServiceStats, event *JDoc, raw string, debu
 			//ctx.AddLogValue("trace.out.path", publisher.GetPath())
 			ctx.AddLogValue("trace.out.headers", publisher.GetHeaders())
 			ctx.AddLogValue("trace.out.protocol", publisher.GetProtocol())
+			ctx.AddLogValue("trace.out.topic", publisher.GetTopic())
 			//ctx.AddLogValue("trace.out.endpoint", publisher.GetEndpoint())
 			ctx.AddLogValue("trace.out.verb", publisher.GetVerb())
 			ctx.AddLogValue("trace.out.url", publisher.GetUrl())
+			ctx.AddLogValue("trace.out.topic", publisher.GetTopic())
+			ctx.AddLogValue("trace.out.partition", publisher.GetPartition())
 			if syncExec {
 				// no need to call out to endpoint in sync mode
 				debuginfo = append(debuginfo, publisher.GetPayloadParsed().GetOriginalObject())
@@ -84,7 +87,6 @@ func handleEvent(ctx Context, stats *ServiceStats, event *JDoc, raw string, debu
 				if publisher.GetAsyncReplyTo() != nil {
 					sendAsyncResponse(ctx, publisher.GetAsyncReplyTo(), err)
 				}
-
 				AddLatencyLog(ctx, stats, "stat.eel.time")
 				ctx.AddLogValue("trace.out.endpoint", publisher.GetEndpoint())
 				ctx.AddLogValue("trace.out.url", publisher.GetUrl())
@@ -104,6 +106,8 @@ func handleEvent(ctx Context, stats *ServiceStats, event *JDoc, raw string, debu
 				de["trace.out.protocol"] = publisher.GetProtocol()
 				de["trace.out.verb"] = publisher.GetVerb()
 				de["trace.out.url"] = publisher.GetUrl()
+				de["trace.out.topic"] = publisher.GetTopic()
+				de["trace.out.partition"] = publisher.GetPartition()
 				if publisher.GetPayload() != "" {
 					data := make(map[string]interface{})
 					err := json.Unmarshal([]byte(publisher.GetPayload()), &data)
@@ -133,11 +137,9 @@ func handleEvent(ctx Context, stats *ServiceStats, event *JDoc, raw string, debu
 					defer wg.Done()
 					defer c.HandlePanic()
 					_, err := p.Publish()
-
 					if p.GetAsyncReplyTo() != nil {
 						sendAsyncResponse(c, p.GetAsyncReplyTo(), err)
 					}
-
 					AddLatencyLog(c, stats, "stat.eel.time")
 					//c.AddLogValue("trace.out.endpoint", p.GetEndpoint())
 					c.AddLogValue("trace.out.url", p.GetUrl())
@@ -187,7 +189,6 @@ func sendAsyncResponseToEEL(c Context, replyTo map[string]string, err error) {
 		c.Log().Error("op", "sendAsyncResponseToEEL", "action", "getEndpoint", "error", "endpoint_not_found", "replyTo", replyTo)
 		return
 	}
-
 	body := make(map[string]string)
 	if err != nil {
 		body["status"] = "fail"
@@ -196,18 +197,15 @@ func sendAsyncResponseToEEL(c Context, replyTo map[string]string, err error) {
 		body["status"] = "success"
 	}
 	body["location"] = location
-
 	payload := make(map[string]interface{})
 	payload["traceId"] = c.Value("tx.traceId")
 	payload["messageType"] = "AsyncResponse"
 	payload["body"] = body
-
 	payloadData, err := json.Marshal(payload)
 	if err != nil {
 		c.Log().Error("op", "sendAsyncResponseToEEL", "action", "marshalPayload", "error", err, "replyTo", replyTo, "payload", payload)
 		return
 	}
-
 	resp, status, err := GetRetrier(c).RetryEndpoint(c, endpoint, string(payloadData), "POST", nil, nil)
 	if err != nil {
 		c.Log().Error("op", "sendAsyncResponseToEEL", "action", "postEndpoint", "error", err, "replyTo", replyTo, "resp", resp)

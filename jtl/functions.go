@@ -647,6 +647,8 @@ func fnCurl(ctx Context, doc *JDoc, params []string) interface{} {
 		AddError(ctx, NetworkError{endpoint, "endpoint returned error", status})
 		return nil
 	}
+	ctx.Log().Debug("op", "curl", "resp", resp, "endpoint", endpoint, "body", body, "params", extractStringParam(params[0]), "headers", headers, "status", status)
+
 	var res interface{}
 	err = json.Unmarshal([]byte(resp), &res)
 	if err != nil {
