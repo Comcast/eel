@@ -18,6 +18,7 @@ This `CHANGELOG.md` implements the spirit of http://keepachangelog.com/.
 * Add function base64decode
 * Add function loadFile
 * Add function hmac
+* Add optional multiple partitions for kafka publisher
 
 ## [1.21](https://github.com/Comcast/eel/compare/v1.20...v1.21) - 2018-07-09
 
