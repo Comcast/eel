@@ -248,7 +248,7 @@ func GetPluginConfigList(ctx Context) PluginConfigList {
 	return config
 }
 
-func LoadInboundPlugins(ctx Context) {
+func LoadInboundPlugins(ctx Context, enablePlugins bool) {
 	// load plugin configs
 	pluginConfigList = GetPluginConfigList(ctx)
 	for _, e := range pluginConfigList {
@@ -262,6 +262,10 @@ func LoadInboundPlugins(ctx Context) {
 	}
 	// launch plugins
 	for k, v := range inboundPluginMap {
+		if !enablePlugins && v.GetSettings().Type != "WEBHOOK" {
+			v.GetSettings().AutoStart = false
+		}
+
 		if v.GetSettings().AutoStart {
 			ctx.Log().Info("action", "launching_inbound_plugin", "plugin_name", k, "pugin_type", v.GetSettings().Type)
 			v.StartPlugin(ctx)

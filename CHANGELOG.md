@@ -9,6 +9,9 @@ This `CHANGELOG.md` implements the spirit of http://keepachangelog.com/.
 ### Updated
 * reduce log lines
 
+### Added
+* Add a global flag to disable all plugins except webhook
+
 ## [1.22](https://github.com/Comcast/eel/compare/v1.21...v1.22) - 2018-11-12
 
 ### Added
