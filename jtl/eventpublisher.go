@@ -48,8 +48,8 @@ type (
 		GetAsyncReplyTo() map[string]string
 		SetTopic(topic string)
 		GetTopic() string
-		SetPartition([]int32)
-		GetPartition() []int32
+		SetPartition(int32)
+		GetPartition() int32
 	}
 )
 

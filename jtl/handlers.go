@@ -69,8 +69,8 @@ type (
 		Endpoint    interface{}       // optional - overwrite default endpoint from config.json, if array of multiple endpoints, event will be fanned out to endpoint1, endpoint2 etc.
 		HttpHeaders map[string]string // optional - http headers
 		// outgoing Kafka config
-		KafkaTopic string      // kafka topic to send the message to
-		Partition  interface{} // kafka partition to send the message to
+		KafkaTopic string // kafka topic to send the message to
+		Partition  string // kafka partition to send the message to
 		// asyncReplyTo
 		AsyncReplyTo string
 		// internal pre-compiled configs
