@@ -4,10 +4,15 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 This `CHANGELOG.md` implements the spirit of http://keepachangelog.com/.
 
-## [1.23](https://github.com/Comcast/eel/compare/v1.22...dev) - [Unreleased]
+## [1.24](https://github.com/Comcast/eel/compare/v1.23...dev) - [Unreleased]
+
+## [1.23](https://github.com/Comcast/eel/compare/v1.22...v1.23) - 2019-01-07
 
 ### Updated
 * reduce log lines
+
+### Added
+* Add a global flag to disable all plugins except webhook
 
 ## [1.22](https://github.com/Comcast/eel/compare/v1.21...v1.22) - 2018-11-12
 
@@ -15,6 +20,7 @@ This `CHANGELOG.md` implements the spirit of http://keepachangelog.com/.
 * Add function base64decode
 * Add function loadFile
 * Add function hmac
+* Add optional multiple partitions for kafka publisher
 
 ## [1.21](https://github.com/Comcast/eel/compare/v1.20...v1.21) - 2018-07-09
 

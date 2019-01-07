@@ -202,7 +202,7 @@ func main() {
 		// register inbound plugins
 		RegisterInboundPluginType(NewStdinPlugin, "STDIN")
 		RegisterInboundPluginType(NewWebhookPlugin, "WEBHOOK")
-		LoadInboundPlugins(Gctx)
+		LoadInboundPlugins(Gctx, true)
 		// hang on channel forever
 		<-make(chan int)
 	}

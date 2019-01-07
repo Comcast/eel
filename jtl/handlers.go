@@ -885,41 +885,31 @@ func (h *HandlerConfiguration) ProcessEvent(ctx Context, event *JDoc) ([]EventPu
 				ctx.Log().Error("error_type", "process_event", "cause", "unsupported_protocol", "protocol", h.Protocol, "event", event.String(), "handler", h.Name)
 				continue
 			}
-			publisher.SetEndpoint(ep)
 			if h.AuthInfo != nil {
 				publisher.SetAuthInfo(h.AuthInfo)
 			}
 			publisher.SetHeaders(headers)
-			if h.Verb != "" {
-				publisher.SetVerb(h.Verb)
-			}
 			publisher.SetPayload(payload)
 			publisher.SetPath(rp)
 			publisher.SetPayloadParsed(tfd)
 			publisher.SetDebug(debug)
-
 			publisher.SetAsyncReplyTo(event.GetStringMapValueForExpression(ctx, h.AsyncReplyTo))
-
-			if publisher.GetProtocol() == "kafka" {
-				//Setting kafka fields
-				kp, ok := publisher.(KafkaEventPublisher)
-				if !ok {
-					ctx.Log().Error("error_type", "process_event", "cause", "kafka_type_cast_failure", "protocol", h.Protocol, "event", event.String(), "handler", h.Name, "type", reflect.TypeOf(publisher))
-					continue
-				}
-				kt := event.GetStringValueForExpression(ctx, h.KafkaTopic)
+			if h.KafkaTopic != "" {
+				publisher.SetTopic(event.GetStringValueForExpression(ctx, h.KafkaTopic))
+			}
+			if h.Partition != "" {
 				ep := event.GetStringValueForExpression(ctx, h.Partition)
-
 				partition, err := strconv.Atoi(ep)
 				if err != nil {
-					ctx.Log().Error("error_type", "process_event", "cause", "invalid_parition", "protocol", h.Protocol, "event", event.String(), "handler", h.Name, "partition", h.Partition)
+					ctx.Log().Error("error_type", "process_event", "cause", "invalid_partition", "protocol", h.Protocol, "event", event.String(), "handler", h.Name, "partition", h.Partition)
 					continue
 				}
-
-				kp.SetTopic(kt)
-				kp.SetPartition(int32(partition))
+				publisher.SetPartition(int32(partition))
 			}
-
+			publisher.SetEndpoint(ep)
+			if h.Verb != "" {
+				publisher.SetVerb(h.Verb)
+			}
 			publishers = append(publishers, publisher)
 		}
 	}
