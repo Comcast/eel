@@ -37,7 +37,7 @@ func handleEvent(ctx Context, stats *ServiceStats, event *JDoc, raw string, debu
 	var wg sync.WaitGroup
 	for _, handler := range handlers {
 		ctx.AddLogValue("topic", handler.Topic)
-		ctx.AddLogValue("tenantId", handler.TenantId)
+		ctx.AddLogValue(LogTenantId, handler.TenantId)
 		ctx.AddLogValue("handler", handler.Name)
 		publishers, err := handler.ProcessEvent(initialCtx.SubContext(), event)
 		if err != nil {
@@ -63,6 +63,16 @@ func handleEvent(ctx Context, stats *ServiceStats, event *JDoc, raw string, debu
 			}
 			ctx.AddLogValue("tx.traceId", publisher.GetHeaders()[traceHeaderKey])
 			ctx.AddValue("tx.traceId", publisher.GetHeaders()[traceHeaderKey])
+
+			// tenant header
+			tenantHeaderKey := GetConfig(ctx).HttpTenantHeader
+			if publisher.GetHeaders() == nil {
+				publisher.SetHeaders(make(map[string]string, 0))
+			}
+			if publisher.GetHeaders()[tenantHeaderKey] == "" && ctx.LogValue(LogTenantId) != nil {
+				publisher.GetHeaders()[tenantHeaderKey] = ctx.LogValue(LogTenantId).(string)
+			}
+			ctx.AddValue(LogTenantId, publisher.GetHeaders()[tenantHeaderKey])
 			// other log params
 			ctx.AddLogValue("trace.out.url", publisher.GetUrl())
 			//ctx.AddLogValue("trace.in.data", event.GetOriginalObject())
