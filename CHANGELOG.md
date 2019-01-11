@@ -6,6 +6,9 @@ This `CHANGELOG.md` implements the spirit of http://keepachangelog.com/.
 
 ## [1.24](https://github.com/Comcast/eel/compare/v1.23...dev) - [Unreleased]
 
+## Updated
+* XRULES-12619: All components need to log Gears Portal application id
+
 ## [1.23](https://github.com/Comcast/eel/compare/v1.22...v1.23) - 2019-01-07
 
 ### Updated
