@@ -57,7 +57,7 @@ func EventHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Header.Get(tenantHeaderKey) != "" {
 		ctx.AddValue(EelTenantId, r.Header.Get(tenantHeaderKey))
 		ctx.AddValue(tenantHeaderKey, r.Header.Get(tenantHeaderKey))
-		ctx.AddLogValue("tenantId", r.Header.Get(tenantHeaderKey))
+		ctx.AddLogValue(LogTenantId, r.Header.Get(tenantHeaderKey))
 	}
 	w.Header().Set("Content-Type", "application/json")
 	if r.ContentLength > GetConfig(ctx).MaxMessageSize {

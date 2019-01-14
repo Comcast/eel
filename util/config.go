@@ -119,6 +119,7 @@ const (
 	EelTraceLogger          = "Eel.TraceLogger"
 	EelCache                = "Eel.Cache"
 	EelTenantIds            = "Eel.TenantIds"
+	LogTenantId             = "gears.app.id"
 )
 
 const (
