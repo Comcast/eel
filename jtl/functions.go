@@ -1028,8 +1028,8 @@ func fnPropExists(ctx Context, doc *JDoc, params []string) interface{} {
 
 	cp := GetCustomProperties(ctx)
 	if cp != nil {
-		if val, ok := cp[extractStringParam(params[0])]; ok {
-			return val
+		if _, ok := cp[extractStringParam(params[0])]; ok {
+			return true
 		}
 	}
 	props := GetConfig(ctx).CustomProperties
