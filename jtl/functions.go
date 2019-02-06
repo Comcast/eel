@@ -100,6 +100,9 @@ func NewFunction(fn string) *JFunction {
 	case "prop":
 		// return property from CustomProperties section in config.json
 		return &JFunction{fnProp, 1, 1}
+	case "propExists":
+		// check whether or not a property exists
+		return &JFunction{fnPropExists, 1, 1}
 	case "js":
 		// execute arbitrary javascript and return result
 		return &JFunction{fnJs, 1, 100}
@@ -196,6 +199,9 @@ func NewFunction(fn string) *JFunction {
 	case "hashmod":
 		// hash a given string and then mod it by the given divider
 		return &JFunction{fnHashMod, 2, 2}
+	case "toTS":
+		//Take a timestamp string and convert it to unix ts in milliseconds
+		return &JFunction{fnToTS, 2, 2}
 	default:
 		//gctx.Log.Error("error_type", "func_", "op", fn, "cause", "not_implemented")
 		//stats.IncErrors()
@@ -1009,6 +1015,30 @@ func fnProp(ctx Context, doc *JDoc, params []string) interface{} {
 	return doc.ParseExpression(ctx, props[extractStringParam(params[0])])
 }
 
+func fnPropExists(ctx Context, doc *JDoc, params []string) interface{} {
+	stats := ctx.Value(EelTotalStats).(*ServiceStats)
+	if params == nil || len(params) != 1 {
+		ctx.Log().Error("error_type", "func_propExists", "op", "propExists", "cause", "wrong_number_of_parameters", "params", params)
+		stats.IncErrors()
+		AddError(ctx, SyntaxError{fmt.Sprintf("wrong number of parameters in call to unquote function"), "unquote", params})
+		return ""
+	}
+
+	ctx.Log().Debug("op", "propExists", "params", params[0])
+
+	cp := GetCustomProperties(ctx)
+	if cp != nil {
+		if _, ok := cp[extractStringParam(params[0])]; ok {
+			return true
+		}
+	}
+	props := GetConfig(ctx).CustomProperties
+	if props == nil || props[extractStringParam(params[0])] == nil {
+		return false
+	}
+	return true
+}
+
 // fnTenant return current tenant.
 func fnTenant(ctx Context, doc *JDoc, params []string) interface{} {
 	stats := ctx.Value(EelTotalStats).(*ServiceStats)
@@ -1480,6 +1510,30 @@ func fnHashMod(ctx Context, doc *JDoc, params []string) interface{} {
 	partition := h.Sum32() % uint32(d)
 
 	return fmt.Sprintf("%d", partition)
+}
+
+func fnToTS(ctx Context, doc *JDoc, params []string) interface{} {
+	stats := ctx.Value(EelTotalStats).(*ServiceStats)
+	if params == nil || len(params) != 2 {
+		ctx.Log().Error("error_type", "func_toTS", "op", "toTS", "cause", "wrong_number_of_parameters", "params", params)
+		stats.IncErrors()
+		AddError(ctx, SyntaxError{fmt.Sprintf("wrong number of parameters in call to toTS function"), "toTS", params})
+		return 0
+	}
+
+	ctx.Log().Debug("op", "toTS", "params", params)
+
+	layout := extractStringParam(params[0])
+	dtStr := extractStringParam(params[1])
+
+	t, err := time.Parse(layout, dtStr)
+	if err != nil {
+		ctx.Log().Error("error_type", "func_toTS", "op", "time.Parse", "error", err, "params", params)
+		stats.IncErrors()
+		AddError(ctx, RuntimeError{fmt.Sprintf("fail to parse time string"), "toTS", params})
+		return 0
+	}
+	return t.UnixNano() / 1e6
 }
 
 // fnHmac uses specified hash function to hash input with key
