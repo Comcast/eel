@@ -1024,8 +1024,6 @@ func fnPropExists(ctx Context, doc *JDoc, params []string) interface{} {
 		return ""
 	}
 
-	ctx.Log().Debug("op", "propExists", "params", params[0])
-
 	cp := GetCustomProperties(ctx)
 	if cp != nil {
 		if _, ok := cp[extractStringParam(params[0])]; ok {
