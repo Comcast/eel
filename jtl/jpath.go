@@ -19,6 +19,7 @@ package jtl
 import (
 	"encoding/json"
 	"io/ioutil"
+	"reflect"
 	"regexp"
 	"strconv"
 	"strings"
@@ -643,9 +644,24 @@ func (j *JDoc) contains(a interface{}, b interface{}, strength int) (bool, int) 
 				alts := strings.Split(b.(string), JPathOr)
 				result := false
 				for _, alt := range alts {
+					//Gctx.Log().Info("CHECKING_ALT", alt, "a", a, "b", b)
 					if alt == JPathWildcard || alt == a {
 						strength++
 						result = true
+					} else if reflect.TypeOf(a).Kind() == reflect.String && strings.Contains(alt, JPathWildcard) {
+						frags := strings.Split(alt, JPathWildcard)
+						//Gctx.Log().Info("CHECKING_ALT_FRAGS", frags, "a", a, "b", b)
+						result = true
+						for _, frag := range frags {
+							// just making sure all fragments occur in the string
+							if !strings.Contains(a.(string), frag) {
+								result = false
+								break
+							} 
+						}
+						if result {
+							strength++
+						}
 					}
 				}
 				if !result {
