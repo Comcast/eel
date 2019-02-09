@@ -644,20 +644,23 @@ func (j *JDoc) contains(a interface{}, b interface{}, strength int) (bool, int) 
 				alts := strings.Split(b.(string), JPathOr)
 				result := false
 				for _, alt := range alts {
-					//Gctx.Log().Info("CHECKING_ALT", alt, "a", a, "b", b)
 					if alt == JPathWildcard || alt == a {
 						strength++
 						result = true
 					} else if reflect.TypeOf(a).Kind() == reflect.String && strings.Contains(alt, JPathWildcard) {
 						frags := strings.Split(alt, JPathWildcard)
-						//Gctx.Log().Info("CHECKING_ALT_FRAGS", frags, "a", a, "b", b)
 						result = true
+						partial := a.(string)
 						for _, frag := range frags {
-							// just making sure all fragments occur in the string
-							if !strings.Contains(a.(string), frag) {
+							// just making sure all fragments occur in the string in correct order without overlaps
+							Gctx.Log().Info("CHECKING_ALT_FRAGS", frags, "a", a, "b", b, "frag", frag, "partial", partial)
+							if !strings.Contains(partial, frag) {
 								result = false
 								break
-							} 
+							} else {
+								idx := strings.Index(partial, frag)
+								partial = partial[idx+len(frag):]
+							}
 						}
 						if result {
 							strength++
