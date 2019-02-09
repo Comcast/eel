@@ -1,0 +1,22 @@
+{
+	"Version": "1.0",
+	"Name": "MatchWithWildCards",
+	"Info": "Matching with multiple wild cards.",
+	"Active": true,
+	"Match": {
+		"foo": "ba*oo*"
+	},
+	"IsMatchByExample": true,
+	"TerminateOnMatch": true,
+	"Transformation": {
+		"{{/}}": "{{/}}"
+	},
+	"IsTransformationByExample": false,
+	"Path": "",
+	"Verb": "POST",
+	"Endpoint": "",
+	"HttpHeaders": {
+		"X-B3-TraceId": "{{traceid()}}",
+		"Xrs-Tenant-Id": "{{tenant()}}"
+	}
+}
