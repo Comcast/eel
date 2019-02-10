@@ -62,7 +62,6 @@ var (
 )
 
 const (
-	JPathThisSelector = "."
 	JPathWildcard     = "*"
 	JPathPrefix       = "{{"
 	JPathSuffix       = "}}"
