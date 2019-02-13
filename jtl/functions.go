@@ -920,9 +920,7 @@ func fnString(ctx Context, doc *JDoc, params []string) interface{} {
 	if err != nil {
 		return extractStringParam(params[0])
 	}
-
 	return strings.Join(obj, extractStringParam(params[1])+" ")
-
 }
 
 // fnJoin functions joins two JSON documents given as parameters and returns results.
@@ -1023,9 +1021,6 @@ func fnPropExists(ctx Context, doc *JDoc, params []string) interface{} {
 		AddError(ctx, SyntaxError{fmt.Sprintf("wrong number of parameters in call to unquote function"), "unquote", params})
 		return ""
 	}
-
-	ctx.Log().Debug("op", "propExists", "params", params[0])
-
 	cp := GetCustomProperties(ctx)
 	if cp != nil {
 		if _, ok := cp[extractStringParam(params[0])]; ok {
@@ -1493,9 +1488,6 @@ func fnHashMod(ctx Context, doc *JDoc, params []string) interface{} {
 		AddError(ctx, SyntaxError{fmt.Sprintf("wrong number of parameters in call to hashmod function"), "hashmod", params})
 		return ""
 	}
-
-	ctx.Log().Debug("op", "hashmod", "params", params)
-
 	str := extractStringParam(params[0])
 	d, err := strconv.Atoi(extractStringParam(params[1]))
 	if err != nil {
@@ -1504,11 +1496,9 @@ func fnHashMod(ctx Context, doc *JDoc, params []string) interface{} {
 		AddError(ctx, SyntaxError{fmt.Sprintf("Invalid divisor parameter"), "hashmod", params})
 		return ""
 	}
-
 	h := fnv.New32a()
 	h.Write([]byte(str))
 	partition := h.Sum32() % uint32(d)
-
 	return fmt.Sprintf("%d", partition)
 }
 
@@ -1520,12 +1510,8 @@ func fnToTS(ctx Context, doc *JDoc, params []string) interface{} {
 		AddError(ctx, SyntaxError{fmt.Sprintf("wrong number of parameters in call to toTS function"), "toTS", params})
 		return 0
 	}
-
-	ctx.Log().Debug("op", "toTS", "params", params)
-
 	layout := extractStringParam(params[0])
 	dtStr := extractStringParam(params[1])
-
 	t, err := time.Parse(layout, dtStr)
 	if err != nil {
 		ctx.Log().Error("error_type", "func_toTS", "op", "time.Parse", "error", err, "params", params)
@@ -1548,7 +1534,6 @@ func fnHmac(ctx Context, doc *JDoc, params []string) interface{} {
 		hashFunc := extractStringParam(params[0])
 		input := extractStringParam(params[1])
 		key := extractStringParam(params[2])
-
 		if hashFunc == "SHA1" {
 			key_for_sign := []byte(key)
 			h := hmac.New(sha1.New, key_for_sign)
@@ -1559,7 +1544,6 @@ func fnHmac(ctx Context, doc *JDoc, params []string) interface{} {
 			return nil
 		}
 	}
-
 	return nil
 }
 
@@ -1567,25 +1551,22 @@ func fnHmac(ctx Context, doc *JDoc, params []string) interface{} {
 func fnLoadFile(ctx Context, doc *JDoc, params []string) interface{} {
 	stats := ctx.Value(EelTotalStats).(*ServiceStats)
 	if params == nil || len(params) != 1 || params[0] == "" {
-		ctx.Log().Error("error_type", "func_lloadFile", "op", "loadFile", "cause", "wrong_number_of_parameters", "params", params)
+		ctx.Log().Error("error_type", "func_loadfile", "op", "loadFile", "cause", "wrong_number_of_parameters", "params", params)
 		stats.IncErrors()
 		AddError(ctx, SyntaxError{fmt.Sprintf("wrong number of parameters in call to loadFile function"), "curl", params})
 		return nil
 	} else {
 		filename := extractStringParam(params[0])
-
 		if _, err := os.Stat(filename); nil != err {
-			ctx.Log().Error("error_type", "func_loadJson", "op", "loadFile", "cause", "error_access_file", "errror", err, "params", params)
+			ctx.Log().Error("error_type", "func_loadfile", "op", "loadFile", "cause", "error_access_file", "errror", err, "params", params)
 			return nil
 		}
-
 		bs, err := ioutil.ReadFile(filename)
 		if nil != err {
-			ctx.Log().Error("error_type", "func_loadJson", "op", "loadFile", "cause", "error_read_file", "errror", err, "params", params)
+			ctx.Log().Error("error_type", "func_loadfile", "op", "loadFile", "cause", "error_read_file", "errror", err, "params", params)
 			return nil
 		}
 		return string(bs)
 	}
-
 	return nil
 }
