@@ -305,6 +305,11 @@ func TestMatchByExample(t *testing.T) {
 	transformEvent(t, "data/test11/", nil)
 }
 
+func TestMatchWithMultiWildCards(t *testing.T) {
+	initTests("data/test60/handlers")
+	transformEvent(t, "data/test60/", nil)
+}
+
 func TestHeaders(t *testing.T) {
 	initTests("data/test12/handlers")
 	transformEvent(t, "data/test12/", map[string]string{"X-MyKey": "xyz"})
