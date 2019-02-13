@@ -100,7 +100,7 @@ func NewFunction(fn string) *JFunction {
 	case "prop":
 		// return property from CustomProperties section in config.json
 		return &JFunction{fnProp, 1, 1}
-	case "propExists":
+	case "propexists":
 		// check whether or not a property exists
 		return &JFunction{fnPropExists, 1, 1}
 	case "js":
@@ -1016,7 +1016,7 @@ func fnProp(ctx Context, doc *JDoc, params []string) interface{} {
 func fnPropExists(ctx Context, doc *JDoc, params []string) interface{} {
 	stats := ctx.Value(EelTotalStats).(*ServiceStats)
 	if params == nil || len(params) != 1 {
-		ctx.Log().Error("error_type", "func_propExists", "op", "propExists", "cause", "wrong_number_of_parameters", "params", params)
+		ctx.Log().Error("error_type", "func_propexists", "op", "propexists", "cause", "wrong_number_of_parameters", "params", params)
 		stats.IncErrors()
 		AddError(ctx, SyntaxError{fmt.Sprintf("wrong number of parameters in call to unquote function"), "unquote", params})
 		return ""
