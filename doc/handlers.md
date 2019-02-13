@@ -420,6 +420,18 @@ Example 4: Similar to example 3 but using by-example-syntax. Makes also use of w
 IsMatchByExample: true
 ```
 
+Example 5: Similar to example 4 but matching events where account id starts with 123.
+
+```
+"Match": {
+    "content": {
+      "type": "ALARM",
+      "accountId": "123*"
+    }
+},
+IsMatchByExample: true
+```
+
 #### TerminateOnMatch
 
 Usually set to true.
@@ -439,7 +451,7 @@ All event filtering parameters are optional.
 #### Filters
 
 Filters are optional. You can have zero, one or more filters.
-`Filters` describes a list of patterns that must be matched by the incoming event. If the event does not match all of the patterns,
+`Filters` describes a list of patterns to be matched against incoming events. If an event matches all of the patterns,
 EEL will discard the event and not forward it. A filter lets you choose between by-path syntax and
 by-example syntax using the `IsFilterByExample` parameter. If the parameter `IsFilterInverted` is
 set to `true`, events will be filtered if they do NOT match the pattern described by `Filter`.
@@ -448,22 +460,7 @@ outgoing event (after the transformation), otherwise it will be applied to the i
 (before the transformation). Additionally you can configure to log arbitrary key-value-pairs when the
 filter triggers using the optional `LogParams` parameter.
 
-_*Example 1:*_ Let everything come through.
-
-```
-"Filters" : [
-  {
-    "Filter" : {
-      "*" : "*"
-    },
-    "IsFilterByExample" : true,
-    "IsFilterInverted" : false,
-	"FilterAfterTransformation" : false
-  }
-]
-```
-
-_*Example 2:*_ Only process events with `id` present regardless of its value.
+_*Example 2:*_ Filter events with `id` present regardless of its value.
 
 ```
 "Filters" : [
@@ -475,12 +472,29 @@ _*Example 2:*_ Only process events with `id` present regardless of its value.
     },
     "IsFilterByExample" : true,
     "IsFilterInverted" : false,
-	"FilterAfterTransformation" : false
+	  "FilterAfterTransformation" : false
   }
 ]
 ```
 
-_*Example 3:*_ Only process events with `id` present and value `"123"`.
+_*Example 2:*_ Filter events with `id` starting with `"123"`.
+
+```
+"Filters" : [
+  {
+    "Filter" : {
+       "content" : {
+         "id" : "123*"
+       }
+    },
+    "IsFilterByExample" : true,
+    "IsFilterInverted" : false,
+	  "FilterAfterTransformation" : false
+  }
+]
+```
+
+_*Example 3:*_ Filter events with `id` equal to `"123"`.
 
 ```
 "Filters" : [
@@ -492,12 +506,12 @@ _*Example 3:*_ Only process events with `id` present and value `"123"`.
     },
     "IsFilterByExample" : true,
     "IsFilterInverted" : false,
-	"FilterAfterTransformation" : false
+	  "FilterAfterTransformation" : false
   }
 ]
 ```
 
-_*Example 4:*_ Only process events with `id` present and value `"123"` or `"xyz"`.
+_*Example 4:*_ Filter events with `id` present and value `"123"` or `"xyz"`.
 
 ```
 "Filters" : [
@@ -509,12 +523,12 @@ _*Example 4:*_ Only process events with `id` present and value `"123"` or `"xyz"
     },
     "IsFilterByExample" : true,
     "IsFilterInverted" : false,
-	"FilterAfterTransformation" : false
+	  "FilterAfterTransformation" : false
   }
 ]
 ```
 
-_*Example 5:*_ Only process events where `message` is `found_problem`.
+_*Example 5:*_ Process events where `message` is `found_problem`.
 
 ```
 "Filters": [
@@ -522,8 +536,8 @@ _*Example 5:*_ Only process events where `message` is `found_problem`.
 		"Filter": {
 			"{{equals('{{/message}}','found_problem')}}": false
 		},
-	    "IsFilterByExample" : false,
-	    "IsFilterInverted" : false,
+	  "IsFilterByExample" : false,
+	  "IsFilterInverted" : false,
 		"FilterAfterTransformation" : false
 	}
 ]
@@ -534,9 +548,9 @@ _*Example 6:*_ Filder events older than 5 minutes and log some interesting data.
 ```
 "Filters" : [
 {
-    "Filter" : {
-      "{{true()}}":"{{js('(new Date()).getTime()-{{/content/timestamp}}>300000')}}"
-    },
+  "Filter" : {
+    "{{true()}}":"{{js('(new Date()).getTime()-{{/content/timestamp}}>300000')}}"
+  },
 	"LogParams" : {
 		"delta" : "{{js('((new Date()).getTime()-{{/content/timestamp}})/1000')}}",
 		"payload" : "{{/}}",
