@@ -19,6 +19,7 @@ package jtl
 import (
 	"encoding/json"
 	"io/ioutil"
+	"reflect"
 	"regexp"
 	"strconv"
 	"strings"
@@ -61,7 +62,6 @@ var (
 )
 
 const (
-	JPathThisSelector = "."
 	JPathWildcard     = "*"
 	JPathPrefix       = "{{"
 	JPathSuffix       = "}}"
@@ -638,7 +638,7 @@ func (j *JDoc) contains(a interface{}, b interface{}, strength int) (bool, int) 
 		default:
 			//return a == b
 			switch b.(type) {
-			// special treatment of flat string matches suporting boolean or and wild cards (mainly here for backward compatibility)
+			// special treatment of flat string matches supporting boolean or and wild cards 
 			case string:
 				alts := strings.Split(b.(string), JPathOr)
 				result := false
@@ -646,6 +646,31 @@ func (j *JDoc) contains(a interface{}, b interface{}, strength int) (bool, int) 
 					if alt == JPathWildcard || alt == a {
 						strength++
 						result = true
+					} else if reflect.TypeOf(a).Kind() == reflect.String && strings.Contains(alt, JPathWildcard) {
+						frags := strings.Split(alt, JPathWildcard)
+						result = true
+						partial := a.(string)
+						// check corner cases at beginning and end of string
+						if !strings.HasPrefix(alt, JPathWildcard) && !strings.HasPrefix(partial, frags[0]) {
+							return false, strength
+						}
+						if !strings.HasSuffix(alt, JPathWildcard) && !strings.HasSuffix(partial, frags[len(frags)-1]) {
+							return false, strength
+						}
+						for _, frag := range frags {
+							// making sure all fragments occur in the string in correct order without overlaps
+							//Gctx.Log().Info("CHECKING_ALT_FRAGS", frags, "a", a, "b", b, "frag", frag, "partial", partial)
+							if !strings.Contains(partial, frag) {
+								result = false
+								break
+							} else {
+								idx := strings.Index(partial, frag)
+								partial = partial[idx+len(frag):]
+							}
+						}
+						if result {
+							strength++
+						}
 					}
 				}
 				if !result {

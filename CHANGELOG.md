@@ -4,7 +4,17 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 This `CHANGELOG.md` implements the spirit of http://keepachangelog.com/.
 
-## [1.24](https://github.com/Comcast/eel/compare/v1.23...dev) - [Unreleased]
+## [1.26](https://github.com/Comcast/eel/compare/v1.25...dev) - [Unreleased]
+
+## [1.25](https://github.com/Comcast/eel/compare/v1.24...v1.25) - 2019-02-15
+
+### Added
+* Two new EEL functions: propExists and toTS
+
+## [1.24](https://github.com/Comcast/eel/compare/v1.23...dev) - 2019-01-28
+
+## Updated
+* XRULES-12619: All components need to log Gears Portal application id
 
 ## [1.23](https://github.com/Comcast/eel/compare/v1.22...v1.23) - 2019-01-07
 

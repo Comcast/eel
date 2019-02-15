@@ -836,3 +836,123 @@ Output:
 ```
 42
 ```
+
+### hashmod
+
+Hash a given string and then mod it by the given divider.
+
+Syntax:
+
+```
+{{hashmod('<string>','<divider>')}}
+```
+
+Example:
+
+Expression:
+
+```
+{{hashmod('foo','100')}}
+```
+
+Output:
+
+```
+42
+```
+
+### propexists
+
+Check if custom property exists and return true if it does, otherwise return false.
+
+Syntax:
+
+```
+{{propexists('<prop>')}}
+```
+
+Example:
+
+Expression:
+
+```
+{{propexists('foo')}}
+```
+
+Output:
+
+```
+false
+```
+
+### base64decode
+
+Decode base 64 encoded string.
+
+Syntax:
+
+```
+{{base64decode('<enoced>')}}
+```
+
+Example:
+
+Expression:
+
+```
+{{base64decode('Zm9v')}}
+```
+
+Output:
+
+```
+foo
+```
+
+### hmac
+
+Hash input string, currently only SHA1 supported.
+
+Syntax:
+
+```
+{{hmac('<hash>','<input>','<key>')}}
+```
+
+Example:
+
+Expression:
+
+```
+{{hmac('SHA1','foo','some_key')}}
+```
+
+Output:
+
+```
+xLW5k+IGTjzJe8cq/dU0k8kO0bE=
+```
+
+### loadfile
+
+Load file and return result as string.
+
+Syntax:
+
+```
+{{loadfile('<filename>')}}
+```
+
+Example:
+
+Expression:
+
+```
+{{loadfile('file.txt')}}
+```
+
+Output:
+
+```
+hello world
+```
