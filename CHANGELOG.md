@@ -4,7 +4,9 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 This `CHANGELOG.md` implements the spirit of http://keepachangelog.com/.
 
-## [1.25](https://github.com/Comcast/eel/compare/v1.24...dev) - [Unreleased]
+## [1.26](https://github.com/Comcast/eel/compare/v1.25...dev) - [Unreleased]
+
+## [1.25](https://github.com/Comcast/eel/compare/v1.24...v1.25) - 2019-02-15
 
 ### Added
 * Two new EEL functions: propExists and toTS
