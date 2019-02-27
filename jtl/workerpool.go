@@ -58,9 +58,13 @@ func NewWorker(id int, workerQueue chan chan *WorkRequest) *Worker {
 }
 
 func GetWorkDispatcher(ctx Context, tenantId string) *WorkDispatcher {
-	//ctx.Log().Debug("tenantId", tenantId)
 	if ctx.Value(EelDispatcher+"_"+tenantId) != nil {
 		return ctx.Value(EelDispatcher + "_" + tenantId).(*WorkDispatcher)
+	} else if ctx.Value(EelDispatcher+"_") != nil {
+		// return default worker pool if there is no dedicated pool for this tenant
+		return ctx.Value(EelDispatcher + "_").(*WorkDispatcher)
+	} else {
+		ctx.Log().Error("error", "no_worker_pool_for_tenant", "tenant", tenantId)
 	}
 	return nil
 }
