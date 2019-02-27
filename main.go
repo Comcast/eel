@@ -197,6 +197,7 @@ func main() {
 			dp := NewWorkDispatcher(GetConfig(ctx).WorkerPoolSize[tenantId], GetConfig(ctx).MessageQueueDepth, tenantId)
 			dp.Start(ctx)
 			Gctx.AddValue(EelDispatcher+"_"+tenantId, dp)
+			ctx.Log().Info("action", "start_worker_pool", "size", GetConfig(ctx).WorkerPoolSize[tenantId], "queue_depth", GetConfig(ctx).MessageQueueDepth, "tenant_id", tenantId)
 		}
 		registerAdminServices()
 		// register inbound plugins
