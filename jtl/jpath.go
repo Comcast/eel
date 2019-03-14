@@ -62,11 +62,11 @@ var (
 )
 
 const (
-	JPathWildcard     = "*"
-	JPathPrefix       = "{{"
-	JPathSuffix       = "}}"
-	JPathSimple       = "(\\/[a-zA-Z0-9\\.,:_\\-]*)+"
-	JPathOr           = "||"
+	JPathWildcard = "*"
+	JPathPrefix   = "{{"
+	JPathSuffix   = "}}"
+	JPathSimple   = "(\\/[a-zA-Z0-9\\.,:_\\-]*)+"
+	JPathOr       = "||"
 )
 
 // NewJDocFromString returns handle to JSON document given as a string.
@@ -426,6 +426,14 @@ func (j *JDoc) ApplyTransformation(ctx Context, transformation *JDoc) *JDoc {
 			for i := 0; i < len(segments)-1; i++ {
 				if _, ok := m.(map[string]interface{})[segments[i]]; !ok {
 					m.(map[string]interface{})[segments[i]] = make(map[string]interface{}, 0)
+				} else {
+					// force type to be map in case we are dealing with an ambiguous handler tht already places a flat value or array at this location
+					switch m.(map[string]interface{})[segments[i]].(type) {
+					case map[string]interface{}:
+						break
+					default:
+						m.(map[string]interface{})[segments[i]] = make(map[string]interface{}, 0)
+					}
 				}
 				m = m.(map[string]interface{})[segments[i]].(map[string]interface{})
 			}
@@ -638,7 +646,7 @@ func (j *JDoc) contains(a interface{}, b interface{}, strength int) (bool, int) 
 		default:
 			//return a == b
 			switch b.(type) {
-			// special treatment of flat string matches supporting boolean or and wild cards 
+			// special treatment of flat string matches supporting boolean or and wild cards
 			case string:
 				alts := strings.Split(b.(string), JPathOr)
 				result := false
