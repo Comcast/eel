@@ -32,10 +32,9 @@ import (
 	"strings"
 	"time"
 
+	. "github.com/Comcast/eel/util"
 	"github.com/Knetic/govaluate"
 	"github.com/robertkrimen/otto"
-
-	. "github.com/Comcast/eel/util"
 )
 
 type (
@@ -194,8 +193,11 @@ func NewFunction(fn string) *JFunction {
 		// returns true if path exists in document
 		return &JFunction{fnExists, 1, 2}
 	case "calc":
-		// evalutaes simple arithmetic expressions in native go and returns result
+		// evaluates simple arithmetic expressions in native go and returns result
 		return &JFunction{fnCalc, 1, 1}
+	case "log":
+		// logs parameter for debuging
+		return &JFunction{fnLog, 1, 1}
 	case "hashmod":
 		// hash a given string and then mod it by the given divider
 		return &JFunction{fnHashMod, 2, 2}
@@ -246,6 +248,20 @@ func fnRegex(ctx Context, doc *JDoc, params []string) interface{} {
 	} else {
 		return reg.FindString(extractStringParam(params[0]))
 	}
+}
+
+// fnLog write param to logs for debugging.
+func fnLog(ctx Context, doc *JDoc, params []string) interface{} {
+	stats := ctx.Value(EelTotalStats).(*ServiceStats)
+	if params == nil || len(params) != 1 {
+		ctx.Log().Error("error_type", "func_log", "op", "log", "cause", "wrong_number_of_parameters", "params", params)
+		stats.IncErrors()
+		AddError(ctx, SyntaxError{fmt.Sprintf("wrong number of parameters in call to log function"), "log", params})
+		return nil
+	}
+	val := extractStringParam(params[0])
+	ctx.Log().Info("action", "logfn", "value", val)
+	return ""
 }
 
 // fnCalc regular expression function returns true if regex matches.
