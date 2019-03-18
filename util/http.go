@@ -38,6 +38,7 @@ var (
 	StatusUnknownTopic        = map[string]interface{}{"error": "unknown topic"}
 	StatusAlreadySubscribed   = map[string]interface{}{"error": "already subscribed"}
 	StatusNotEvenSubscribed   = map[string]interface{}{"error": "not even subscribed"}
+	StatusNoWorkerPool   	  =	map[string]interface{}{"error": "not worker pool"}
 
 	HttpStatusTooManyRequests = 429
 )

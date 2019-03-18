@@ -152,8 +152,8 @@ func EventHandler(w http.ResponseWriter, r *http.Request) {
 		if ctx.Value(EelTenantId) != nil {
 			tenantId = ctx.Value(EelTenantId).(string)
 		}
-		if ctx.Value(EelDispatcher+"_"+tenantId) != nil {
-			dp := GetWorkDispatcher(ctx, tenantId)
+		dp := GetWorkDispatcher(ctx, tenantId)
+		if dp != nil {
 			work := WorkRequest{Raw: string(body), Event: evt, Ctx: ctx}
 			select {
 			case dp.WorkQueue <- &work:
@@ -171,6 +171,10 @@ func EventHandler(w http.ResponseWriter, r *http.Request) {
 				w.WriteHeader(HttpStatusTooManyRequests)
 				w.Write(GetResponse(ctx, StatusQueueFull))
 			}
+		} else {
+			ctx.Log().Error("status", "500", "action", "rejected", "error_type", "worker_pool", "cause", "no_pool_for_tenant", "tenant_id", tenantId)
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write(GetResponse(ctx, StatusNoWorkerPool))
 		}
 	}
 }

@@ -58,7 +58,7 @@ func (p *StdinPlugin) StartStdInConsumer(ctx Context, r io.Reader) {
 	}
 	dp := GetWorkDispatcher(ctx, tenantId)
 	if dp == nil {
-		ctx.Log().Error("error_type", "stdin_consumer_error", "cause", "no_work_dispatcher", "op", "stdin")
+		ctx.Log().Error("error_type", "stdin_consumer_error", "cause", "no_work_dispatcher", "op", "stdin", "tenant_id", tenantId)
 		return
 	}
 	stats := ctx.Value(EelTotalStats).(*ServiceStats)
