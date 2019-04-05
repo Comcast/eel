@@ -124,7 +124,7 @@ func EventHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	if debug || sync {
-		ctx.Log().Info("status", "200", "action", "accepted")
+		ctx.Log().Info("status", "200", "action", "accepted", "op", "EventHandler)
 		ctx.Log().Metric("accepted", M_Namespace, "xrs", M_Metric, "accepted", M_Unit, "Count", M_Dims, "app="+AppId+"&env="+EnvName+"&instance="+InstanceName, M_Val, 1.0)
 		var events interface{}
 		events = handleEvent(ctx, stats, evt, string(body), debug, sync)
