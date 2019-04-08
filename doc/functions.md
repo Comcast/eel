@@ -933,6 +933,24 @@ Output:
 xLW5k+IGTjzJe8cq/dU0k8kO0bE=
 ```
 
+### log
+
+Write parameter as string to eel log file. Useful for debugging. Returns empty string.
+
+Syntax:
+
+```
+{{log('<logstring>')}}
+```
+
+Example:
+
+Expression:
+
+```
+{{log('test')}}
+```
+
 ### loadfile
 
 Load file and return result as string.
