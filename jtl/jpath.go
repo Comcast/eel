@@ -575,7 +575,7 @@ func (j *JDoc) merge(a interface{}, b interface{}) interface{} {
 			//l := make([]interface{}, 2)
 			//l[0] = a
 			//l[1] = b
-			Gctx.Log().Error("error_type", "parser", "cause", "cannot_merge_simple_types")
+			Gctx.Log().Error("error_type", "parser", "cause", "cannot_merge_simple_types", "a", a, "b", b, "doc", j.String())
 			return b
 		}
 	}
