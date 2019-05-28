@@ -41,9 +41,11 @@ type (
 		CustomProperties string
 		Filters          string
 		ErrorMessage     string
+		Match            string
 		Path             interface{}
 		PathExpression   string
 		IsTBE            bool
+		IsMBE            bool
 	}
 	AllTopicHandlersTest struct {
 		TopicHandlerTest
@@ -376,9 +378,14 @@ func TopicTestHandler(w http.ResponseWriter, r *http.Request) {
 	transformations := r.FormValue("transformations")
 	customproperties := r.FormValue("customproperties")
 	filters := r.FormValue("filters")
+	match := r.FormValue("match")
 	istbe := false
 	if r.FormValue("istbe") == "on" {
 		istbe = true
+	}
+	ismbe := false
+	if r.FormValue("ismbe") == "on" {
+		ismbe = true
 	}
 	var tht TopicHandlerTest
 	tht.Message = message
@@ -386,14 +393,16 @@ func TopicTestHandler(w http.ResponseWriter, r *http.Request) {
 	tht.Transformations = transformations
 	tht.CustomProperties = customproperties
 	tht.Filters = filters
+	tht.Match = match
 	tht.IsTBE = istbe
+	tht.IsMBE = ismbe
 	hc := new(HandlerConfiguration)
 	err := json.Unmarshal([]byte(transformation), &hc.Transformation)
 	if err != nil {
 		tht.ErrorMessage = err.Error()
 	}
 	hc.IsTransformationByExample = istbe
-	hc.IsTransformationByExample = istbe
+	hc.IsMatchByExample = ismbe
 	hc.Version = "1.0"
 	hc.Name = "DEBUG"
 	if filters != "" {
@@ -403,6 +412,15 @@ func TopicTestHandler(w http.ResponseWriter, r *http.Request) {
 		} else {
 			buf, _ := json.MarshalIndent(hc.Filters, "", "\t")
 			tht.Filters = string(buf)
+		}
+	}
+	if match != "" {
+		err = json.Unmarshal([]byte(match), &hc.Match)
+		if err != nil {
+			tht.ErrorMessage = "error parsing match: " + err.Error()
+		} else {
+			buf, _ := json.MarshalIndent(hc.Match, "", "\t")
+			tht.Match = string(buf)
 		}
 	}
 	hf, _ := NewHandlerFactory(ctx, nil)
@@ -456,20 +474,26 @@ func TopicTestHandler(w http.ResponseWriter, r *http.Request) {
 			tht.ErrorMessage = "error parsing message: " + err.Error()
 			ctx.Log().Error("comp", "debug", "error_type", "test_handler_error", "error", err.Error())
 		}
-		publishers, err := topicHandler.ProcessEvent(ctx, mIn)
 		out := ""
-		if err != nil {
-			tht.ErrorMessage = "error processing message: " + err.Error()
-			ctx.Log().Error("comp", "debug", "error_type", "test_handler_error", "error", err.Error())
-		} else if publishers != nil && len(publishers) > 0 {
-			tht.Response = publishers[0].GetPayload()
-			tht.Path = publishers[0].GetPath()
-			out = tht.Response
-			if errs := GetErrors(ctx); errs != nil {
-				for _, e := range errs {
-					tht.ErrorMessage += e.Error() + "<br/>"
+		if matches, _ := topicHandler.matchesExpectedValues(ctx, mdoc); matches {
+			publishers, err := topicHandler.ProcessEvent(ctx, mIn)
+			if err != nil {
+				tht.ErrorMessage = "error processing message: " + err.Error()
+				ctx.Log().Error("comp", "debug", "error_type", "test_handler_error", "error", err.Error())
+			} else if publishers != nil && len(publishers) > 0 {
+				tht.Response = publishers[0].GetPayload()
+				tht.Path = publishers[0].GetPath()
+				out = tht.Response
+				if errs := GetErrors(ctx); errs != nil {
+					for _, e := range errs {
+						tht.ErrorMessage += e.Error() + "<br/>"
+					}
 				}
 			}
+		} else {
+			tht.ErrorMessage = "handler does not match"
+			tht.Response = ""
+			tht.Path = ""
 		}
 		ctx.Log().Info("comp", "debug", "action", "test_transform", "in", message, "out", out, "topic_handler", topicHandler)
 	}
