@@ -171,6 +171,24 @@ func NewHandlerFactory(ctx Context, configFolders []string) (*HandlerFactory, []
 			}
 		}
 	}
+	if tenantMap["_default"] {
+		//we have default handlers ... lets make sure we populate them into every tenant's CustomHandlerMap
+		for tenant, handlerMap := range hf.CustomHandlerMap {
+			if tenant == "_default" {
+				continue
+			}
+			for handlerName, handler := range hf.CustomHandlerMap["_default"] {
+				_, ok := handlerMap[handlerName]
+				if ok {
+					//tenant already have the same handler name, don't overwrite
+					continue
+				}
+				handlerMap[handlerName] = handler
+				ctx.Log().Info("action", "registering_handler", "tenant", tenant, "name", handler.Name, "match", handler.Match)
+			}
+		}
+	}
+
 	return hf, warnings
 }
 
@@ -390,7 +408,11 @@ func (hf *HandlerFactory) GetHandlersForEvent(ctx Context, event *JDoc) []*Handl
 	// check custom match handlers
 	if preferredTenantId != "" {
 		hmil := make([]*handlerMatchInstance, 0)
-		for _, handler := range hf.CustomHandlerMap[preferredTenantId] {
+		handlerMap, ok := hf.CustomHandlerMap[preferredTenantId]
+		if !ok {
+			handlerMap = hf.CustomHandlerMap["_default"]
+		}
+		for _, handler := range handlerMap {
 			if matches, strength := handler.matchesExpectedValues(ctx, event); matches {
 				hmil = append(hmil, newHandlerMatchInstance(handler, strength))
 			}

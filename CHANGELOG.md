@@ -5,6 +5,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 This `CHANGELOG.md` implements the spirit of http://keepachangelog.com/.
 
 ## [1.30](https://github.com/Comcast/eel/compare/v1.29...dev) - [Unreleased]
+* XRULES-13840: Default handlers in EEL
+
 
 ## [1.29](https://github.com/Comcast/eel/compare/v1.28...v1.29) - 2019-05-17
 
