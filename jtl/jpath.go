@@ -558,7 +558,7 @@ func (j *JDoc) merge(a interface{}, b interface{}) interface{} {
 			res = append(res, b.([]interface{})...)
 			return res
 		default:
-			Gctx.Log().Error("error_type", "parser", "cause", "cannot_merge_array_with_simple_type")
+			//Gctx.Log().Error("error_type", "parser", "cause", "cannot_merge_array_with_simple_type")
 			return b
 			//return append(a.([]interface{}), b)
 		}
