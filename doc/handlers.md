@@ -14,6 +14,10 @@ and the handler files are organized in a folder structure by tenant like this:
 ```
 config-handlers
  |
+ |--- _default
+ |      |
+ |       --- def_handler1.json
+ |       --- def_handler2.json
   --- tenant1
  |      |
  |       --- handler1.json
@@ -26,6 +30,9 @@ config-handlers
          ...
  ...
 ```
+
+Please note that `_default` tenant folder has a special meaning in that handlers in the `_default` folder will
+automatically be applied to all tenants.
 
 The handler configuration folder can be configured with the EEL command line parameter `-handlers`, the default location
 is `config-handlers`. Under that folder there is one folder per tenant. If you don't care about multi-tenancy just

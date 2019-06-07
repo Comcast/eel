@@ -133,13 +133,13 @@ func (c *DefaultContext) EnableLogging() {
 
 func (c *DefaultContext) HandlePanic() {
 	if x := recover(); x != nil {
-		panicError := fmt.Sprintf("%#v", x)
+		panicError := fmt.Sprintf("%+v", x)
 		trace := bytes.NewBuffer(debug.Stack()).String()
 		//limit the stack track to 16k
 		if maxStackSize < len(trace) {
 			trace = trace[:maxStackSize]
 		}
-		c.Log().Error("panicError", panicError, "stackTrace", trace)
+		c.Log().Error("panicError", panicError, "panicStackTrace", trace)
 		return
 	}
 }
