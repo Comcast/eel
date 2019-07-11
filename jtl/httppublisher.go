@@ -36,7 +36,7 @@ type (
 		event    *JDoc
 		debug    bool
 		ctx      Context
-		replyTo  map[string]string
+		configs  map[string]string
 	}
 )
 
@@ -154,24 +154,11 @@ func (p *HttpPublisher) GetPayloadParsed() *JDoc {
 	return p.event
 }
 
-func (p *HttpPublisher) SetAsyncReplyTo(replyTo map[string]string) {
-	p.replyTo = replyTo
+func (p *HttpPublisher) SetPublisherConfigs(configs map[string]string) error {
+	p.configs = configs
+	return nil
 }
 
-func (p *HttpPublisher) GetAsyncReplyTo() map[string]string {
-	return p.replyTo
-}
-
-func (p *HttpPublisher) SetTopic(topic string) {
-}
-
-func (p *HttpPublisher) GetTopic() string {
-	return ""
-}
-
-func (p *HttpPublisher) SetPartition(partition int32) {
-}
-
-func (p *HttpPublisher) GetPartition() int32 {
-	return 0
+func (p *HttpPublisher) GetPublisherConfigs() map[string]string {
+	return p.configs
 }

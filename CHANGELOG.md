@@ -6,6 +6,10 @@ This `CHANGELOG.md` implements the spirit of http://keepachangelog.com/.
 
 ## [1.31](https://github.com/Comcast/eel/compare/v1.30.0...dev) - [Unreleased]
 
+### Added
+* Ability to send abitrary parameters to a pubblisher
+* Remove kafka/asyncReply related parameters
+
 ## [1.30](https://github.com/Comcast/eel/compare/v1.29...v1.30.0) - 2019-06-07
 * XRULES-13840: Default handlers in EEL
 * XRULES-13983: Flow execution log issues

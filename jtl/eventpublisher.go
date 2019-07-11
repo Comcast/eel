@@ -44,12 +44,8 @@ type (
 		SetPayloadParsed(event *JDoc)
 		GetPayloadParsed() *JDoc
 		GetErrors() []error
-		SetAsyncReplyTo(replyTo map[string]string)
-		GetAsyncReplyTo() map[string]string
-		SetTopic(topic string)
-		GetTopic() string
-		SetPartition(int32)
-		GetPartition() int32
+		SetPublisherConfigs(configs map[string]string) error
+		GetPublisherConfigs() map[string]string
 	}
 )
 
