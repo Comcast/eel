@@ -72,12 +72,8 @@ func handleEvent(ctx Context, stats *ServiceStats, event *JDoc, raw string, debu
 			//ctx.AddLogValue("trace.out.path", publisher.GetPath())
 			ctx.AddLogValue("trace.out.headers", publisher.GetHeaders())
 			ctx.AddLogValue("trace.out.protocol", publisher.GetProtocol())
-			//ctx.AddLogValue("trace.out.topic", publisher.GetTopic())
-			//ctx.AddLogValue("trace.out.endpoint", publisher.GetEndpoint())
 			ctx.AddLogValue("trace.out.verb", publisher.GetVerb())
 			ctx.AddLogValue("trace.out.url", publisher.GetUrl())
-			//ctx.AddLogValue("trace.out.topic", publisher.GetTopic())
-			//ctx.AddLogValue("trace.out.partition", publisher.GetPartition())
 			ctx.AddLogValue("trace.out.publisherData", publisher.GetPublisherConfigs())
 			if syncExec {
 				// no need to call out to endpoint in sync mode
@@ -86,9 +82,6 @@ func handleEvent(ctx Context, stats *ServiceStats, event *JDoc, raw string, debu
 				// sequential execution to collect debug info
 				_, err := publisher.Publish()
 
-				//if publisher.GetAsyncReplyTo() != nil {
-				//	sendAsyncResponse(ctx, publisher.GetAsyncReplyTo(), err)
-				//}
 				AddLatencyLog(ctx, stats, "stat.eel.time")
 				ctx.AddLogValue("trace.out.endpoint", publisher.GetEndpoint())
 				ctx.AddLogValue("trace.out.url", publisher.GetUrl())
@@ -108,8 +101,6 @@ func handleEvent(ctx Context, stats *ServiceStats, event *JDoc, raw string, debu
 				de["trace.out.protocol"] = publisher.GetProtocol()
 				de["trace.out.verb"] = publisher.GetVerb()
 				de["trace.out.url"] = publisher.GetUrl()
-				//de["trace.out.topic"] = publisher.GetTopic()
-				//de["trace.out.partition"] = publisher.GetPartition()
 				de["trace.out.publisherData"] = publisher.GetPublisherConfigs()
 				if publisher.GetPayload() != "" {
 					data := make(map[string]interface{})
@@ -140,9 +131,6 @@ func handleEvent(ctx Context, stats *ServiceStats, event *JDoc, raw string, debu
 					defer wg.Done()
 					defer c.HandlePanic()
 					_, err := p.Publish()
-					//if p.GetAsyncReplyTo() != nil {
-					//	sendAsyncResponse(c, p.GetAsyncReplyTo(), err)
-					//}
 					AddLatencyLog(c, stats, "stat.eel.time")
 					//c.AddLogValue("trace.out.endpoint", p.GetEndpoint())
 					c.AddLogValue("trace.out.url", p.GetUrl())
