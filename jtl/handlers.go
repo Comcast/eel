@@ -24,7 +24,6 @@ import (
 	"path/filepath"
 	"reflect"
 	"sort"
-	"strconv"
 	"strings"
 
 	. "github.com/Comcast/eel/util"
@@ -68,11 +67,8 @@ type (
 		Protocol    string            // optional - if omitted defaults to http, other valid values: x1, emo, email, sms (the protocol in the match section, if present, is just a meaningless custom match value!)
 		Endpoint    interface{}       // optional - overwrite default endpoint from config.json, if array of multiple endpoints, event will be fanned out to endpoint1, endpoint2 etc.
 		HttpHeaders map[string]string // optional - http headers
-		// outgoing Kafka config
-		KafkaTopic string // kafka topic to send the message to
-		Partition  string // kafka partition to send the message to
-		// asyncReplyTo
-		AsyncReplyTo string
+		// extra publisher config
+		PublisherConfigs map[string]string //optional - any extra publisher configuration parameters should go here
 		// internal pre-compiled configs
 		t *JDoc // transformation
 		f *JDoc // filter
@@ -889,6 +885,14 @@ func (h *HandlerConfiguration) ProcessEvent(ctx Context, event *JDoc) ([]EventPu
 			ctx.ConfigValue(EelTraceLogger).(*TraceLogger).TraceLog(ctx, event, false)
 		}
 	}
+	// prepare configs
+	configs := make(map[string]string, 0)
+	if h.PublisherConfigs != nil {
+		for hk, jexpr := range h.PublisherConfigs {
+			configs[hk] = ToFlatString(event.ParseExpression(ctx, jexpr))
+		}
+	}
+
 	// filtering
 	if h.FilterAfterTransformation {
 		if h.filterEvent(ctx, tfd) {
@@ -915,18 +919,10 @@ func (h *HandlerConfiguration) ProcessEvent(ctx Context, event *JDoc) ([]EventPu
 			publisher.SetPath(rp)
 			publisher.SetPayloadParsed(tfd)
 			publisher.SetDebug(debug)
-			publisher.SetAsyncReplyTo(event.GetStringMapValueForExpression(ctx, h.AsyncReplyTo))
-			if h.KafkaTopic != "" {
-				publisher.SetTopic(event.GetStringValueForExpression(ctx, h.KafkaTopic))
-			}
-			if h.Partition != "" {
-				ep := event.GetStringValueForExpression(ctx, h.Partition)
-				partition, err := strconv.Atoi(ep)
-				if err != nil {
-					ctx.Log().Error("error_type", "process_event", "cause", "invalid_partition", "protocol", h.Protocol, "event", event.String(), "handler", h.Name, "partition", h.Partition)
-					continue
-				}
-				publisher.SetPartition(int32(partition))
+			err := publisher.SetPublisherConfigs(configs)
+			if err != nil {
+				ctx.Log().Error("error_type", "process_event", "cause", "invalid_configs", "protocol", h.Protocol, "event", event.String(), "handler", h.Name, "configs", configs)
+				continue
 			}
 			publisher.SetEndpoint(ep)
 			if h.Verb != "" {
