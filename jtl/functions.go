@@ -1066,6 +1066,14 @@ func fnTenant(ctx Context, doc *JDoc, params []string) interface{} {
 		AddError(ctx, RuntimeError{fmt.Sprintf("current handler not found in call to tenant function"), "tenant", params})
 		return ""
 	}
+	if h.TenantId == "_default" {
+		//The default tenant handler is used. We need to drill-down into context to find out the actual tenant
+		tenantHeaderKey := GetConfig(ctx).HttpTenantHeader
+		if ctx.Value(tenantHeaderKey) != "" {
+			return ctx.Value(tenantHeaderKey)
+		}
+	}
+
 	return h.TenantId
 }
 
