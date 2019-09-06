@@ -174,10 +174,9 @@ var (
 			"X-B3-TraceId": "276ba4a9-c425-4a96-9353-63705042c734",
 			"X-Tenant-Id": "tenant1"
 		},
-		"trace.out.partition": 0,
-		"trace.out.topic": "",
 		"trace.out.path": "",
 		"trace.out.protocol": "http",
+		"trace.out.publisherData": {},
 		"trace.out.url": "http://localhost:8088",
 		"trace.out.verb": "POST",
 		"tx.id": "276ba4a9-c425-4a96-9353-63705042c734",
