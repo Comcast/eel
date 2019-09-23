@@ -118,6 +118,13 @@ func NilHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, `{"status":"ok"}`)
 }
 
+// VersionHandler http handler to return nothing but version info.
+func VersionHandler(w http.ResponseWriter, r *http.Request) {
+	ctx := Gctx.SubContext()
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprintf(w, `{"version":"%s"}`, GetConfig(ctx).Version)
+}
+
 // ReloadConfigHandler http handler to relaod all configs from disk. Response is similar to StatusHandler.
 func ReloadConfigHandler(w http.ResponseWriter, r *http.Request) {
 	tenantIds := Gctx.Value(EelTenantIds).([]string)
