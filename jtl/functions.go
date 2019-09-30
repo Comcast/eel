@@ -60,9 +60,6 @@ func NewFunction(fn string) *JFunction {
 		// curl('<method>','<url>',['<payload>'],['<header-map>'],['<retries>'])
 		// example curl('POST', 'http://foo.com/bar/json', 'foo-{{/content/bar}}')
 		return &JFunction{fnCurl, 2, 5}
-	case "curlOAuth1":
-		// curlOAuth1('<method>','<url>',['<payload>'],['<header-map>'],['<retries>'],['<oauth1-provider>'])
-		return &JFunction{fnCurlOAuth1, 2, 6}
 	case "hmac":
 		// hmac("<hashFunc>", '<input>', '<key>')
 		return &JFunction{fnHmac, 3, 3}
