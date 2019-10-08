@@ -677,46 +677,6 @@ func fnCurl(ctx Context, doc *JDoc, params []string) interface{} {
 	}
 }
 
-// fnCurlOAuth1 provides curl-like functionality to reach out to helper web services, with oauth 1.0 authenication
-func fnCurlOAuth1(ctx Context, doc *JDoc, params []string) interface{} {
-	stats := ctx.Value(EelTotalStats).(*ServiceStats)
-	if params == nil || len(params) < 6 {
-		ctx.Log().Error("error_type", "func_curlOAuth1", "op", "curlOAuth1", "cause", "wrong_number_of_parameters", "params", params)
-		stats.IncErrors()
-		AddError(ctx, SyntaxError{fmt.Sprintf("wrong number of parameters in call to curlOAuth1 function"), "curl", params})
-		return nil
-	} else {
-		method := extractStringParam(params[0])
-		endpoint := extractStringParam(params[1])
-		headers := extractStringParam(params[3])
-		oauthProvider := extractStringParam(params[5])
-
-		//add Authorization header by oauthProvider
-		res := make(map[string]string)
-		err := json.Unmarshal([]byte(headers), &res)
-		if nil != err {
-			ctx.Log().Error("error_type", "func_curlOAuth1", "op", "curlOAuth1", "cause", "invalid_header_passed_in", "params", params)
-			return nil
-		}
-		oauthConsumer := NewOAuthConsumer(oauthProvider)
-		res["Authorization"], err = oauthConsumer.GetOAuth1Header(ctx, method, endpoint)
-		if nil != err {
-			ctx.Log().Error("error_type", "func_curlOAuth1", "op", "curlOAuth1", "cause", "no_valid_oauth_header", "params", params)
-			return nil
-		}
-		newHeaders, err := json.Marshal(res)
-		if nil != err {
-			ctx.Log().Error("error_type", "func_curlOAuth1", "op", "curlOAuth1", "cause", "error_when_create_new_header", "params", params)
-			return nil
-		}
-		params[3] = "'" + string(newHeaders) + "'"
-
-		//unset oauthProvider for fnCurl
-		params = params[:5]
-	}
-	return fnCurl(ctx, doc, params)
-}
-
 // fnHeader function to obtain http header value from incoming event by key.
 func fnHeader(ctx Context, doc *JDoc, params []string) interface{} {
 	stats := ctx.Value(EelTotalStats).(*ServiceStats)

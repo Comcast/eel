@@ -168,7 +168,7 @@ func NewHandlerFactory(ctx Context, configFolders []string) (*HandlerFactory, []
 		}
 	}
 	if tenantMap["_default"] {
-		//we have default handlers ... lets make sure we populate them into every tenant's CustomHandlerMap
+		// we have default handlers, let's make sure we populate them into every tenant's CustomHandlerMap
 		for tenant, handlerMap := range hf.CustomHandlerMap {
 			if tenant == "_default" {
 				continue
@@ -176,16 +176,24 @@ func NewHandlerFactory(ctx Context, configFolders []string) (*HandlerFactory, []
 			for handlerName, handler := range hf.CustomHandlerMap["_default"] {
 				_, ok := handlerMap[handlerName]
 				if ok {
-					//tenant already have the same handler name, don't overwrite
+					// tenant already have the same handler name, don't overwrite
 					continue
 				}
+				clonedHandler := handler.DeepCopy()
+				clonedHandler.TenantId = tenant
 				handlerMap[handlerName] = handler
 				ctx.Log().Info("action", "registering_handler", "tenant", tenant, "name", handler.Name, "match", handler.Match)
 			}
 		}
 	}
-
 	return hf, warnings
+}
+
+func (h *HandlerConfiguration) DeepCopy() *HandlerConfiguration {
+	buf, _ := json.Marshal(h)
+	c := new(HandlerConfiguration)
+	json.Unmarshal(buf, c)
+	return c
 }
 
 func (h *HandlerConfiguration) GetNamedTransformation() map[string]*Transformation {
