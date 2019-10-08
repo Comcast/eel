@@ -46,6 +46,7 @@ type (
 		PathExpression   string
 		IsTBE            bool
 		IsMBE            bool
+		BasePath         string
 	}
 	AllTopicHandlersTest struct {
 		TopicHandlerTest
@@ -55,6 +56,7 @@ type (
 		SelectedHandler string
 		Headers         string
 		HeadersOut      string
+		BasePath        string
 	}
 	AstTest struct {
 		Message          string
@@ -64,6 +66,7 @@ type (
 		Transformations  string
 		CustomProperties string
 		Lists            [][][]string
+		BasePath         string
 	}
 )
 
@@ -277,6 +280,7 @@ func ParserDebugVizHandler(w http.ResponseWriter, r *http.Request) {
 	t, _ := template.ParseFiles(filepath.Join(BasePath, "web/asttree.html"))
 	var ta AstTest
 	ta.Expression = expression
+	ta.BasePath = GetApiBasePath()
 	t.Execute(w, ta)
 }
 
@@ -295,6 +299,7 @@ func ParserDebugHandler(w http.ResponseWriter, r *http.Request) {
 	ta.Lists = make([][][]string, 0)
 	ta.Message = message
 	ta.CustomProperties = customproperties
+	ta.BasePath = GetApiBasePath()
 	if message != "" && expression != "" {
 		var h HandlerConfiguration
 		if customproperties != "" {
@@ -396,6 +401,7 @@ func TopicTestHandler(w http.ResponseWriter, r *http.Request) {
 	tht.Match = match
 	tht.IsTBE = istbe
 	tht.IsMBE = ismbe
+	tht.BasePath = GetApiBasePath()
 	hc := new(HandlerConfiguration)
 	err := json.Unmarshal([]byte(transformation), &hc.Transformation)
 	if err != nil {
@@ -532,6 +538,7 @@ func HandlersTestHandler(w http.ResponseWriter, r *http.Request) {
 	allHandlers := GetHandlerFactory(ctx).GetAllHandlers(ctx)
 	tht.AllHandlers = make(map[string]*HandlerConfiguration)
 	tht.AllHandlerNames = make([]string, 0)
+	tht.BasePath = GetApiBasePath()
 	for _, hdlr := range allHandlers {
 		name := hdlr.TenantId + "/" + hdlr.Name
 		tht.AllHandlers[name] = hdlr
