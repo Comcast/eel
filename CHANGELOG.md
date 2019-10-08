@@ -6,6 +6,9 @@ This `CHANGELOG.md` implements the spirit of http://keepachangelog.com/.
 
 ## [1.34](https://github.com/Comcast/eel/compare/v1.33.0...dev) - [Unreleased]
 
+### Added
+* Ability to specify a basepath in the URL
+
 ## [1.33](https://github.com/Comcast/eel/compare/v1.32.0...v1.33.0) - 2019-09-23
 
 ## [1.32](https://github.com/Comcast/eel/compare/v1.31.0...v1.32.0) - 2019-08-09

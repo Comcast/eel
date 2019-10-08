@@ -40,6 +40,10 @@ func SetApiBasePath(basePath string) {
 	apiBasePath = basePath
 }
 
+func GetApiBasePath() string {
+	return apiBasePath
+}
+
 func (p *WebhookPlugin) GetSettings() *PluginSettings {
 	return p.Settings
 }

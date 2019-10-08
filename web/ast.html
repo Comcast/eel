@@ -17,7 +17,7 @@ p.error		{color: red;}
 <div align="center">
 <h1>EEL JPath Expression Debugger</h1>
 <!--<p><img src="/img/eel.png" width="250"/></p>-->
-<form action="/v1/test/ast" method="POST">
+<form action="{{.BasePath}}/v1/test/ast" method="POST">
 <p class="error">{{.ErrorMessage}}</p>
 <div><input type="submit" value="Parse"></div>
 <h3>JSON Event:</h3>
