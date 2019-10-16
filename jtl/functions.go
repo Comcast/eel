@@ -67,10 +67,10 @@ func NewFunction(fn string) *JFunction {
 		return &JFunction{fnHmac, 3, 3}
 	case "oauth2get":
 		// perform a GET request to a given url using 2-legged oauth2 authentication.
-		//   url - the GET url
-		//   clientId - the oauth2 client id in the custom property. It is expected that the client key will also be
-		//              under the same custom property.
-		// oauth2("<url>", '<clientId>')
+		//   url        - the GET url
+		//   oauth2Cred - the oauth2 credential in the custom property. It is expected to have the following 3 property
+		//                values - ClientId, ClientSecret, TokenURL.
+		// oauth2("<url>", '<oauth2Cred>')
 		return &JFunction{fnOauth2Get, 2, 2}
 	case "loadfile":
 		// loadfile("<filename>')
@@ -225,45 +225,51 @@ func fnOauth2Get(ctx Context, doc *JDoc, params []string) interface{} {
 		AddError(ctx, SyntaxError{fmt.Sprintf("wrong number of parameters in call to fnOauth2Get function"), "oauth2get", params})
 		return nil
 	}
-	clientId := params[1]
+	oauthCredName := params[1]
 	var oauth2Credentials map[string]interface{}
 	cp := GetCustomProperties(ctx)
 	if cp != nil {
-		if creds, ok := cp[extractStringParam(clientId)]; ok {
+		if creds, ok := cp[extractStringParam(oauthCredName)]; ok {
 			oauth2Credentials, ok = creds.(map[string]interface{})
 			if !ok {
 				ctx.Log().Error("error_type", "func_oauth2get", "op", "oauth2get", "cause", "bad_oauth2_cred_format_handler", "params", params)
-				AddError(ctx, SyntaxError{fmt.Sprintf("%s must be a properties of type map in handler", clientId), "oauth2get", params})
+				AddError(ctx, SyntaxError{fmt.Sprintf("%s must be a properties of type map in handler", oauthCredName), "oauth2get", params})
 				return nil
 			}
 		}
 	}
 	props := GetConfig(ctx).CustomProperties
 	if props != nil {
-		if creds, ok := props[extractStringParam(clientId)]; ok {
+		if creds, ok := props[extractStringParam(oauthCredName)]; ok {
 			oauth2Credentials, ok = creds.(map[string]interface{})
 			if !ok {
 				ctx.Log().Error("error_type", "func_oauth2get", "op", "oauth2get", "cause", "bad_oauth2_cred_format_settings", "params", params)
-				AddError(ctx, SyntaxError{fmt.Sprintf("%s must be a properties of type map in settings", clientId), "oauth2get", params})
+				AddError(ctx, SyntaxError{fmt.Sprintf("%s must be a properties of type map in settings", oauthCredName), "oauth2get", params})
 				return nil
 			}
 		}
 	}
 	if oauth2Credentials == nil {
 		ctx.Log().Error("error_type", "func_oauth2get", "op", "oauth2get", "cause", "oauth2_cred_not_found", "params", params)
-		AddError(ctx, SyntaxError{fmt.Sprintf("oauth2 credential %s not found", clientId), "oauth2get", params})
+		AddError(ctx, SyntaxError{fmt.Sprintf("oauth2 credential %s not found", oauthCredName), "oauth2get", params})
+		return nil
+	}
+	clientId, ok := oauth2Credentials["ClientId"].(string)
+	if !ok {
+		ctx.Log().Error("error_type", "func_oauth2get", "op", "oauth2get", "cause", "client_id_not_found", "params", params)
+		AddError(ctx, SyntaxError{fmt.Sprintf("ClientId not found for %s", oauthCredName), "oauth2get", params})
 		return nil
 	}
 	clientSecret, ok := oauth2Credentials["ClientSecret"].(string)
 	if !ok {
 		ctx.Log().Error("error_type", "func_oauth2get", "op", "oauth2get", "cause", "client_secret_not_found", "params", params)
-		AddError(ctx, SyntaxError{fmt.Sprintf("ClientSecret not found for %s", clientId), "oauth2get", params})
+		AddError(ctx, SyntaxError{fmt.Sprintf("ClientSecret not found for %s", oauthCredName), "oauth2get", params})
 		return nil
 	}
 	tokenUrl, ok := oauth2Credentials["TokenURL"].(string)
 	if !ok {
 		ctx.Log().Error("error_type", "func_oauth2get", "op", "oauth2get", "cause", "token_url_not_found", "params", params)
-		AddError(ctx, SyntaxError{fmt.Sprintf("TokenURL not found for %s", clientId), "oauth2get", params})
+		AddError(ctx, SyntaxError{fmt.Sprintf("TokenURL not found for %s", oauthCredName), "oauth2get", params})
 		return nil
 	}
 	scopeString, ok := oauth2Credentials["Scopes"].(string)
