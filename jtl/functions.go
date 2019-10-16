@@ -17,11 +17,13 @@
 package jtl
 
 import (
+	"context"
 	"crypto/hmac"
 	"crypto/sha1"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"golang.org/x/oauth2/clientcredentials"
 	"hash/fnv"
 	"io/ioutil"
 	"net/http"
@@ -63,6 +65,13 @@ func NewFunction(fn string) *JFunction {
 	case "hmac":
 		// hmac("<hashFunc>", '<input>', '<key>')
 		return &JFunction{fnHmac, 3, 3}
+	case "oauth2get":
+		// perform a GET request to a given url using 2-legged oauth2 authentication.
+		//   url - the GET url
+		//   clientId - the oauth2 client id in the custom property. It is expected that the client key will also be
+		//              under the same custom property.
+		// oauth2("<url>", '<clientId>')
+		return &JFunction{fnOauth2Get, 2, 2}
 	case "loadfile":
 		// loadfile("<filename>')
 		return &JFunction{fnLoadFile, 1, 1}
@@ -206,6 +215,105 @@ func NewFunction(fn string) *JFunction {
 		//stats.IncErrors()
 		return nil
 	}
+}
+
+func fnOauth2Get(ctx Context, doc *JDoc, params []string) interface{} {
+	stats := ctx.Value(EelTotalStats).(*ServiceStats)
+	if params == nil || len(params) != 2 {
+		ctx.Log().Error("error_type", "func_oauth2get", "op", "oauth2get", "cause", "wrong_number_of_parameters", "params", params)
+		stats.IncErrors()
+		AddError(ctx, SyntaxError{fmt.Sprintf("wrong number of parameters in call to fnOauth2Get function"), "oauth2get", params})
+		return nil
+	}
+	clientId := params[1]
+	var oauth2Credentials map[string]interface{}
+	cp := GetCustomProperties(ctx)
+	if cp != nil {
+		if creds, ok := cp[extractStringParam(clientId)]; ok {
+			oauth2Credentials, ok = creds.(map[string]interface{})
+			if !ok {
+				ctx.Log().Error("error_type", "func_oauth2get", "op", "oauth2get", "cause", "bad_oauth2_cred_format_handler", "params", params)
+				AddError(ctx, SyntaxError{fmt.Sprintf("%s must be a properties of type map in handler", clientId), "oauth2get", params})
+				return nil
+			}
+		}
+	}
+	props := GetConfig(ctx).CustomProperties
+	if props != nil {
+		if creds, ok := props[extractStringParam(clientId)]; ok {
+			oauth2Credentials, ok = creds.(map[string]interface{})
+			if !ok {
+				ctx.Log().Error("error_type", "func_oauth2get", "op", "oauth2get", "cause", "bad_oauth2_cred_format_settings", "params", params)
+				AddError(ctx, SyntaxError{fmt.Sprintf("%s must be a properties of type map in settings", clientId), "oauth2get", params})
+				return nil
+			}
+		}
+	}
+	if oauth2Credentials == nil {
+		ctx.Log().Error("error_type", "func_oauth2get", "op", "oauth2get", "cause", "oauth2_cred_not_found", "params", params)
+		AddError(ctx, SyntaxError{fmt.Sprintf("oauth2 credential %s not found", clientId), "oauth2get", params})
+		return nil
+	}
+	clientSecret, ok := oauth2Credentials["ClientSecret"].(string)
+	if !ok {
+		ctx.Log().Error("error_type", "func_oauth2get", "op", "oauth2get", "cause", "client_secret_not_found", "params", params)
+		AddError(ctx, SyntaxError{fmt.Sprintf("ClientSecret not found for %s", clientId), "oauth2get", params})
+		return nil
+	}
+	tokenUrl, ok := oauth2Credentials["TokenURL"].(string)
+	if !ok {
+		ctx.Log().Error("error_type", "func_oauth2get", "op", "oauth2get", "cause", "token_url_not_found", "params", params)
+		AddError(ctx, SyntaxError{fmt.Sprintf("TokenURL not found for %s", clientId), "oauth2get", params})
+		return nil
+	}
+	scopeString, ok := oauth2Credentials["Scopes"].(string)
+	var scopes []string
+	if ok {
+		scopes = strings.Split(scopeString, ",")
+	}
+
+	conf := &clientcredentials.Config{
+		ClientID:     clientId,
+		ClientSecret: clientSecret,
+		TokenURL:     tokenUrl,
+		Scopes:       scopes,
+	}
+
+	client := conf.Client(context.Background())
+	req, err := http.NewRequest("GET", params[0], nil)
+	if err != nil {
+		ctx.Log().Error("error_type", "func_oauth2get", "op", "oauth2get", "cause", "bad_request", "params", params)
+		AddError(ctx, SyntaxError{fmt.Sprintf("bad_request"), "oauth2get", params})
+		return nil
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		status := -1
+		if resp != nil {
+			status = resp.StatusCode
+		}
+		ctx.Log().Error("error_type", "func_oauth2get", "op", "oauth2get", "cause", "request_error", "params", params, "error", err, "status", status)
+		AddError(ctx, SyntaxError{fmt.Sprintf("request_error %s", err), "oauth2get", params})
+		return nil
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		ctx.Log().Error("error_type", "func_oauth2get", "op", "oauth2get", "cause", "body_error", "params", params, "error", err, "status", resp.StatusCode)
+		AddError(ctx, SyntaxError{fmt.Sprintf("body_error %s", err), "oauth2get", params})
+		return nil
+	}
+
+	var ret interface{}
+	err = json.Unmarshal(body, &ret)
+	if err != nil {
+		ctx.Log().Error("error_type", "func_oauth2get", "op", "oauth2get", "cause", "json_unmarshal", "params", params, "error", err, "body", body)
+		AddError(ctx, SyntaxError{fmt.Sprintf("json_unmarshal_error %s", body), "oauth2get", params})
+		return nil
+	}
+	return ret
 }
 
 // fnRegex regular expression function returns first matching value.
