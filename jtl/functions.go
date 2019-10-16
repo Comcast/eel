@@ -226,11 +226,11 @@ func fnOauth2Get(ctx Context, doc *JDoc, params []string) interface{} {
 		return nil
 	}
 	oauthCredName := params[1]
-	var oauth2Credentials map[string]interface{}
+	var oauth2Credentials map[string]string
 	cp := GetCustomProperties(ctx)
 	if cp != nil {
 		if creds, ok := cp[extractStringParam(oauthCredName)]; ok {
-			oauth2Credentials, ok = creds.(map[string]interface{})
+			oauth2Credentials, ok = creds.(map[string]string)
 			if !ok {
 				ctx.Log().Error("error_type", "func_oauth2get", "op", "oauth2get", "cause", "bad_oauth2_cred_format_handler", "params", params)
 				AddError(ctx, SyntaxError{fmt.Sprintf("%s must be a properties of type map in handler", oauthCredName), "oauth2get", params})
@@ -241,7 +241,7 @@ func fnOauth2Get(ctx Context, doc *JDoc, params []string) interface{} {
 	props := GetConfig(ctx).CustomProperties
 	if props != nil {
 		if creds, ok := props[extractStringParam(oauthCredName)]; ok {
-			oauth2Credentials, ok = creds.(map[string]interface{})
+			oauth2Credentials, ok = creds.(map[string]string)
 			if !ok {
 				ctx.Log().Error("error_type", "func_oauth2get", "op", "oauth2get", "cause", "bad_oauth2_cred_format_settings", "params", params)
 				AddError(ctx, SyntaxError{fmt.Sprintf("%s must be a properties of type map in settings", oauthCredName), "oauth2get", params})
@@ -254,25 +254,25 @@ func fnOauth2Get(ctx Context, doc *JDoc, params []string) interface{} {
 		AddError(ctx, SyntaxError{fmt.Sprintf("oauth2 credential %s not found", oauthCredName), "oauth2get", params})
 		return nil
 	}
-	clientId, ok := oauth2Credentials["ClientId"].(string)
+	clientId, ok := oauth2Credentials["ClientId"]
 	if !ok {
 		ctx.Log().Error("error_type", "func_oauth2get", "op", "oauth2get", "cause", "client_id_not_found", "params", params)
 		AddError(ctx, SyntaxError{fmt.Sprintf("ClientId not found for %s", oauthCredName), "oauth2get", params})
 		return nil
 	}
-	clientSecret, ok := oauth2Credentials["ClientSecret"].(string)
+	clientSecret, ok := oauth2Credentials["ClientSecret"]
 	if !ok {
 		ctx.Log().Error("error_type", "func_oauth2get", "op", "oauth2get", "cause", "client_secret_not_found", "params", params)
 		AddError(ctx, SyntaxError{fmt.Sprintf("ClientSecret not found for %s", oauthCredName), "oauth2get", params})
 		return nil
 	}
-	tokenUrl, ok := oauth2Credentials["TokenURL"].(string)
+	tokenUrl, ok := oauth2Credentials["TokenURL"]
 	if !ok {
 		ctx.Log().Error("error_type", "func_oauth2get", "op", "oauth2get", "cause", "token_url_not_found", "params", params)
 		AddError(ctx, SyntaxError{fmt.Sprintf("TokenURL not found for %s", oauthCredName), "oauth2get", params})
 		return nil
 	}
-	scopeString, ok := oauth2Credentials["Scopes"].(string)
+	scopeString, ok := oauth2Credentials["Scopes"]
 	var scopes []string
 	if ok {
 		scopes = strings.Split(scopeString, ",")
@@ -286,21 +286,17 @@ func fnOauth2Get(ctx Context, doc *JDoc, params []string) interface{} {
 	}
 
 	client := conf.Client(context.Background())
-	req, err := http.NewRequest("GET", params[0], nil)
+	req, err := http.NewRequest("GET", extractStringParam(params[0]), nil)
 	if err != nil {
-		ctx.Log().Error("error_type", "func_oauth2get", "op", "oauth2get", "cause", "bad_request", "params", params)
-		AddError(ctx, SyntaxError{fmt.Sprintf("bad_request"), "oauth2get", params})
+		ctx.Log().Error("error_type", "func_oauth2get", "op", "oauth2get", "cause", "bad_request", "params", params, "error", err)
+		AddError(ctx, SyntaxError{fmt.Sprintf("bad_request %s", err.Error()), "oauth2get", params})
 		return nil
 	}
 
 	resp, err := client.Do(req)
 	if err != nil {
-		status := -1
-		if resp != nil {
-			status = resp.StatusCode
-		}
-		ctx.Log().Error("error_type", "func_oauth2get", "op", "oauth2get", "cause", "request_error", "params", params, "error", err, "status", status)
-		AddError(ctx, SyntaxError{fmt.Sprintf("request_error %s", err), "oauth2get", params})
+		ctx.Log().Error("error_type", "func_oauth2get", "op", "oauth2get", "cause", "request_error", "params", params, "error", err)
+		AddError(ctx, SyntaxError{fmt.Sprintf("request_error %s", err.Error()), "oauth2get", params})
 		return nil
 	}
 	defer resp.Body.Close()
@@ -308,14 +304,19 @@ func fnOauth2Get(ctx Context, doc *JDoc, params []string) interface{} {
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		ctx.Log().Error("error_type", "func_oauth2get", "op", "oauth2get", "cause", "body_error", "params", params, "error", err, "status", resp.StatusCode)
-		AddError(ctx, SyntaxError{fmt.Sprintf("body_error %s", err), "oauth2get", params})
+		AddError(ctx, SyntaxError{fmt.Sprintf("body_error %s", err.Error()), "oauth2get", params})
+		return nil
+	}
+	if resp.StatusCode < 200 || resp.StatusCode >= 400 {
+		ctx.Log().Error("error_type", "func_oauth2get", "op", "oauth2get", "cause", "bad_status_code", "params", params, "statusCode", resp.StatusCode, "body", string(body))
+		AddError(ctx, SyntaxError{fmt.Sprintf("bad_status_code %d", resp.StatusCode), "oauth2get", params})
 		return nil
 	}
 
 	var ret interface{}
 	err = json.Unmarshal(body, &ret)
 	if err != nil {
-		ctx.Log().Error("error_type", "func_oauth2get", "op", "oauth2get", "cause", "json_unmarshal", "params", params, "error", err, "body", body)
+		ctx.Log().Error("error_type", "func_oauth2get", "op", "oauth2get", "cause", "json_unmarshal", "params", params, "error", err, "body", string(body))
 		AddError(ctx, SyntaxError{fmt.Sprintf("json_unmarshal_error %s", body), "oauth2get", params})
 		return nil
 	}
