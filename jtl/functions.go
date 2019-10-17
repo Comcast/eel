@@ -217,6 +217,8 @@ func NewFunction(fn string) *JFunction {
 	}
 }
 
+var oauthClientCache map[string]*http.Client = make(map[string]*http.Client)
+
 func fnOauth2Get(ctx Context, doc *JDoc, params []string) interface{} {
 	stats := ctx.Value(EelTotalStats).(*ServiceStats)
 	if params == nil || len(params) != 2 {
@@ -285,7 +287,12 @@ func fnOauth2Get(ctx Context, doc *JDoc, params []string) interface{} {
 		Scopes:       scopes,
 	}
 
-	client := conf.Client(context.Background())
+	var client *http.Client
+	if client, ok = oauthClientCache[oauthCredName]; !ok {
+		ctx.Log().Info("op", "cacheOauth2Client", "credName", oauthCredName)
+		client = conf.Client(context.Background())
+		oauthClientCache[oauthCredName] = client
+	}
 	req, err := http.NewRequest("GET", extractStringParam(params[0]), nil)
 	if err != nil {
 		ctx.Log().Error("error_type", "func_oauth2get", "op", "oauth2get", "cause", "bad_request", "params", params, "error", err)
