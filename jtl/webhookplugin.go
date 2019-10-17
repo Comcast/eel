@@ -28,10 +28,20 @@ type WebhookPlugin struct {
 	ShuttingDown bool
 }
 
+var apiBasePath = ""
+
 func NewWebhookPlugin(settings *PluginSettings) InboundPlugin {
 	p := new(WebhookPlugin)
 	p.Settings = settings
 	return p
+}
+
+func SetApiBasePath(basePath string) {
+	apiBasePath = basePath
+}
+
+func GetApiBasePath() string {
+	return apiBasePath
 }
 
 func (p *WebhookPlugin) GetSettings() *PluginSettings {
@@ -55,8 +65,8 @@ func (p *WebhookPlugin) startWebhookServices(ctx Context) {
 	if eventProxyPort == 0 {
 		eventProxyPort = 8080
 	}
-	eventProxyPath := p.GetSettings().Parameters["EventProxyPath"].(string)
-	eventProcPath := p.GetSettings().Parameters["EventProcPath"].(string)
+	eventProxyPath := apiBasePath + p.GetSettings().Parameters["EventProxyPath"].(string)
+	eventProcPath := apiBasePath + p.GetSettings().Parameters["EventProcPath"].(string)
 	http.HandleFunc(eventProxyPath, EventHandler)
 	http.HandleFunc(eventProcPath, EventHandler)
 	http.HandleFunc("/elementsevent", EventHandler) // hard coded during transition period

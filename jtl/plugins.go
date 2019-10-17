@@ -41,6 +41,11 @@ type InboundPlugin interface {
 	IsActive() bool
 }
 
+type PluginTemplateParams struct {
+	BasePath string
+	PluginSettings
+}
+
 type PluginSettings struct {
 	Type       string
 	Name       string
@@ -125,9 +130,13 @@ func ManagePluginsUIHandler(w http.ResponseWriter, r *http.Request) {
 			p.StopPlugin(ctx)
 		}
 	}
-	psl := make([]*PluginSettings, 0)
+	psl := make([]*PluginTemplateParams, 0)
 	for _, p := range inboundPluginMap {
-		psl = append(psl, p.GetSettings())
+		params := &PluginTemplateParams{
+			BasePath:       GetApiBasePath(),
+			PluginSettings: *p.GetSettings(),
+		}
+		psl = append(psl, params)
 	}
 	err = pluginsTemplate.Execute(w, psl)
 	if err != nil {

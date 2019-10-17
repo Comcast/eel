@@ -4,7 +4,12 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 This `CHANGELOG.md` implements the spirit of http://keepachangelog.com/.
 
-## [1.34](https://github.com/Comcast/eel/compare/v1.33.0...dev) - [Unreleased]
+## [1.35](https://github.com/Comcast/eel/compare/v1.34.0...dev) - [Unreleased]
+
+## [1.34](https://github.com/Comcast/eel/compare/v1.33.0...v1.34.0) - 2019-10-17
+
+### Added
+* Ability to specify a basepath in the URL
 
 ## [1.33](https://github.com/Comcast/eel/compare/v1.32.0...v1.33.0) - 2019-09-23
 
