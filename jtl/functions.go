@@ -17,6 +17,7 @@
 package jtl
 
 import (
+	"bytes"
 	"context"
 	"crypto/hmac"
 	"crypto/sha1"
@@ -65,13 +66,15 @@ func NewFunction(fn string) *JFunction {
 	case "hmac":
 		// hmac("<hashFunc>", '<input>', '<key>')
 		return &JFunction{fnHmac, 3, 3}
-	case "oauth2get":
-		// perform a GET request to a given url using 2-legged oauth2 authentication.
-		//   url        - the GET url
+	case "oauth2":
+		// perform a HTTP request to a given url using 2-legged oauth2 authentication.
+		//   url        - the url
 		//   oauth2Cred - the oauth2 credential in the custom property. It is expected to have the following 3 property
 		//                values - ClientId, ClientSecret, TokenURL.
+		//   method     - optional. The http method. Default is GET
+		//   payload    - optional. The body payload normally for POST or PUT method
 		// oauth2("<url>", '<oauth2Cred>')
-		return &JFunction{fnOauth2Get, 2, 2}
+		return &JFunction{fnOauth2, 2, 4}
 	case "loadfile":
 		// loadfile("<filename>')
 		return &JFunction{fnLoadFile, 1, 1}
@@ -219,14 +222,19 @@ func NewFunction(fn string) *JFunction {
 
 var oauthClientCache map[string]*http.Client = make(map[string]*http.Client)
 
-func fnOauth2Get(ctx Context, doc *JDoc, params []string) interface{} {
+func fnOauth2(ctx Context, doc *JDoc, params []string) interface{} {
 	stats := ctx.Value(EelTotalStats).(*ServiceStats)
-	if params == nil || len(params) != 2 {
+	if params == nil || len(params) < 2 || len(params) > 4 {
 		ctx.Log().Error("error_type", "func_oauth2get", "op", "oauth2get", "cause", "wrong_number_of_parameters", "params", params)
 		stats.IncErrors()
 		AddError(ctx, SyntaxError{fmt.Sprintf("wrong number of parameters in call to fnOauth2Get function"), "oauth2get", params})
 		return nil
 	}
+	method := "GET"
+	if len(params) > 2 {
+		method = params[2]
+	}
+
 	oauthCredName := params[1]
 	var oauth2Credentials map[string]string
 	cp := GetCustomProperties(ctx)
@@ -293,7 +301,12 @@ func fnOauth2Get(ctx Context, doc *JDoc, params []string) interface{} {
 		client = conf.Client(context.Background())
 		oauthClientCache[oauthCredName] = client
 	}
-	req, err := http.NewRequest("GET", extractStringParam(params[0]), nil)
+	var buf *bytes.Buffer
+	if len(params) > 3 {
+		body := params[3]
+		buf = bytes.NewBuffer([]byte(body))
+	}
+	req, err := http.NewRequest(method, extractStringParam(params[0]), buf)
 	if err != nil {
 		ctx.Log().Error("error_type", "func_oauth2get", "op", "oauth2get", "cause", "bad_request", "params", params, "error", err)
 		AddError(ctx, SyntaxError{fmt.Sprintf("bad_request %s", err.Error()), "oauth2get", params})
