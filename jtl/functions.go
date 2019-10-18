@@ -26,6 +26,7 @@ import (
 	"fmt"
 	"golang.org/x/oauth2/clientcredentials"
 	"hash/fnv"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -301,7 +302,7 @@ func fnOauth2(ctx Context, doc *JDoc, params []string) interface{} {
 		client = conf.Client(context.Background())
 		oauthClientCache[oauthCredName] = client
 	}
-	var buf *bytes.Buffer
+	var buf io.Reader
 	if len(params) > 3 {
 		body := params[3]
 		buf = bytes.NewBuffer([]byte(body))
