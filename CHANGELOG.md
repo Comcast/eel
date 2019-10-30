@@ -6,6 +6,9 @@ This `CHANGELOG.md` implements the spirit of http://keepachangelog.com/.
 
 ## [1.35](https://github.com/Comcast/eel/compare/v1.34.0...dev) - [Unreleased]
 
+### Added
+* XRULES-15127: Updates to Profile Service Endpoint
+
 ## [1.34](https://github.com/Comcast/eel/compare/v1.33.0...v1.34.0) - 2019-10-17
 
 ### Added
