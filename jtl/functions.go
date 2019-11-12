@@ -341,6 +341,7 @@ func fnOauth2(ctx Context, doc *JDoc, params []string) interface{} {
 		AddError(ctx, SyntaxError{fmt.Sprintf("json_unmarshal_error %s", body), "oauth2get", params})
 		return nil
 	}
+
 	return ret
 }
 
