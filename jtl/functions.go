@@ -295,7 +295,6 @@ func fnOauth2(ctx Context, doc *JDoc, params []string) interface{} {
 		TokenURL:     tokenUrl,
 		Scopes:       scopes,
 	}
-	ctx.Log().Info("op", "mchiang", "clientId", clientId, "tokenUrl", tokenUrl, "scopes", scopes)
 
 	var client *http.Client
 	if client, ok = oauthClientCache[oauthCredName]; !ok {
@@ -342,7 +341,6 @@ func fnOauth2(ctx Context, doc *JDoc, params []string) interface{} {
 		AddError(ctx, SyntaxError{fmt.Sprintf("json_unmarshal_error %s", body), "oauth2get", params})
 		return nil
 	}
-	ctx.Log().Info("op", "mchiang", "ret", ret)
 
 	return ret
 }
