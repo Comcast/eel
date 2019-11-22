@@ -284,7 +284,7 @@ func LoadInboundPlugins(ctx Context, enablePlugins bool) {
 	}
 	// need sync path in inproc.go
 	if GetInboundPluginByType("WEBHOOK") != nil {
-		syncPath := GetInboundPluginByType("WEBHOOK").GetSettings().Parameters["EventProcPath"]
+		syncPath := apiBasePath + GetInboundPluginByType("WEBHOOK").GetSettings().Parameters["EventProcPath"].(string)
 		Gctx.AddConfigValue(EelSyncPath, syncPath)
 	} else {
 		Gctx.AddConfigValue(EelSyncPath, "")
