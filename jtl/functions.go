@@ -24,7 +24,6 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"golang.org/x/oauth2/clientcredentials"
 	"hash/fnv"
 	"io"
 	"io/ioutil"
@@ -39,6 +38,7 @@ import (
 	. "github.com/Comcast/eel/util"
 	"github.com/Knetic/govaluate"
 	"github.com/robertkrimen/otto"
+	"golang.org/x/oauth2/clientcredentials"
 )
 
 type (
@@ -208,6 +208,9 @@ func NewFunction(fn string) *JFunction {
 	case "log":
 		// logs parameter for debuging
 		return &JFunction{fnLog, 1, 1}
+	case "hash":
+		// hash a given string
+		return &JFunction{fnHash, 1, 1}
 	case "hashmod":
 		// hash a given string and then mod it by the given divider
 		return &JFunction{fnHashMod, 2, 2}
@@ -668,7 +671,7 @@ func fnJs(ctx Context, doc *JDoc, params []string) interface{} {
 	if err != nil {
 		ctx.Log().Error("error_type", "func_js", "op", "js", "cause", "vm_error", "params", params, "error", err.Error())
 		stats.IncErrors()
-		AddError(ctx, RuntimeError{fmt.Sprintf("js vm error: %s", err.Error), "js", params})
+		AddError(ctx, RuntimeError{fmt.Sprintf("js vm error: %s", err.Error()), "js", params})
 		return nil
 	}
 	if len(params) > 1 {
@@ -677,7 +680,7 @@ func fnJs(ctx Context, doc *JDoc, params []string) interface{} {
 		if err != nil {
 			ctx.Log().Error("error_type", "func_js", "op", "js", "cause", "vm_val_error", "params", params, "error", err.Error())
 			stats.IncErrors()
-			AddError(ctx, RuntimeError{fmt.Sprintf("js vm value error: %s", err.Error), "js", params})
+			AddError(ctx, RuntimeError{fmt.Sprintf("js vm value error: %s", err.Error()), "js", params})
 			return nil
 		}
 	}
@@ -696,7 +699,7 @@ func fnJs(ctx Context, doc *JDoc, params []string) interface{} {
 	if err != nil {
 		ctx.Log().Error("error_type", "func_js", "op", "js", "cause", "vm_val_conv_error", "params", params, "error", err.Error())
 		stats.IncErrors()
-		AddError(ctx, RuntimeError{fmt.Sprintf("js vm value conversion error: %s", err.Error), "js", params})
+		AddError(ctx, RuntimeError{fmt.Sprintf("js vm value conversion error: %s", err.Error()), "js", params})
 		return nil
 	}
 	return ret
@@ -1596,6 +1599,20 @@ func extractStringParam(param string) string {
 // ExecuteFunction executes a function on a given JSON document with given parameters.
 func (f *JFunction) ExecuteFunction(ctx Context, doc *JDoc, params []string) interface{} {
 	return f.fn(ctx, doc, params)
+}
+
+func fnHash(ctx Context, doc *JDoc, params []string) interface{} {
+	stats := ctx.Value(EelTotalStats).(*ServiceStats)
+	if params == nil || len(params) != 1 {
+		ctx.Log().Error("error_type", "func_hash", "op", "hash", "cause", "wrong_number_of_parameters", "params", params)
+		stats.IncErrors()
+		AddError(ctx, SyntaxError{fmt.Sprintf("wrong number of parameters in call to hash function"), "hash", params})
+		return ""
+	}
+	str := extractStringParam(params[0])
+	h := fnv.New32a()
+	h.Write([]byte(str))
+	return fmt.Sprintf("%d", h.Sum32())
 }
 
 func fnHashMod(ctx Context, doc *JDoc, params []string) interface{} {

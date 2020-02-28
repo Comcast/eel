@@ -6,6 +6,9 @@ This `CHANGELOG.md` implements the spirit of http://keepachangelog.com/.
 
 ## [1.37](https://github.com/Comcast/eel/compare/v1.36.0...dev) - [Unreleased]
 
+### Added
+* XRULES-16187: Pt 2 - Implement: Isolate flow executions in masheens
+
 ## [1.36](https://github.com/Comcast/eel/compare/v1.35.0...v1.36.0) - 2019-11-25
 
 ## [1.35](https://github.com/Comcast/eel/compare/v1.34.0...v1.35.0) - 2019-11-04
