@@ -929,7 +929,7 @@ func (h *HandlerConfiguration) ProcessEvent(ctx Context, event *JDoc) ([]EventPu
 			publisher.SetDebug(debug)
 			err := publisher.SetPublisherConfigs(configs)
 			if err != nil {
-				ctx.Log().Error("error_type", "process_event", "cause", "invalid_configs", "protocol", h.Protocol, "event", event.String(), "handler", h.Name, "configs", configs)
+				ctx.Log().Error("error_type", "process_event", "cause", "invalid_configs", "protocol", h.Protocol, "event", event.String(), "handler", h.Name, "configs", configs, "error", err)
 				continue
 			}
 			publisher.SetEndpoint(ep)
