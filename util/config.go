@@ -109,6 +109,7 @@ const (
 	EelHttpClient           = "Eel.HttpClient"
 	EelHttpTransport        = "Eel.HttpTransport"
 	EelRequestHeader        = "Eel.Header"
+	EelRequestQuery         = "Eel.Query"
 	EelNamedTransformations = "Eel.NamedTransformations"
 	EelHandlerConfig        = "Eel.HandlerConfig"
 	EelTenantId             = "Eel.TenantId"

@@ -39,6 +39,7 @@ func EventHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	ctx.AddValue("start_ts", time.Now().UnixNano())
 	ctx.AddValue(EelRequestHeader, r.Header)
+	ctx.AddValue(EelRequestQuery, r.URL.Query())
 	stats := ctx.Value(EelTotalStats).(*ServiceStats)
 	stats.IncInCount()
 	// adopt trace header if present

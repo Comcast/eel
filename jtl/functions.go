@@ -87,6 +87,10 @@ func NewFunction(fn string) *JFunction {
 		// returns a value given the http request header key, or all headers if no key is given
 		// header('mykey')
 		return &JFunction{fnHeader, 0, 1}
+	case "param":
+		// returns a value given the http request query string parameter key, or all headers if no key is given
+		// param('mykey')
+		return &JFunction{fnParam, 0, 1}
 	case "ident":
 		// returns input parameter unchanged, for debugging only
 		// ident('foo')
@@ -845,6 +849,37 @@ func fnHeader(ctx Context, doc *JDoc, params []string) interface{} {
 		return h.Get(key)
 	} else {
 		return h
+	}
+}
+
+// fnParam function to obtain request query string parameter value from incoming event by key.
+func fnParam(ctx Context, doc *JDoc, params []string) interface{} {
+	stats := ctx.Value(EelTotalStats).(*ServiceStats)
+	if params == nil || len(params) > 1 {
+		ctx.Log().Error("error_type", "func_param", "op", "param", "cause", "wrong_number_of_parameters", "params", params)
+		stats.IncErrors()
+		AddError(ctx, SyntaxError{"wrong number of parameters in call to param function", "param", params})
+		return ""
+	}
+	query := ctx.Value(EelRequestQuery)
+	if query == nil {
+		ctx.Log().Info("error_type", "func_param", "op", "param", "cause", "param_object_not_found")
+		stats.IncErrors()
+		AddError(ctx, RuntimeError{"query string parameter object not found in call to param function", "param", params})
+		return ""
+	}
+	q, ok := query.(url.Values)
+	if !ok {
+		ctx.Log().Info("error_type", "func_param", "op", "param", "cause", "param_object_not_valid")
+		AddError(ctx, RuntimeError{"query string parameter object not valid in call to param function", "param", params})
+		stats.IncErrors()
+		return ""
+	}
+	if len(params) == 1 && len(params[0]) > 2 {
+		key := extractStringParam(params[0])
+		return q.Get(key)
+	} else {
+		return q
 	}
 }
 

@@ -767,6 +767,29 @@ Example:
 {{case('{{/content/message}}', 'High WiFi','{{/content/device}} has returned to good Wi-Fi coverage','{{/content/message}}', 'Low WiFi','{{/content/device}} has returned to bad Wi-Fi coverage','{{/content/message}}')}}
 ```
 
+### param
+
+Returns query string parameter value(s) from incoming event url by key (key = parameter name). When the key parameter is omitted the entire query string parameter map will be returned.
+
+Syntax:
+
+```
+{{param(['<key>'])}}
+```
+
+Example:
+
+```
+{{param('foo')}}
+```
+
+When executing an event using the following url, the above expression will return "bar" as result:
+
+```
+"http://localhost:8080/v1/sync/events?foo=bar"
+```
+
+
 ### header
 
 Returns http header value from incoming event by key. When the key parameter is omitted the entire header map will be returned.
