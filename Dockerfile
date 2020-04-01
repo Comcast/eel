@@ -9,6 +9,7 @@ RUN apk update && \
     apk upgrade && \
     apk add $BUILD_PACKAGES && \
     go get -u github.com/Comcast/eel && \
+    cd test && go test -v && cd .. && \
     go build -o bin/eel
 
 EXPOSE 8080
