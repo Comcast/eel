@@ -9,7 +9,7 @@ RUN apk update && \
     apk upgrade && \
     apk add $BUILD_PACKAGES && \
     go get -u github.com/Comcast/eel && \
-    cd test && go test -v && cd .. && \
+    cd test && go test -v -cover && cd .. && \
     go build -o bin/eel
 
 
