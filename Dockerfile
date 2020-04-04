@@ -1,4 +1,4 @@
-FROM golang:1.8-alpine
+FROM golang:1.8-alpine AS builder
 
 ENV BUILD_PACKAGES="build-base git"
 
@@ -12,6 +12,16 @@ RUN apk update && \
     cd test && go test -v && cd .. && \
     go build -o bin/eel
 
-EXPOSE 8080
-CMD ./bin/dockereel.sh
 
+FROM alpine:latest
+RUN apk --no-cache add ca-certificates tzdata curl
+
+WORKDIR /go/src/github.com/Comcast/eel
+COPY --from=builder /go/src/github.com/Comcast/eel/bin ./bin
+COPY --from=builder /go/src/github.com/Comcast/eel/config-eel ./config-eel
+COPY --from=builder /go/src/github.com/Comcast/eel/config-handlers ./config-handlers
+COPY --from=builder /go/src/github.com/Comcast/eel/test/data ./test/data
+
+EXPOSE 8080
+
+CMD ./bin/dockereel.sh
