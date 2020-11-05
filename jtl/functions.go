@@ -146,6 +146,10 @@ func NewFunction(fn string) *JFunction {
 	case "join":
 		// merges two json documents into one, key conflicts are resolved at random
 		return &JFunction{fnJoin, 2, 2}
+	case "stringtojson":
+		// input is a string and output is json object
+		// input example:{\"timestamp\": 1602873483}
+		return &JFunction{fnStringToJson, 1, 1}
 	case "format":
 		// formats time string: format('<ms>',['<layout>'],['<timezone>']), example: format('1439962298000','Mon Jan 2 15:04:05 2006','PST')
 		return &JFunction{fnFormat, 1, 3}
@@ -1099,6 +1103,30 @@ func fnJoin(ctx Context, doc *JDoc, params []string) interface{} {
 		}
 		return docC.GetOriginalObject()
 	}
+}
+
+// fnStringToJson functions convert input string to json format. Input example:{\"timestamp\": 1602873483}
+func fnStringToJson(ctx Context, doc *JDoc, params []string) interface{} {
+	stats := ctx.Value(EelTotalStats).(*ServiceStats)
+	if params == nil || len(params) != 1 {
+		ctx.Log().Error("error_type", "func_stringtojson", "op", "stringToJson", "cause", "wrong_number_of_parameters", "params", params)
+		stats.IncErrors()
+		AddError(ctx, SyntaxError{fmt.Sprintf("wrong number of parameters in call to stringtojson function"), "stringtojson", params})
+		return nil
+	}
+
+	inputString := extractStringParam(params[0])
+	// remove escape
+	inputStringClean := strings.ReplaceAll(inputString, `\"`, `"`)
+
+	docA, err := NewJDocFromString(inputStringClean)
+	if err != nil {
+		ctx.Log().Error("error_type", "func_stringtojson", "op", "stringToJson", "cause", "non_json_parameter", "params", params, "error", err.Error())
+		stats.IncErrors()
+		AddError(ctx, SyntaxError{fmt.Sprintf("non json parameters in call to stringtojson function"), "stringtojson", params})
+		return nil
+	}
+	return docA.GetOriginalObject()
 }
 
 // fnProp function pulls property from custom properties section in config.json.
