@@ -298,6 +298,22 @@ Example:
 {{join('{{eval('/code/data')}}','{\"protocol\":\"apns\"}')}}
 ```
 
+### stringtojson
+
+Cconverts string to json object.
+
+Syntax:
+
+```
+{{stringtojson('<string>')}}
+```
+
+Example:
+
+```
+{{stringtojson('{\"protocol\":\"apns\"}')}}
+```
+
 ### format
 
 Format human readable time strings from epoch ms.
