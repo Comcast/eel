@@ -128,6 +128,9 @@ func NewFunction(fn string) *JFunction {
 	case "match":
 		// apply regex to string value and return true if matches: match('<string>', '<regex>')
 		return &JFunction{fnMatch, 2, 2}
+	case "hassuffix":
+		// check whether or not a string has suffix: match('<string>', '<suffix>')
+		return &JFunction{fnHasSuffix, 2, 2}
 	case "and":
 		// boolean and: and('<bool>', '<bool>', ...)
 		return &JFunction{fnAnd, 1, 100}
@@ -453,6 +456,18 @@ func fnMatch(ctx Context, doc *JDoc, params []string) interface{} {
 		return nil
 	}
 	return reg.MatchString(extractStringParam(params[0]))
+}
+
+// fnHasSuffix check whether a string ends with suffix.
+func fnHasSuffix(ctx Context, doc *JDoc, params []string) interface{} {
+	stats := ctx.Value(EelTotalStats).(*ServiceStats)
+	if params == nil || len(params) != 2 {
+		ctx.Log().Error("error_type", "func_hassuffix", "op", "match", "cause", "wrong_number_of_parameters", "params", params)
+		stats.IncErrors()
+		AddError(ctx, SyntaxError{fmt.Sprintf("wrong number of parameters in call to hassuffix function"), "hassuffix", params})
+		return nil
+	}
+	return strings.HasSuffix(extractStringParam(params[0]), extractStringParam(params[1]))
 }
 
 // fnAlt alternative function.
