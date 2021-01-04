@@ -731,6 +731,28 @@ Example return value:
 foo
 ```
 
+### hassuffix
+
+Check whether a string ends with suffix.
+
+Syntax:
+
+```
+{{hassuffix('<string>', '<string>')}}
+```
+
+Example:
+
+```
+{{hassuffix('foo', 'oo')}}
+```
+
+Example return value:
+
+```
+true
+```
+
 ### substr
 
 Returns substring of input string.
