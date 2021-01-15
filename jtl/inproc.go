@@ -123,6 +123,8 @@ func EventHandler(w http.ResponseWriter, r *http.Request) {
 			ctx.AddLogValue(k, ev)
 		}
 	}
+	// !! for testing purpose
+	ctx.Log().Info("op", "EventHandler", "eventBody", string(body))
 	if debug || sync {
 		ctx.Log().Info("status", "200", "action", "accepted")
 		ctx.Log().Metric("accepted", M_Namespace, "xrs", M_Metric, "accepted", M_Unit, "Count", M_Dims, "app="+AppId+"&env="+EnvName+"&instance="+InstanceName, M_Val, 1.0)
