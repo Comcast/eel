@@ -161,7 +161,7 @@ func EventHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		dp := GetWorkDispatcher(ctx, tenantId)
 		// !!!
-		ctx.Log().("tenantId", tenantId, "dp.tenant", dp.tenant)
+		ctx.Log().Info("tenantId", tenantId, "dp.tenant", dp.tenant)
 		if dp != nil {
 			work := WorkRequest{Raw: string(body), Event: evt, Ctx: ctx}
 			select {
