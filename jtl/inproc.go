@@ -54,11 +54,15 @@ func EventHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	// adopt tenant id if present
 	tenantHeaderKey := GetConfig(ctx).HttpTenantHeader
+
 	if r.Header.Get(tenantHeaderKey) != "" {
 		ctx.AddValue(EelTenantId, r.Header.Get(tenantHeaderKey))
 		ctx.AddValue(tenantHeaderKey, r.Header.Get(tenantHeaderKey))
 		ctx.AddLogValue(LogTenantId, r.Header.Get(tenantHeaderKey))
 	}
+	// !!
+	ctx.Log().Info("tenantHeaderKey", tenantHeaderKey, "headerTenant", r.Header.Get(tenantHeaderKey))
+
 	w.Header().Set("Content-Type", "application/json")
 	if r.ContentLength > GetConfig(ctx).MaxMessageSize {
 		ctx.Log().Error("status", "413", "action", "rejected", "error_type", "rejected", "cause", "message_too_large", "msg_length", r.ContentLength, "error", "message too large")
