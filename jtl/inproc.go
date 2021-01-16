@@ -30,6 +30,7 @@ import (
 // If certain headers are set (X-Debug, X-Sync) a response will be returned immediately bypassing the worker pool queue.
 func EventHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := Gctx.SubContext()
+	ctx.Log().Info("op", "startEventHandler")
 	debug := false
 	sync := false
 	if r.Header.Get("X-Debug") == "true" {
@@ -159,6 +160,8 @@ func EventHandler(w http.ResponseWriter, r *http.Request) {
 			tenantId = ctx.Value(EelTenantId).(string)
 		}
 		dp := GetWorkDispatcher(ctx, tenantId)
+		// !!!
+		ctx.Log().("tenantId", tenantId, "dp.tenant", dp.tenant)
 		if dp != nil {
 			work := WorkRequest{Raw: string(body), Event: evt, Ctx: ctx}
 			select {
