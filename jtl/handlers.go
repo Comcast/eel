@@ -873,6 +873,9 @@ func (h *HandlerConfiguration) ProcessEvent(ctx Context, event *JDoc) ([]EventPu
 		return make([]EventPublisher, 0), errors.New("no endpoints")
 	}*/
 	// prepare payload
+
+	defer ctx.HandlePanic()
+
 	payload := ""
 	var tfd *JDoc
 	if h.Transformation != nil {
@@ -893,6 +896,9 @@ func (h *HandlerConfiguration) ProcessEvent(ctx Context, event *JDoc) ([]EventPu
 			ctx.ConfigValue(EelTraceLogger).(*TraceLogger).TraceLog(ctx, event, false)
 		}
 	}
+
+	ctx.Log().Info("op", "xxx", "action", "h.Transformation")
+
 	// prepare configs
 	configs := make(map[string]string, 0)
 	if h.PublisherConfigs != nil {
