@@ -901,8 +901,6 @@ func (h *HandlerConfiguration) ProcessEvent(ctx Context, event *JDoc) ([]EventPu
 		}
 	}
 
-	ctx.Log().Info("op", "xxx", "action", "FilterAfterTransformation")
-
 	// filtering
 	if h.FilterAfterTransformation {
 		if h.filterEvent(ctx, tfd) {
@@ -912,15 +910,11 @@ func (h *HandlerConfiguration) ProcessEvent(ctx Context, event *JDoc) ([]EventPu
 	if h.applyFilters(ctx, tfd, true) {
 		return make([]EventPublisher, 0), nil
 	}
-
-	ctx.Log().Info("op", "xxx", "action", "applyFilters")
-
 	// prepare publisher(s)
 	publishers := make([]EventPublisher, 0)
 	for _, ep := range endpoints {
 		for _, rp := range relativePaths {
 			publisher := NewEventPublisher(ctx.SubContext(), h.Protocol)
-			ctx.Log().Info("op", "xxx", "protocol", h.Protocol, "publisher", publisher)
 			if publisher == nil {
 				ctx.Log().Error("error_type", "process_event", "cause", "unsupported_protocol", "protocol", h.Protocol, "event", event.String(), "handler", h.Name)
 				continue
@@ -943,7 +937,6 @@ func (h *HandlerConfiguration) ProcessEvent(ctx Context, event *JDoc) ([]EventPu
 				publisher.SetVerb(h.Verb)
 			}
 			publishers = append(publishers, publisher)
-			ctx.Log().Info("op", "xxx", "action", "publisher", "numPublisher", len(publishers))
 		}
 	}
 	return publishers, nil
