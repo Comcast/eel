@@ -191,6 +191,9 @@ func NewFunction(fn string) *JFunction {
 	case "tenant":
 		// returns tenant of current handler
 		return &JFunction{fnTenant, 0, 0}
+	case "partner":
+		// returns partner of current handler
+		return &JFunction{fnPartner, 0, 0}
 	case "traceid":
 		// returns current trace id used for logging
 		return &JFunction{fnTraceId, 0, 0}
@@ -1206,15 +1209,69 @@ func fnTenant(ctx Context, doc *JDoc, params []string) interface{} {
 		AddError(ctx, RuntimeError{fmt.Sprintf("current handler not found in call to tenant function"), "tenant", params})
 		return ""
 	}
+	//Add logic to separating tenant and partner
+	allowPartner := GetConfig(ctx).AllowPartner
 	if h.TenantId == "_default" {
 		//The default tenant handler is used. We need to drill-down into context to find out the actual tenant
 		tenantHeaderKey := GetConfig(ctx).HttpTenantHeader
 		if ctx.Value(tenantHeaderKey) != "" {
-			return ctx.Value(tenantHeaderKey)
+			combinedTenant := ctx.Value(tenantHeaderKey).(string)
+			tenant := ""
+			if allowPartner && strings.LastIndex(combinedTenant, "_") > 0 && strings.LastIndex(combinedTenant, "_") < len(combinedTenant)-1 {
+				tenant = combinedTenant[:strings.LastIndex(combinedTenant, "_")]
+			} else {
+				tenant = combinedTenant
+			}
+			return tenant
 		}
 	}
+	combinedTenant := h.TenantId
+	tenant := ""
+	if allowPartner && strings.LastIndex(combinedTenant, "_") > 0 && strings.LastIndex(combinedTenant, "_") < len(combinedTenant)-1 {
+		tenant = combinedTenant[:strings.LastIndex(combinedTenant, "_")]
+	} else {
+		tenant = combinedTenant
+	}
+	return tenant
+}
 
-	return h.TenantId
+func fnPartner(ctx Context, doc *JDoc, params []string) interface{} {
+	stats := ctx.Value(EelTotalStats).(*ServiceStats)
+	if params == nil || params[0] != "" {
+		ctx.Log().Error("error_type", "func_partner", "op", "partner", "cause", "no_parameters_expected", "params", params)
+		stats.IncErrors()
+		AddError(ctx, SyntaxError{fmt.Sprintf("no parameters expected in call to partner function"), "partner", params})
+		return ""
+	}
+	h := GetCurrentHandlerConfig(ctx)
+	if h == nil {
+		ctx.Log().Error("error_type", "func_partner", "op", "partner", "cause", "no_handler", "params", params)
+		stats.IncErrors()
+		AddError(ctx, RuntimeError{fmt.Sprintf("current handler not found in call to partner function"), "partner", params})
+		return ""
+	}
+	//Add logic to separating tenant and partner
+	allowPartner := GetConfig(ctx).AllowPartner
+	if h.TenantId == "_default" {
+		//The default tenant handler is used. We need to drill-down into context to find out the actual tenant
+		tenantHeaderKey := GetConfig(ctx).HttpTenantHeader
+		if ctx.Value(tenantHeaderKey) != "" {
+			if ctx.Value(tenantHeaderKey) != "" {
+				combinedTenant := ctx.Value(tenantHeaderKey).(string)
+				partner := ""
+				if allowPartner && strings.LastIndex(combinedTenant, "_") > 0 && strings.LastIndex(combinedTenant, "_") < len(combinedTenant)-1 {
+					partner = combinedTenant[strings.LastIndex(combinedTenant, "_")+1:]
+				}
+				return partner
+			}
+		}
+	}
+	combinedTenant := h.TenantId
+	partner := ""
+	if allowPartner && strings.LastIndex(combinedTenant, "_") > 0 && strings.LastIndex(combinedTenant, "_") < len(combinedTenant)-1 {
+		partner = combinedTenant[strings.LastIndex(combinedTenant, "_")+1:]
+	}
+	return partner
 }
 
 // fnTransform function applies transformation (given by name) to current document.

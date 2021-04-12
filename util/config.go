@@ -70,6 +70,7 @@ type EelSettings struct {
 	UseRetryQueue                  bool
 	Version                        string
 	HandlerConfigPath              string
+	AllowPartner                   bool
 }
 
 // EelDebugLogParams struct is an optional debug white list and log param config in eel settings

@@ -36,5 +36,6 @@
 		"LogParams": {
 			"payload": "{{/}}"
 		}		
-	}
+	},
+	"AllowPartner": false
 }
