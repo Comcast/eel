@@ -6,6 +6,10 @@ This `CHANGELOG.md` implements the spirit of http://keepachangelog.com/.
 
 ## [1.40](https://github.com/Comcast/eel/compare/v1.39.0...dev) - [Unreleased]
 
+### Added
+* AllowPartner config parameter
+* partner() function
+
 ## [1.39](https://github.com/Comcast/eel/compare/v1.38.0...v1.39.0) - 2020-12-04
 
 ## [1.38](https://github.com/Comcast/eel/compare/v1.37.0...v1.38.0) - 2020-11-16
