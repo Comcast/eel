@@ -1214,7 +1214,7 @@ func fnTenant(ctx Context, doc *JDoc, params []string) interface{} {
 	if h.TenantId == "_default" {
 		//The default tenant handler is used. We need to drill-down into context to find out the actual tenant
 		tenantHeaderKey := GetConfig(ctx).HttpTenantHeader
-		if ctx.Value(tenantHeaderKey) != "" {
+		if ctx.Value(tenantHeaderKey) != nil {
 			combinedTenant := ctx.Value(tenantHeaderKey).(string)
 			tenant := ""
 			if allowPartner && strings.LastIndex(combinedTenant, "_") > 0 && strings.LastIndex(combinedTenant, "_") < len(combinedTenant)-1 {
@@ -1254,9 +1254,16 @@ func fnPartner(ctx Context, doc *JDoc, params []string) interface{} {
 	allowPartner := GetConfig(ctx).AllowPartner
 	if h.TenantId == "_default" {
 		//The default tenant handler is used. We need to drill-down into context to find out the actual tenant
+
+		//if partner header is present, return the partner header value as partner
+		partnerHeaderKey := GetConfig(ctx).HttpPartnerHeader
+		if allowPartner && ctx.Value(partnerHeaderKey) != nil {
+			return ctx.Value(partnerHeaderKey)
+		}
+
 		tenantHeaderKey := GetConfig(ctx).HttpTenantHeader
-		if ctx.Value(tenantHeaderKey) != "" {
-			if ctx.Value(tenantHeaderKey) != "" {
+		if ctx.Value(tenantHeaderKey) != nil {
+			if ctx.Value(tenantHeaderKey) != nil {
 				combinedTenant := ctx.Value(tenantHeaderKey).(string)
 				partner := ""
 				if allowPartner && strings.LastIndex(combinedTenant, "_") > 0 && strings.LastIndex(combinedTenant, "_") < len(combinedTenant)-1 {

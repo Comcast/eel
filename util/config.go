@@ -48,6 +48,7 @@ type EelSettings struct {
 	HttpTransactionHeader          string
 	HttpDebugHeader                string
 	HttpTenantHeader               string
+	HttpPartnerHeader              string
 	HttpTimeout                    time.Duration
 	ResponseHeaderTimeout          time.Duration
 	MaxIdleConnsPerHost            int
@@ -113,6 +114,7 @@ const (
 	EelNamedTransformations = "Eel.NamedTransformations"
 	EelHandlerConfig        = "Eel.HandlerConfig"
 	EelTenantId             = "Eel.TenantId"
+	EelPartnerId            = "Eel.PartnerId"
 	EelCustomProperties     = "Eel.CustomProperties"
 	EelRetryService         = "Eel.RetryService"
 	EelErrors               = "Eel.Errors"
@@ -121,6 +123,7 @@ const (
 	EelCache                = "Eel.Cache"
 	EelTenantIds            = "Eel.TenantIds"
 	LogTenantId             = "gears.app.id"
+	LogPartnerId            = "gears.partner.id"
 )
 
 const (

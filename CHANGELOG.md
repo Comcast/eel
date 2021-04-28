@@ -9,6 +9,7 @@ This `CHANGELOG.md` implements the spirit of http://keepachangelog.com/.
 ### Added
 * AllowPartner config parameter
 * partner() function
+* Add logic to handle http partner header
 
 ## [1.39](https://github.com/Comcast/eel/compare/v1.38.0...v1.39.0) - 2020-12-04
 
