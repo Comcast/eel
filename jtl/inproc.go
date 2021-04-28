@@ -59,6 +59,15 @@ func EventHandler(w http.ResponseWriter, r *http.Request) {
 		ctx.AddValue(tenantHeaderKey, r.Header.Get(tenantHeaderKey))
 		ctx.AddLogValue(LogTenantId, r.Header.Get(tenantHeaderKey))
 	}
+
+	// adopt partner id if present
+	partnerHeaderKey := GetConfig(ctx).HttpPartnerHeader
+	if r.Header.Get(partnerHeaderKey) != "" {
+		ctx.AddValue(EelPartnerId, r.Header.Get(partnerHeaderKey))
+		ctx.AddValue(partnerHeaderKey, r.Header.Get(partnerHeaderKey))
+		ctx.AddLogValue(LogPartnerId, r.Header.Get(partnerHeaderKey))
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 	if r.ContentLength > GetConfig(ctx).MaxMessageSize {
 		ctx.Log().Error("status", "413", "action", "rejected", "error_type", "rejected", "cause", "message_too_large", "msg_length", r.ContentLength, "error", "message too large")
