@@ -34,10 +34,12 @@ func handleEvent(ctx Context, stats *ServiceStats, event *JDoc, raw string, debu
 	}
 	initialCtx := ctx
 	ctx = ctx.SubContext()
+	allowPartner := GetConfig(ctx).AllowPartner
 	var wg sync.WaitGroup
 	for _, handler := range handlers {
 		ctx.AddLogValue("topic", handler.Topic)
-		ctx.AddLogValue(LogTenantId, handler.TenantId)
+		ctx.AddLogValue(LogTenantId, ExtractAppId(handler.TenantId, allowPartner))
+		ctx.AddLogValue(LogPartnerId, ExtractPartnerId(handler.TenantId, allowPartner))
 		ctx.AddLogValue("handler", handler.Name)
 		publishers, err := handler.ProcessEvent(initialCtx.SubContext(), event)
 		if err != nil {
