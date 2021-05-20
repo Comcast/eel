@@ -687,6 +687,23 @@ Example return value:
 tenant1
 ```
 
+### partner
+
+Returns current partner id. Useful when AllowPartner config is set to true (default is false) and has handler folder name with `{{tenantId}}_{{partnerId}}` format.
+
+Syntax:
+
+```
+{{partner()}}
+```
+
+Example return value for handler folder named `tenant1_partner1`:
+
+```
+partner1
+```
+will return empty string if AllowParter is set to false or the folder name isn't constructed as the above way.
+
 ### upper
 
 Returns uppercase version of input string.

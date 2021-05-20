@@ -4,7 +4,14 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 This `CHANGELOG.md` implements the spirit of http://keepachangelog.com/.
 
-## [1.40](https://github.com/Comcast/eel/compare/v1.39.0...dev) - [Unreleased]
+## [1.41](https://github.com/Comcast/eel/compare/v1.40.0...dev) - [Unreleased]
+
+## [1.40](https://github.com/Comcast/eel/compare/v1.39.0...v1.40.0) - 2021-05-10
+
+### Added
+* AllowPartner config parameter
+* partner() function
+* Add logic to handle http partner header
 
 ## [1.39](https://github.com/Comcast/eel/compare/v1.38.0...v1.39.0) - 2020-12-04
 
