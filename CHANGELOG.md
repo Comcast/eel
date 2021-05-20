@@ -6,6 +6,10 @@ This `CHANGELOG.md` implements the spirit of http://keepachangelog.com/.
 
 ## [1.41](https://github.com/Comcast/eel/compare/v1.40.0...dev) - [Unreleased]
 
+### Added
+* Logging for partner Id
+* Covert to go mod
+
 ## [1.40](https://github.com/Comcast/eel/compare/v1.39.0...v1.40.0) - 2021-05-10
 
 ### Added
