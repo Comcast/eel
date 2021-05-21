@@ -72,6 +72,7 @@ type EelSettings struct {
 	Version                        string
 	HandlerConfigPath              string
 	AllowPartner                   bool
+	DefaultPartner                 string
 }
 
 // EelDebugLogParams struct is an optional debug white list and log param config in eel settings

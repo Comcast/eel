@@ -142,12 +142,12 @@ func ExtractAppId(tenant string, allowPartner bool) string {
 	return appId
 }
 
-func ExtractPartnerId(tenant string, allowPartner bool) string {
+func ExtractPartnerId(tenant string, allowPartner bool, defaultPartner string) string {
 	if !allowPartner {
 		return ""
 	}
 	combinedTenant := tenant
-	partnerId := "comcast"
+	partnerId := defaultPartner
 	if strings.LastIndex(combinedTenant, "_") > 0 && strings.LastIndex(combinedTenant, "_") < len(combinedTenant)-1 {
 		partnerId = combinedTenant[strings.LastIndex(combinedTenant, "_")+1:]
 	}

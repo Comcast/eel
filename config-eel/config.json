@@ -38,5 +38,6 @@
 			"payload": "{{/}}"
 		}		
 	},
-	"AllowPartner": false
+	"AllowPartner": false,
+	"DefaultPartner": ""
 }
