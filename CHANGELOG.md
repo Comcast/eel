@@ -21,6 +21,13 @@ This `CHANGELOG.md` implements the spirit of http://keepachangelog.com/.
 
 ## [1.38](https://github.com/Comcast/eel/compare/v1.37.0...v1.38.0) - 2020-11-16
 
+### Added
+* XRULES-20200606: Add function 'param' to read query string parameters of incoming event url
+* XRULES-20200606: Add use of HTTP_PROXY environment variable to send data via a proxy
+
+### Updated
+* XRULES-20200606: Docker build; Make smaller runtime image by using multi-stage build, and enable testing
+
 ## [1.37](https://github.com/Comcast/eel/compare/v1.36.0...v1.37.0) - 2020-03-09
 
 ### Added

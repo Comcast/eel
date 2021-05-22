@@ -75,6 +75,7 @@ func InitHttpTransportWithDial(ctx Context, dial func(network, addr string) (net
 	tr := &http.Transport{
 		MaxIdleConnsPerHost:   GetConfig(ctx).MaxIdleConnsPerHost,
 		ResponseHeaderTimeout: GetConfig(ctx).ResponseHeaderTimeout * time.Millisecond,
+		Proxy: http.ProxyFromEnvironment,
 		Dial: dial,
 	}
 	if GetConfig(ctx).CloseIdleConnectionIntervalSec > 0 && !GetConfig(ctx).CloseIdleConnectionsStarted {
