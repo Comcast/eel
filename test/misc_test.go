@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"testing"
 	"time"
 
@@ -995,6 +996,44 @@ func TestParserInvalidFunction3(t *testing.T) {
 	_, err := NewJExpr(test)
 	if err == nil {
 		t.Errorf("missing error for illegal function %s\n", test)
+	}
+}
+
+func TestParserSelectParam(t *testing.T) {
+	initTests("../config-handlers")
+	e1, err := NewJDocFromString(event1)
+	if err != nil {
+		t.Fatal("could not get event1")
+	}
+
+	// normal case
+	test1 := `{{param('mykey')}}`
+	jexpr, err := NewJExpr(test1)
+	if err != nil {
+		t.Errorf("error: %s\n", err.Error())
+	}
+	query := make(url.Values)
+	query.Add("mykey", "myvalue")
+	Gctx.AddValue(EelRequestQuery, query)
+	expected := "myvalue"
+	result := jexpr.Execute(Gctx, e1)
+	if result.(string) != expected {
+		t.Errorf("wrong parsing result: %v expected: %v\n", result, expected)
+	}
+
+	// missing parameter
+	test2 := `{{param('otherkey')}}`
+	jexpr, err = NewJExpr(test2)
+	if err != nil {
+		t.Errorf("error: %s\n", err.Error())
+	}
+	query = make(url.Values)
+	query.Add("mykey", "myvalue")
+	Gctx.AddValue(EelRequestQuery, query)
+	expected = ""
+	result = jexpr.Execute(Gctx, e1)
+	if result.(string) != expected {
+		t.Errorf("wrong parsing result: %v expected: %v\n", result, expected)
 	}
 }
 
