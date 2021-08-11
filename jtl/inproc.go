@@ -32,6 +32,7 @@ func EventHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := Gctx.SubContext()
 	debug := false
 	sync := false
+	allowPartner := GetConfig(ctx).AllowPartner
 	if r.Header.Get("X-Debug") == "true" {
 		debug = true
 	} else if r.Header.Get("X-Sync") == "true" || r.URL.Path == Gctx.ConfigValue(EelSyncPath).(string) {
@@ -39,6 +40,7 @@ func EventHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	ctx.AddValue("start_ts", time.Now().UnixNano())
 	ctx.AddValue(EelRequestHeader, r.Header)
+	ctx.AddValue(EelRequestQuery, r.URL.Query())
 	stats := ctx.Value(EelTotalStats).(*ServiceStats)
 	stats.IncInCount()
 	// adopt trace header if present
@@ -57,8 +59,17 @@ func EventHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Header.Get(tenantHeaderKey) != "" {
 		ctx.AddValue(EelTenantId, r.Header.Get(tenantHeaderKey))
 		ctx.AddValue(tenantHeaderKey, r.Header.Get(tenantHeaderKey))
-		ctx.AddLogValue(LogTenantId, r.Header.Get(tenantHeaderKey))
+		ctx.AddLogValue(LogTenantId, ExtractAppId(r.Header.Get(tenantHeaderKey), allowPartner))
 	}
+
+	// adopt partner id if present
+	partnerHeaderKey := GetConfig(ctx).HttpPartnerHeader
+	if r.Header.Get(partnerHeaderKey) != "" {
+		ctx.AddValue(EelPartnerId, r.Header.Get(partnerHeaderKey))
+		ctx.AddValue(partnerHeaderKey, r.Header.Get(partnerHeaderKey))
+		ctx.AddLogValue(LogPartnerId, r.Header.Get(partnerHeaderKey))
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 	if r.ContentLength > GetConfig(ctx).MaxMessageSize {
 		ctx.Log().Error("status", "413", "action", "rejected", "error_type", "rejected", "cause", "message_too_large", "msg_length", r.ContentLength, "error", "message too large")

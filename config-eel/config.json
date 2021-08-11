@@ -19,6 +19,7 @@
     "DuplicateTimeout": 0,
     "HttpTransactionHeader": "X-B3-TraceId",
     "HttpTenantHeader": "Xrs-Tenant-Id",
+    "HttpPartnerHeader": "Partner-Id",
 	"HttpDebugHeader": "X-Debug",
     "CustomProperties": {
         "key" : "value"
@@ -36,5 +37,7 @@
 		"LogParams": {
 			"payload": "{{/}}"
 		}		
-	}
+	},
+	"AllowPartner": false,
+	"DefaultPartner": ""
 }

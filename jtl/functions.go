@@ -87,6 +87,10 @@ func NewFunction(fn string) *JFunction {
 		// returns a value given the http request header key, or all headers if no key is given
 		// header('mykey')
 		return &JFunction{fnHeader, 0, 1}
+	case "param":
+		// returns a value given the http request query string parameter key, or all headers if no key is given
+		// param('mykey')
+		return &JFunction{fnParam, 0, 1}
 	case "ident":
 		// returns input parameter unchanged, for debugging only
 		// ident('foo')
@@ -191,6 +195,9 @@ func NewFunction(fn string) *JFunction {
 	case "tenant":
 		// returns tenant of current handler
 		return &JFunction{fnTenant, 0, 0}
+	case "partner":
+		// returns partner of current handler
+		return &JFunction{fnPartner, 0, 0}
 	case "traceid":
 		// returns current trace id used for logging
 		return &JFunction{fnTraceId, 0, 0}
@@ -867,6 +874,37 @@ func fnHeader(ctx Context, doc *JDoc, params []string) interface{} {
 	}
 }
 
+// fnParam function to obtain request query string parameter value from incoming event by key.
+func fnParam(ctx Context, doc *JDoc, params []string) interface{} {
+	stats := ctx.Value(EelTotalStats).(*ServiceStats)
+	if params == nil || len(params) > 1 {
+		ctx.Log().Error("error_type", "func_param", "op", "param", "cause", "wrong_number_of_parameters", "params", params)
+		stats.IncErrors()
+		AddError(ctx, SyntaxError{"wrong number of parameters in call to param function", "param", params})
+		return ""
+	}
+	query := ctx.Value(EelRequestQuery)
+	if query == nil {
+		ctx.Log().Info("error_type", "func_param", "op", "param", "cause", "param_object_not_found")
+		stats.IncErrors()
+		AddError(ctx, RuntimeError{"query string parameter object not found in call to param function", "param", params})
+		return ""
+	}
+	q, ok := query.(url.Values)
+	if !ok {
+		ctx.Log().Info("error_type", "func_param", "op", "param", "cause", "param_object_not_valid")
+		AddError(ctx, RuntimeError{"query string parameter object not valid in call to param function", "param", params})
+		stats.IncErrors()
+		return ""
+	}
+	if len(params) == 1 && len(params[0]) > 2 {
+		key := extractStringParam(params[0])
+		return q.Get(key)
+	} else {
+		return q
+	}
+}
+
 // fnUuid return a new uuid.
 func fnUuid(ctx Context, doc *JDoc, params []string) interface{} {
 	stats := ctx.Value(EelTotalStats).(*ServiceStats)
@@ -1206,15 +1244,76 @@ func fnTenant(ctx Context, doc *JDoc, params []string) interface{} {
 		AddError(ctx, RuntimeError{fmt.Sprintf("current handler not found in call to tenant function"), "tenant", params})
 		return ""
 	}
+	//Add logic to separating tenant and partner
+	allowPartner := GetConfig(ctx).AllowPartner
 	if h.TenantId == "_default" {
 		//The default tenant handler is used. We need to drill-down into context to find out the actual tenant
 		tenantHeaderKey := GetConfig(ctx).HttpTenantHeader
-		if ctx.Value(tenantHeaderKey) != "" {
-			return ctx.Value(tenantHeaderKey)
+		if ctx.Value(tenantHeaderKey) != nil {
+			combinedTenant := ctx.Value(tenantHeaderKey).(string)
+			tenant := ""
+			if allowPartner && strings.LastIndex(combinedTenant, "_") > 0 && strings.LastIndex(combinedTenant, "_") < len(combinedTenant)-1 {
+				tenant = combinedTenant[:strings.LastIndex(combinedTenant, "_")]
+			} else {
+				tenant = combinedTenant
+			}
+			return tenant
 		}
 	}
+	combinedTenant := h.TenantId
+	tenant := ""
+	if allowPartner && strings.LastIndex(combinedTenant, "_") > 0 && strings.LastIndex(combinedTenant, "_") < len(combinedTenant)-1 {
+		tenant = combinedTenant[:strings.LastIndex(combinedTenant, "_")]
+	} else {
+		tenant = combinedTenant
+	}
+	return tenant
+}
 
-	return h.TenantId
+func fnPartner(ctx Context, doc *JDoc, params []string) interface{} {
+	stats := ctx.Value(EelTotalStats).(*ServiceStats)
+	if params == nil || params[0] != "" {
+		ctx.Log().Error("error_type", "func_partner", "op", "partner", "cause", "no_parameters_expected", "params", params)
+		stats.IncErrors()
+		AddError(ctx, SyntaxError{fmt.Sprintf("no parameters expected in call to partner function"), "partner", params})
+		return ""
+	}
+	h := GetCurrentHandlerConfig(ctx)
+	if h == nil {
+		ctx.Log().Error("error_type", "func_partner", "op", "partner", "cause", "no_handler", "params", params)
+		stats.IncErrors()
+		AddError(ctx, RuntimeError{fmt.Sprintf("current handler not found in call to partner function"), "partner", params})
+		return ""
+	}
+	//Add logic to separating tenant and partner
+	allowPartner := GetConfig(ctx).AllowPartner
+	if h.TenantId == "_default" {
+		//The default tenant handler is used. We need to drill-down into context to find out the actual tenant
+
+		//if partner header is present, return the partner header value as partner
+		partnerHeaderKey := GetConfig(ctx).HttpPartnerHeader
+		if allowPartner && ctx.Value(partnerHeaderKey) != nil {
+			return ctx.Value(partnerHeaderKey)
+		}
+
+		tenantHeaderKey := GetConfig(ctx).HttpTenantHeader
+		if ctx.Value(tenantHeaderKey) != nil {
+			if ctx.Value(tenantHeaderKey) != nil {
+				combinedTenant := ctx.Value(tenantHeaderKey).(string)
+				partner := ""
+				if allowPartner && strings.LastIndex(combinedTenant, "_") > 0 && strings.LastIndex(combinedTenant, "_") < len(combinedTenant)-1 {
+					partner = combinedTenant[strings.LastIndex(combinedTenant, "_")+1:]
+				}
+				return partner
+			}
+		}
+	}
+	combinedTenant := h.TenantId
+	partner := ""
+	if allowPartner && strings.LastIndex(combinedTenant, "_") > 0 && strings.LastIndex(combinedTenant, "_") < len(combinedTenant)-1 {
+		partner = combinedTenant[strings.LastIndex(combinedTenant, "_")+1:]
+	}
+	return partner
 }
 
 // fnTransform function applies transformation (given by name) to current document.

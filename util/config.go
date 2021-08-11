@@ -48,6 +48,7 @@ type EelSettings struct {
 	HttpTransactionHeader          string
 	HttpDebugHeader                string
 	HttpTenantHeader               string
+	HttpPartnerHeader              string
 	HttpTimeout                    time.Duration
 	ResponseHeaderTimeout          time.Duration
 	MaxIdleConnsPerHost            int
@@ -70,6 +71,8 @@ type EelSettings struct {
 	UseRetryQueue                  bool
 	Version                        string
 	HandlerConfigPath              string
+	AllowPartner                   bool
+	DefaultPartner                 string
 }
 
 // EelDebugLogParams struct is an optional debug white list and log param config in eel settings
@@ -109,9 +112,11 @@ const (
 	EelHttpClient           = "Eel.HttpClient"
 	EelHttpTransport        = "Eel.HttpTransport"
 	EelRequestHeader        = "Eel.Header"
+	EelRequestQuery         = "Eel.Query"
 	EelNamedTransformations = "Eel.NamedTransformations"
 	EelHandlerConfig        = "Eel.HandlerConfig"
 	EelTenantId             = "Eel.TenantId"
+	EelPartnerId            = "Eel.PartnerId"
 	EelCustomProperties     = "Eel.CustomProperties"
 	EelRetryService         = "Eel.RetryService"
 	EelErrors               = "Eel.Errors"
@@ -120,6 +125,7 @@ const (
 	EelCache                = "Eel.Cache"
 	EelTenantIds            = "Eel.TenantIds"
 	LogTenantId             = "gears.app.id"
+	LogPartnerId            = "gears.partner.id"
 )
 
 const (
