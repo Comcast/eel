@@ -153,3 +153,24 @@ func ExtractPartnerId(tenant string, allowPartner bool, defaultPartner string) s
 	}
 	return partnerId
 }
+
+func UpdateContext(ctx Context, conf *EelSettings, tenantId string) {
+	if "" == tenantId {
+		return
+	}
+
+	partnerId := ExtractPartnerId(tenantId, conf.AllowPartner, conf.DefaultPartner)
+	appId := ExtractAppId(tenantId, conf.AllowPartner)
+
+	// for tracing
+	ctx.AddValue(conf.HttpPartnerHeader, partnerId)
+	ctx.AddValue(conf.HttpTenantHeader, appId)
+
+	// for eel
+	ctx.AddValue(EelPartnerId, partnerId)
+	ctx.AddValue(EelTenantId, tenantId)
+
+	// for logging
+	ctx.AddLogValue(LogPartnerId, partnerId)
+	ctx.AddLogValue(LogTenantId, appId)
+}

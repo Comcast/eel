@@ -38,7 +38,7 @@ var (
 	StatusUnknownTopic        = map[string]interface{}{"error": "unknown topic"}
 	StatusAlreadySubscribed   = map[string]interface{}{"error": "already subscribed"}
 	StatusNotEvenSubscribed   = map[string]interface{}{"error": "not even subscribed"}
-	StatusNoWorkerPool   	  =	map[string]interface{}{"error": "not worker pool"}
+	StatusNoWorkerPool        = map[string]interface{}{"error": "not worker pool"}
 
 	HttpStatusTooManyRequests = 429
 )
@@ -75,8 +75,8 @@ func InitHttpTransportWithDial(ctx Context, dial func(network, addr string) (net
 	tr := &http.Transport{
 		MaxIdleConnsPerHost:   GetConfig(ctx).MaxIdleConnsPerHost,
 		ResponseHeaderTimeout: GetConfig(ctx).ResponseHeaderTimeout * time.Millisecond,
-		Proxy: http.ProxyFromEnvironment,
-		Dial: dial,
+		Proxy:                 http.ProxyFromEnvironment,
+		Dial:                  dial,
 	}
 	if GetConfig(ctx).CloseIdleConnectionIntervalSec > 0 && !GetConfig(ctx).CloseIdleConnectionsStarted {
 		go func() {
@@ -129,10 +129,26 @@ func HitEndpoint(ctx Context, url string, payload string, verb string, headers m
 		}
 	}
 
+	var (
+		resp *http.Response
+	)
+
+	uri := req.URL.Redacted()
+	ctx = Start(ctx, HTTPRequest, map[string]string{HTTPURLKey: uri})
+	start := time.Now()
+	defer func() {
+		attrs := map[string]string{
+			HTTPMethodKey:     req.Method,
+			HTTPStatusCodeKey: strconv.Itoa(resp.StatusCode),
+		}
+		End(ctx, attrs, err)
+		attrs[HTTPHostKey] = req.URL.Scheme + "://" + req.URL.Host
+		Record(ctx, HTTPRequestDuration, attrs, int(time.Since(start).Milliseconds()))
+	}()
+
 	//AddLatencyLog(ctx, stats, "stat.eel.time")
 	// send request
-	resp, err := GetHttpClient(ctx).Do(req)
-	if err != nil {
+	if resp, err = GetHttpClient(ctx).Do(req); err != nil {
 		ctx.Log().Error("op", "HitEndpoint", "error_type", "reaching_service", "cause", "get_http_client", "trace.out.url", url, "trace.out.verb", verb, "trace.out.headers", headers, "error", err.Error())
 		stats.IncErrors()
 		if ctx.LogValue("destination") != nil {

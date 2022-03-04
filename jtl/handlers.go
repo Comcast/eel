@@ -142,7 +142,7 @@ func NewHandlerFactory(ctx Context, configFolders []string) (*HandlerFactory, []
 	for _, folder := range configFolders {
 		configFiles := hf.getAllConfigurationFiles(ctx, folder)
 		for _, configFile := range configFiles {
-			handler, w := hf.GetHandlerConfigurationFromFile(ctx, configFile)
+			handler, w := GetHandlerConfigurationFromFile(ctx, configFile)
 			warnings = append(warnings, w...)
 			if handler != nil && handler.Active {
 				if handler.Topic != "" {
@@ -179,8 +179,6 @@ func NewHandlerFactory(ctx Context, configFolders []string) (*HandlerFactory, []
 					// tenant already have the same handler name, don't overwrite
 					continue
 				}
-				clonedHandler := handler.DeepCopy()
-				clonedHandler.TenantId = tenant
 				handlerMap[handlerName] = handler
 				ctx.Log().Info("action", "registering_handler", "tenant", tenant, "name", handler.Name, "match", handler.Match)
 			}
@@ -537,7 +535,7 @@ func (hf *HandlerFactory) getAllConfigurationFiles(ctx Context, configFolder str
 }
 
 // GetHandlerConfigurationFromFile loads a single handler config from disk and returns a handler and a (hopefully empty) list of warning strings.
-func (hf *HandlerFactory) GetHandlerConfigurationFromFile(ctx Context, filepath string) (*HandlerConfiguration, []error) {
+func GetHandlerConfigurationFromFile(ctx Context, filepath string) (*HandlerConfiguration, []error) {
 	warnings := make([]error, 0)
 	file, err := os.Open(filepath)
 	if file != nil {
@@ -562,11 +560,11 @@ func (hf *HandlerFactory) GetHandlerConfigurationFromFile(ctx Context, filepath 
 		return nil, warnings
 	}
 	handler.File = filepath
-	return hf.GetHandlerConfigurationFromJson(ctx, filepath, handler)
+	return GetHandlerConfigurationFromJson(ctx, filepath, handler)
 }
 
 // GetHandlerConfigurationFromJson parses and vets handler configuration from a partially populated HandlerConfiguration struct.
-func (hf *HandlerFactory) GetHandlerConfigurationFromJson(ctx Context, filepath string, handler HandlerConfiguration) (*HandlerConfiguration, []error) {
+func GetHandlerConfigurationFromJson(ctx Context, filepath string, handler HandlerConfiguration) (*HandlerConfiguration, []error) {
 	var err error
 	warnings := make([]error, 0)
 	ctx.Log().Info("action", "loading_handler", "file", filepath)
