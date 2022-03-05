@@ -47,7 +47,7 @@ func handleEvent(ctx Context, stats *ServiceStats, event *JDoc, raw string, debu
 			ctx = Start(ctx, MessageProcess, attrs)
 			start := time.Now()
 
-			UpdateContext(ctx, conf, handler.TenantId)
+			UpdateContext(ctx, conf, handler.TenantId, false)
 
 			ctx.AddLogValue(TopicKey, handler.Topic)
 			ctx.AddLogValue(HandlerKey, handler.Name)
