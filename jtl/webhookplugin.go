@@ -100,22 +100,23 @@ func (w *responseWriter) WriteHeader(statusCode int) {
 
 func wrap(ctx Context, f func(http.ResponseWriter, *http.Request)) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		Start(ctx, HTTPHandle, nil)
+		ctx = Start(ctx, HTTPHandle, nil)
 		start := time.Now()
-
 		rw := &responseWriter{
 			ResponseWriter: w,
 		}
+		defer func() {
+			attrs := map[string]string{
+				HTTPRouteKey:      r.URL.Redacted(),
+				HTTPMethodKey:     r.Method,
+				HTTPStatusCodeKey: strconv.Itoa(rw.statusCode),
+			}
+
+			Record(ctx, HTTPHandleDuration, attrs, int(time.Since(start).Milliseconds()))
+			End(ctx, attrs, nil)
+		}()
+
 		f(rw, r)
-
-		attrs := map[string]string{
-			HTTPRouteKey:      r.URL.Redacted(),
-			HTTPMethodKey:     r.Method,
-			HTTPStatusCodeKey: strconv.Itoa(rw.statusCode),
-		}
-
-		Record(ctx, HTTPHandleDuration, attrs, int(time.Since(start).Milliseconds()))
-		End(ctx, attrs, nil)
 	}
 }
 
