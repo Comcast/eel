@@ -19,23 +19,14 @@ import (
 	"net/http"
 	"os"
 	"strconv"
-	"time"
 
 	. "github.com/Comcast/eel/util"
 )
 
-type (
-	WebhookPlugin struct {
-		Settings     *PluginSettings
-		ShuttingDown bool
-	}
-
-	responseWriter struct {
-		http.ResponseWriter
-
-		statusCode int
-	}
-)
+type WebhookPlugin struct {
+	Settings     *PluginSettings
+	ShuttingDown bool
+}
 
 var apiBasePath = ""
 
@@ -76,11 +67,10 @@ func (p *WebhookPlugin) startWebhookServices(ctx Context) {
 	}
 	eventProxyPath := apiBasePath + p.GetSettings().Parameters["EventProxyPath"].(string)
 	eventProcPath := apiBasePath + p.GetSettings().Parameters["EventProcPath"].(string)
-	http.HandleFunc(eventProxyPath, wrap(ctx, EventHandler))
-	http.HandleFunc(eventProcPath, wrap(ctx, EventHandler))
-	http.HandleFunc(apiBasePath+"/elementsevent", wrap(ctx, EventHandler)) // hard coded during transition period
-	http.HandleFunc(apiBasePath+"/notify", wrap(ctx, EventHandler))        // hard coded during transition period
-
+	http.HandleFunc(eventProxyPath, EventHandler)
+	http.HandleFunc(eventProcPath, EventHandler)
+	http.HandleFunc(apiBasePath+"/elementsevent", EventHandler) // hard coded during transition period
+	http.HandleFunc(apiBasePath+"/notify", EventHandler)        // hard coded during transition period
 	ctx.Log().Info("action", "listening_for_events", "port", eventProxyPort, "proxy_path", eventProxyPath, "proc_path", eventProcPath, "op", "webhook")
 	err := http.ListenAndServe(":"+strconv.Itoa(eventProxyPort), nil)
 	if err != nil {
@@ -90,33 +80,6 @@ func (p *WebhookPlugin) startWebhookServices(ctx Context) {
 	ctx.Log().Info("action", "stopping_plugin", "op", "webhook")
 	if p.Settings.ExitOnErr {
 		os.Exit(1)
-	}
-}
-
-func (w *responseWriter) WriteHeader(statusCode int) {
-	w.statusCode = statusCode
-	w.ResponseWriter.WriteHeader(statusCode)
-}
-
-func wrap(ctx Context, f func(http.ResponseWriter, *http.Request)) func(http.ResponseWriter, *http.Request) {
-	return func(w http.ResponseWriter, r *http.Request) {
-		ctx = Start(ctx, HTTPHandle, nil)
-		start := time.Now()
-		rw := &responseWriter{
-			ResponseWriter: w,
-		}
-		defer func() {
-			attrs := map[string]string{
-				HTTPRouteKey:      r.URL.Redacted(),
-				HTTPMethodKey:     r.Method,
-				HTTPStatusCodeKey: strconv.Itoa(rw.statusCode),
-			}
-
-			Record(ctx, HTTPHandleDuration, attrs, int(time.Since(start).Milliseconds()))
-			End(ctx, attrs, nil)
-		}()
-
-		f(rw, r)
 	}
 }
 
