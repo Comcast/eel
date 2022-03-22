@@ -429,8 +429,7 @@ func TopicTestHandler(w http.ResponseWriter, r *http.Request) {
 			tht.Match = string(buf)
 		}
 	}
-	hf, _ := NewHandlerFactory(ctx, nil)
-	topicHandler, errs := hf.GetHandlerConfigurationFromJson(ctx, "", *hc)
+	topicHandler, errs := GetHandlerConfigurationFromJson(ctx, "", *hc)
 	for _, e := range errs {
 		tht.ErrorMessage += e.Error() + "<br/>"
 	}
@@ -622,8 +621,7 @@ func HandlersTestHandler(w http.ResponseWriter, r *http.Request) {
 		hc.Version = "1.0"
 		hc.Name = "DEBUG"
 	}
-	hf, _ := NewHandlerFactory(ctx, nil)
-	topicHandler, errs := hf.GetHandlerConfigurationFromJson(ctx, "", *hc)
+	topicHandler, errs := GetHandlerConfigurationFromJson(ctx, "", *hc)
 	for _, e := range errs {
 		tht.ErrorMessage += e.Error() + "<br/>"
 	}

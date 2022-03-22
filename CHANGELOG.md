@@ -6,6 +6,9 @@ This `CHANGELOG.md` implements the spirit of http://keepachangelog.com/.
 
 ## [1.42](https://github.com/Comcast/eel/compare/v1.41.0...dev) - [Unreleased]
 
+### Added
+* Add metrics and tracing to eel
+
 ## [1.41](https://github.com/Comcast/eel/compare/v1.40.0...v1.41.0) - 2021-06-02
 
 ### Added
