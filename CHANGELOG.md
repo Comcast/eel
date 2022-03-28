@@ -4,7 +4,9 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 This `CHANGELOG.md` implements the spirit of http://keepachangelog.com/.
 
-## [1.42](https://github.com/Comcast/eel/compare/v1.41.0...dev) - [Unreleased]
+## [1.43](https://github.com/Comcast/eel/compare/v1.42.0...dev) - [Unreleased]
+
+## [1.42](https://github.com/Comcast/eel/compare/v1.41.0...v1.42.0) - 2022-03-28
 
 ### Added
 * Add metrics and tracing to eel
