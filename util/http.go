@@ -137,9 +137,13 @@ func HitEndpoint(ctx Context, url string, payload string, verb string, headers m
 	ctx = Start(ctx, HTTPRequest, map[string]string{HTTPURLKey: uri})
 	start := time.Now()
 	defer func() {
+		var status string
+		if nil != resp {
+			status = strconv.Itoa(resp.StatusCode)
+		}
 		attrs := map[string]string{
 			HTTPMethodKey:     req.Method,
-			HTTPStatusCodeKey: strconv.Itoa(resp.StatusCode),
+			HTTPStatusCodeKey: status,
 		}
 		End(ctx, attrs, err)
 		attrs[HTTPHostKey] = req.URL.Scheme + "://" + req.URL.Host
