@@ -6,6 +6,9 @@ This `CHANGELOG.md` implements the spirit of http://keepachangelog.com/.
 
 ## [1.43](https://github.com/Comcast/eel/compare/v1.42.0...dev) - [Unreleased]
 
+### Fixed
+* XRULES-19652: panic in nae
+
 ## [1.42](https://github.com/Comcast/eel/compare/v1.41.0...v1.42.0) - 2022-03-28
 
 ### Added
