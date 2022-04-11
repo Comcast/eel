@@ -29,7 +29,10 @@ import (
 // EventHandler processes incoming events (arbitrary JSON payloads) and places them on the worker pool queue.
 // If certain headers are set (X-Debug, X-Sync) a response will be returned immediately bypassing the worker pool queue.
 func EventHandler(w http.ResponseWriter, r *http.Request) {
-	ctx := Gctx.SubContext()
+	HandleEvent(Gctx.SubContext(), w, r)
+}
+
+func HandleEvent(ctx Context, w http.ResponseWriter, r *http.Request) error {
 	debug := false
 	sync := false
 	allowPartner := GetConfig(ctx).AllowPartner
@@ -72,23 +75,25 @@ func EventHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	if r.ContentLength > GetConfig(ctx).MaxMessageSize {
-		ctx.Log().Error("status", "413", "action", "rejected", "error_type", "rejected", "cause", "message_too_large", "msg_length", r.ContentLength, "error", "message too large")
+		err := fmt.Errorf("message too large")
+		ctx.Log().Error("status", "413", "action", "rejected", "error_type", "rejected", "cause", "message_too_large", "msg_length", r.ContentLength, "error", err)
 		ctx.Log().Metric("rejected", M_Namespace, "xrs", M_Metric, "rejected", M_Unit, "Count", M_Dims, "app="+AppId+"&env="+EnvName+"&instance="+InstanceName, M_Val, 1.0)
 		w.WriteHeader(http.StatusRequestEntityTooLarge)
 		w.Write(GetResponse(ctx, StatusRequestTooLarge))
 		stats.IncErrors()
-		return
+		return err
 	}
 	defer r.Body.Close()
 	r.Body = http.MaxBytesReader(w, r.Body, GetConfig(ctx).MaxMessageSize)
 	defer r.Body.Close()
 	if r.Method != "POST" {
-		ctx.Log().Error("status", "400", "action", "rejected", "error_type", "rejected", "cause", "http_post_required", "method", r.Method, "error", "post required")
+		err := fmt.Errorf("post required")
+		ctx.Log().Error("status", "400", "action", "rejected", "error_type", "rejected", "cause", "http_post_required", "method", r.Method, "error", err)
 		ctx.Log().Metric("rejected", M_Namespace, "xrs", M_Metric, "rejected", M_Unit, "Count", M_Dims, "app="+AppId+"&env="+EnvName+"&instance="+InstanceName, M_Val, 1.0)
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write(GetResponse(ctx, StatusHttpPostRequired))
 		stats.IncErrors()
-		return
+		return err
 	}
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
@@ -98,15 +103,16 @@ func EventHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, `{"error":"%s"}`, err.Error())
 		w.Write(GetResponse(ctx, StatusHttpPostRequired))
 		stats.IncErrors()
-		return
+		return err
 	}
 	if body == nil || len(body) == 0 {
-		ctx.Log().Error("status", "400", "action", "rejected", "error_type", "rejected", "cause", "blank_message", "error", "blank message")
+		err := fmt.Errorf("blank message")
+		ctx.Log().Error("status", "400", "action", "rejected", "error_type", "rejected", "cause", "blank_message", "error", err)
 		ctx.Log().Metric("rejected", M_Namespace, "xrs", M_Metric, "rejected", M_Unit, "Count", M_Dims, "app="+AppId+"&env="+EnvName+"&instance="+InstanceName, M_Val, 1.0)
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write(GetResponse(ctx, StatusEmptyBody))
 		stats.IncErrors()
-		return
+		return err
 	}
 	dc := ctx.Value(EelDuplicateChecker).(DuplicateChecker)
 	if dc.GetTtl() > 0 && dc.IsDuplicate(ctx, body) {
@@ -115,7 +121,7 @@ func EventHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		w.Write(GetResponse(ctx, StatusDuplicateEliminated))
 		stats.IncErrors()
-		return
+		return nil
 	}
 	// json validation maybe only in debug mode?
 	evt, err := NewJDocFromString(string(body))
@@ -125,7 +131,7 @@ func EventHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write(GetResponse(ctx, StatusInvalidJson))
 		stats.IncErrors()
-		return
+		return err
 	}
 	stats.IncBytesIn(len(body))
 	if GetConfig(ctx).LogParams != nil {
@@ -158,34 +164,39 @@ func EventHandler(w http.ResponseWriter, r *http.Request) {
 			fmt.Fprintf(w, string(buf))
 		}
 		AddLatencyLog(ctx, stats, "stat.eel.time")
-	} else {
-		tenantId := ""
-		if ctx.Value(EelTenantId) != nil {
-			tenantId = ctx.Value(EelTenantId).(string)
-		}
-		dp := GetWorkDispatcher(ctx, tenantId)
-		if dp != nil {
-			work := WorkRequest{Raw: string(body), Event: evt, Ctx: ctx}
-			select {
-			case dp.WorkQueue <- &work:
-				ctx.Log().Info("status", "202", "action", "accepted")
-				ctx.Log().Metric("accepted", M_Namespace, "xrs", M_Metric, "accepted", M_Unit, "Count", M_Dims, "app="+AppId+"&env="+EnvName+"&instance="+InstanceName, M_Val, 1.0)
-				w.WriteHeader(http.StatusAccepted)
-				w.Write(GetResponse(ctx, StatusProcessed))
-			case <-time.After(time.Millisecond * time.Duration(GetConfig(ctx).MessageQueueTimeout)):
-				// consider spilling over to SQS here
-				ctx.Log().Error("status", "429", "action", "rejected", "error_type", "work_queue", "cause", "queue_full")
-				ctx.Log().Metric("rejected", M_Namespace, "xrs", M_Metric, "rejected", M_Unit, "Count", M_Dims, "app="+AppId+"&env="+EnvName+"&instance="+InstanceName, M_Val, 1.0)
-				// 408
-				//w.WriteHeader(http.StatusRequestTimeout)
-				// 429
-				w.WriteHeader(HttpStatusTooManyRequests)
-				w.Write(GetResponse(ctx, StatusQueueFull))
-			}
-		} else {
-			ctx.Log().Error("status", "500", "action", "rejected", "error_type", "worker_pool", "cause", "no_pool_for_tenant", "tenant_id", tenantId)
-			w.WriteHeader(http.StatusInternalServerError)
-			w.Write(GetResponse(ctx, StatusNoWorkerPool))
+		return err
+	}
+
+	tenantId := ""
+	if ctx.Value(EelTenantId) != nil {
+		tenantId = ctx.Value(EelTenantId).(string)
+	}
+	if dp := GetWorkDispatcher(ctx, tenantId); dp != nil {
+		work := WorkRequest{Raw: string(body), Event: evt, Ctx: ctx}
+		select {
+		case dp.WorkQueue <- &work:
+			ctx.Log().Info("status", "202", "action", "accepted")
+			ctx.Log().Metric("accepted", M_Namespace, "xrs", M_Metric, "accepted", M_Unit, "Count", M_Dims, "app="+AppId+"&env="+EnvName+"&instance="+InstanceName, M_Val, 1.0)
+			w.WriteHeader(http.StatusAccepted)
+			w.Write(GetResponse(ctx, StatusProcessed))
+			return nil
+		case <-time.After(time.Millisecond * time.Duration(GetConfig(ctx).MessageQueueTimeout)):
+			// consider spilling over to SQS here
+			err := fmt.Errorf("queue_full")
+			ctx.Log().Error("status", "429", "action", "rejected", "error_type", "work_queue", "cause", err)
+			ctx.Log().Metric("rejected", M_Namespace, "xrs", M_Metric, "rejected", M_Unit, "Count", M_Dims, "app="+AppId+"&env="+EnvName+"&instance="+InstanceName, M_Val, 1.0)
+			// 408
+			//w.WriteHeader(http.StatusRequestTimeout)
+			// 429
+			w.WriteHeader(HttpStatusTooManyRequests)
+			w.Write(GetResponse(ctx, StatusQueueFull))
+			return err
 		}
 	}
+
+	err = fmt.Errorf("no_pool_for_tenant")
+	ctx.Log().Error("status", "500", "action", "rejected", "error_type", "worker_pool", "cause", "no_pool_for_tenant", "tenant_id", tenantId)
+	w.WriteHeader(http.StatusInternalServerError)
+	w.Write(GetResponse(ctx, StatusNoWorkerPool))
+	return err
 }

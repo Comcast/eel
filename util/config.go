@@ -109,6 +109,7 @@ const (
 	EelStartTime            = "StartTime"
 	EelConfig               = "Eel.Settings"
 	EelHandlerFactory       = "HandlerFactory"
+	EelObserver             = "Observer"
 	EelHttpClient           = "Eel.HttpClient"
 	EelHttpTransport        = "Eel.HttpTransport"
 	EelRequestHeader        = "Eel.Header"

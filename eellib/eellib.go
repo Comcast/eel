@@ -307,8 +307,7 @@ func EELSimpleTransform(ctx Context, event string, transformation string, isTran
 	if h.Endpoint == nil {
 		h.Endpoint = "http://localhost"
 	}
-	hf, _ := NewHandlerFactory(ctx, nil)
-	h, _ = hf.GetHandlerConfigurationFromJson(ctx, "", *h)
+	h, _ = GetHandlerConfigurationFromJson(ctx, "", *h)
 	p, err := h.ProcessEvent(ctx, doc)
 	if err != nil {
 		return "", []error{err}
