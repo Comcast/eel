@@ -1,8 +1,5 @@
 # EEL - A simple Proxy Service for JSON Event Transformation and Forwarding
 
-Requires go 1.7 or greater.
-
-----
 It's simple - a single JSON event comes in and one (or maybe a few) transformed events get out.
 Events are arbitrary JSON encoded payloads and they are typically sent around as
 HTTP POSTs. EEL is stateless and therefore scales easily.
